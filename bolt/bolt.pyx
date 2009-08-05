@@ -94,7 +94,34 @@ cdef class SquaredError(LossFunction):
         return 0.5 * (p-y) * (p-y)
 
     cpdef  double dloss(self,p,y):
-        return (p-y)
+        return p-y
+
+
+cdef class Huber(LossFunction):
+    """
+    """
+    cdef double c
+    
+    def __init__(self,c):
+        self.c = c
+    
+    cpdef  double loss(self,p,y):
+        cdef double r = p-y
+        cdef double abs_r = abs(r)
+        if abs_r <= self.c:
+            return 0.5 * r * r
+        else:
+            return self.c * abs_r - (0.5*self.c*self.c)
+
+    cpdef  double dloss(self,p,y):
+        cdef double r = p-y
+        cdef double abs_r = abs(r)
+        if abs_r <= self.c:
+            return r
+        elif r > 0:
+            return self.c
+        else:
+            return -self.c
 
 # ----------------------------------------
 # Python function for external prediction
@@ -191,12 +218,12 @@ cdef class SGD:
         cdef double bias = 0.0,z,p,t,y,wnorm, s = 0.0
         cdef double reg = self.regularizer
         cdef object[Pair] x = None
+        cdef Pair *xdata = NULL
         cdef int xnnz,nscale,nadd
         cdef double maxw = 1.0 / np.sqrt(reg)
         cdef double typw = np.sqrt(maxw)
         cdef double eta0 = typw /max(
             1.0,loss.dloss(-typw,1.0))
-        cdef Pair *xdata = NULL
         t = 1.0 / (eta0 * reg)
         #print "maxw: %f, typw: %f, eta0: %f, t: %f" % (maxw,typw,eta0,t)
         
@@ -209,6 +236,7 @@ cdef class SGD:
                 data = zip(examples,labels)
                 np.random.shuffle(data)
                 examples,labels = zip(*data)
+            #count = 0
             for x,y in izip(examples,labels):
                 eta = 1.0 / (reg * t)
                 s = 1 - eta * reg
@@ -219,7 +247,7 @@ cdef class SGD:
                     wscale = 1
                 xnnz = x.shape[0]
                 if xnnz == 0: # handle all zero input examples. 
-                    p = 0.0
+                    p = bias
                 else:
                     xdata = <Pair *>&(x[0])
                     p = (dot(wdata, xdata,
@@ -231,9 +259,15 @@ cdef class SGD:
                     bias += etd * 0.01
                     nadd += 1
                 t += 1
+                #count += 1
+                #print w, bias
+                #print t,eta,s,wscale,p,y,etd
+                #if count > 10:
+                #    return
                 
             # floating-point under-/overflow check.
             if np.any(np.isinf(w)) or np.any(np.isnan(w)) or np.isnan(bias) or np.isinf(bias):
+                #print bias, np.any(np.isinf(w)), np.any(np.isnan(w))
                 raise ValueError, "floating-point under-/overflow occured."
 
             # report epoche information

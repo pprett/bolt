@@ -1,5 +1,6 @@
 import numpy as np
 import gzip
+#from time import time
 
 def load(filename):
     if filename.endswith('.npz'):
@@ -23,9 +24,11 @@ def loadDat(filename):
         f=gzip.open(filename,'r')
     else:
         f=open(filename,'r')
+
+#    t1 = time()
     try:
         for i,line in enumerate(f):
-            tokens = line.rstrip().split()
+            tokens = line.split('#')[0].rstrip().split()
             label = float(tokens[0])
             labels.append(label)
             tokens=[(int(t[0]),float(t[1]))
@@ -41,3 +44,4 @@ def loadDat(filename):
         return examples,labels, global_max+1
     finally:
         f.close()
+        #print "data loaded in %f sec" % (time()-t1)

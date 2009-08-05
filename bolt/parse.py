@@ -1,9 +1,9 @@
 from optparse import *
 import textwrap
 
-from bolt import version,ModifiedHuber,Hinge,Log
+from bolt import version
 
-loss_functions = {0:Hinge(), 1:ModifiedHuber(), 2:Log()}
+loss_functions = [0,1,2,5,6]
 
 class IndentedHelpFormatterWithNL(IndentedHelpFormatter):
   def format_description(self, description):
@@ -66,11 +66,16 @@ class IndentedHelpFormatterWithNL(IndentedHelpFormatter):
 def check_loss(option, opt_str, value, parser):
     if value not in loss_functions:
         raise OptionValueError("%d is not a valid loss function." % value)
-    setattr(parser.values, option.dest, loss_functions[value])
+    setattr(parser.values, option.dest, value)
 
 def check_verbosity(option, opt_str, value, parser):
     if value not in range(3):
         raise OptionValueError("%d is not a valid verbosity level." % value)
+    setattr(parser.values, option.dest, value)
+
+def check_epsilon(option, opt_str, value, parser):
+    if value <= 0.0:
+        raise OptionValueError("epsilon must be larger than 0.0." % value)
     setattr(parser.values, option.dest, value)
 
 def parseArguments():
@@ -90,17 +95,27 @@ def parseArguments():
     parser.add_option("-l",
                       action="callback",
                       callback=check_loss,
-                      help="Loss function to use. \n0: Hinge loss.\n1: Modified huber loss [default]. \n2: Log loss.",
+                      help="Loss function to use. \n0: Hinge loss.\n"+
+                      "1: Modified huber loss [default]. \n"+
+                      "2: Log loss.\n"+"5: Squared loss.\n"+
+                      "6: Huber loss.",
                       type="int",
                       dest="loss",
                       metavar="[0..]",
-                      default=loss_functions[1])
+                      default=1)
     
     parser.add_option("-r",
                       dest="regularizer",
                       help="Regularization term lambda [default %default]. ",
                       type="float",
                       default=0.0001,
+                      metavar="float")
+    parser.add_option("-c","--epsilon",
+                      action="callback",
+                      dest="epsilon",
+                      callback=check_epsilon,
+                      help="Size of the regression tube. ",
+                      type="float",
                       metavar="float")
     parser.add_option("-e","--epochs", 
                       dest="epochs",
@@ -110,27 +125,31 @@ def parseArguments():
                       type="int")
     parser.add_option("-p", "--predictions",
                       dest="prediction_file",
-                      help="write predicitons to FILE. If FILE is '-' write to stdout. ",
+                      help="Write predicitons to FILE. If FILE is '-' write to stdout [either -t or --test-only are required].",
                       metavar="FILE")
     parser.add_option("-t",
                       dest="test_file",
-                      help="evaluate the model on a seperate test file. ", 
+                      help="Evaluate the model on a seperate test file. ", 
                       metavar="FILE")
-    parser.add_option("--test-only",
-                      action="store_true",
-                      dest="testonly",
-                      default=False,
-                      help="Test only. ")
+    parser.add_option("-m", "--model",
+                      dest="model_file",
+                      help="If --test-only: Apply seralized model in FILE to example_file. \nelse: store trained model in FILE.",
+                      metavar = "FILE") 
     parser.add_option("-q", "--quadratic",
                       action="store_true",
                       dest="fxpairing",
                       default=False,
                       help="Create and use quadratic features.")
-    parser.add_option("","--shuffle",
+    parser.add_option("--shuffle",
                       action="store_true",
                       dest="shuffle",
                       default=False,
                       help="Shuffle the training data after each epoche.")
+    parser.add_option("--test-only",
+                      action="store_true",
+                      dest="test_only",
+                      default=False,
+                      help="Apply serialized model in option -m to example_file [requires -m].")
 
     options, args = parser.parse_args()
     return (options,args,parser)

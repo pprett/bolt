@@ -4,13 +4,16 @@ import sys
 import numpy as np
 from itertools import izip
 from time import time
+import cPickle as pickle
 
-from bolt import version,predict,SGD,LossFunction,ModifiedHuber,Hinge,Log
+from bolt import version,predict,SGD,LossFunction,ModifiedHuber,Hinge,Log,SquaredError,Huber
 from io import load
 import parse
 
-def error(model,examples, labels):
-    """Compute the missclassification rate of the model.
+loss_functions = {0:Hinge, 1:ModifiedHuber, 2:Log, 5:SquaredError, 6:Huber}
+
+def errorrate(model,examples, labels):
+    """Compute the misclassification rate of the model.
 
     Parameters:
     model: An instance of LinearModel
@@ -27,6 +30,23 @@ def error(model,examples, labels):
         n += 1
     errrate = err / n
     return errrate * 100.0
+
+def rmse(model,examples, labels):
+    """Compute the root mean squared error of the model.
+
+    Parameters:
+    model: An instance of LinearModel
+
+    examples: A sequence of sparse encoded examples.
+    lables: A sequence of regression targets.
+    """
+    n = 0
+    err = 0
+    for p,y in izip(model.predict(examples),labels):
+        err += (p-y)**2
+        n += 1
+    err /= n
+    return np.sqrt(err)
 
 class LinearModel(object):
     """A linear model: y = x*w + b. 
@@ -89,6 +109,23 @@ def loadData(data_file, desc = "training", verbose = 1):
                                                 labels.count(1),
                                                 labels.count(-1)))
     return examples, labels, dim
+
+def computeError(lm,texamples,tlabels,loss):
+    err = 100.0
+    if loss < 5:
+        err = errorrate(lm,texamples,tlabels)
+    else:
+        err = rmse(lm,texamples,tlabels)
+    return err
+
+def writePredictions(lm,texamples,tlabels,predictions_file):
+    f = prediction_file
+    out = sys.stdout if f == "-" else open(f,"w+")
+    try:
+        for p in lm.predict(examples):
+            out.write("%.6f\n" % p)
+    finally:
+        out.close()
     
 
 def main():
@@ -96,52 +133,82 @@ def main():
         options, args, parser  = parse.parseArguments()
         if len(args) < 1 or len(args) > 3:
             parser.error("incorrect number of arguments. ")
+
+        if options.test_only and not options.model_file:
+            parser.error("option -m is required for --test-only.")
+
+        if options.test_only and options.test_file:
+            parser.error("options --test-only and -t are mutually exclusive.")
             
         verbose = options.verbose
         data_file = args[0]
         examples, labels, dim = loadData(data_file, verbose = verbose)
-        lm = LinearModel(dim)
-        if not options.testonly:
+        
+        if not options.test_only:
+            lm = LinearModel(dim)
             sgd = SGD(options.epochs, options.regularizer)
             if verbose > 0:
                 print("---------")
                 print("Training:")
-                print("---------\n")
-            sgd.train(lm,options.loss,examples,labels,verbose = verbose, shuffle = options.shuffle)
-        else:
-            raise Exception, "implement load model and test only"
-
-        if options.prediction_file:
-            f = options.prediction_file
-            out = sys.stdout if f == "-" else open(f,"w+")
-            try:
-                for p in lm.predict(examples):
-                    out.write("%.6f\n" % p)
-            finally:
-                out.close()
-        else:                
-            errrate = error(lm,examples,labels)
+                print("---------")
+            loss_class = loss_functions[options.loss]
+            loss = None
+            if options.epsilon:
+                loss = loss_class(options.epsilon)
+            else:
+                loss = loss_class()
+            if not loss:
+                raise Exception, "cannot create loss function."
+            sgd.train(lm,loss,examples,labels,verbose = verbose, shuffle = options.shuffle)
+            err = computeError(lm,examples,labels, options.loss)
             if verbose > 0:
-                print("error rate: %f%%." % (errrate))
+                print("error: %f%%." % (err))
+            if options.model_file:
+                f = open(options.model_file, 'w+')
+                try:
+                    pickle.dump(lm,f)
+                finally:
+                    f.close()
+                
+            if options.test_file:
+                texamples, tlabels, tdim = loadData(options.test_file,
+                                                    desc = "test", verbose = verbose)
+                if options.prediction_file:
+                    writePredictions(lm,texamples,tlabels,options.prediction_file)
+                else:
+                    print("--------")
+                    print("Testing:")
+                    print("--------")
+                    t1 = time()
+                    err = computeError(lm,texamples,tlabels,options.loss)
+                    print("error: %f%%." % (err))
+                    print("Total prediction time: %.2f seconds." % (time()-t1))
+            
+        else:
+            lm = None
+            f = open(options.model_file, 'r')
+            try:
+                lm = pickle.load(f)
+            finally:
+                f.close()
+            if not lm:
+                raise Exception, "cannot deserialize model in '%s'. " % options.model_file
+            if options.prediction_file:
+                writePredictions(lm,examples,labels,options.prediction_file)
+            else:
+                print("--------")
+                print("Testing:")
+                print("--------")
+                t1 = time()
+                err = computeError(lm,texamples,tlabels,options.loss)
+                print("error: %f%%." % (err))
+                print("Total prediction time: %.2f seconds." % (time()-t1))
 
-        if options.test_file:
-            texamples, tlabels, tdim = loadData(options.test_file,
-                                             desc = "test", verbose = verbose)
-            #if tdim > dim:
-            #    raise Exception, "Dimensionality of test data is larger than training data. "
-            print("\n")
-            print("--------")
-            print("Testing:")
-            print("--------\n")
-            t1 = time()
-            errrate = error(lm,texamples,tlabels)
-            print("error rate: %f%%." % (errrate))
-            print("Total prediction time: %.2f seconds." % (time()-t1))
 
     except Exception as exc:
         print "error: ", exc
 
 if __name__ == "__main__":
-    main()
+    main() 
 
 
