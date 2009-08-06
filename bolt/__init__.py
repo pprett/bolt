@@ -7,46 +7,12 @@ from time import time
 import cPickle as pickle
 
 from bolt import version,predict,SGD,LossFunction,ModifiedHuber,Hinge,Log,SquaredError,Huber
-from io import load
+from io import load, densedtype, sparsedtype, dense2sparse
 import parse
 
 loss_functions = {0:Hinge, 1:ModifiedHuber, 2:Log, 5:SquaredError, 6:Huber}
 
-def errorrate(model,examples, labels):
-    """Compute the misclassification rate of the model.
 
-    Parameters:
-    model: An instance of LinearModel
-
-    examples: A sequence of sparse encoded examples.
-    lables: A sequence of class labels, either 1 or -1. 
-    """
-    n = 0
-    err = 0
-    for p,y in izip(model.predict(examples),labels):
-        z = p*y
-        if np.isinf(p) or np.isnan(p) or z<0:
-            err += 1
-        n += 1
-    errrate = err / n
-    return errrate * 100.0
-
-def rmse(model,examples, labels):
-    """Compute the root mean squared error of the model.
-
-    Parameters:
-    model: An instance of LinearModel
-
-    examples: A sequence of sparse encoded examples.
-    lables: A sequence of regression targets.
-    """
-    n = 0
-    err = 0
-    for p,y in izip(model.predict(examples),labels):
-        err += (p-y)**2
-        n += 1
-    err /= n
-    return np.sqrt(err)
 
 class LinearModel(object):
     """A linear model: y = x*w + b. 
@@ -65,13 +31,19 @@ class LinearModel(object):
 
     def __call__(self,x):
         """Predicts the target value for the given example. 
-        TODO: implement sparse and dense classification.
         
         Return:
         -------
         y = x*w + b
         """
-        return predict(x, self.w, self.bias)
+        if x.dtype == sparsedtype:
+            return predict(x, self.w, self.bias)
+        else:
+            sparsex = dense2sparse(x)
+            return predict(sparsex, self.w, self.bias)
+
+
+        #raise ValueError, "feature vector in sparse or dense encoding expected. "
         
 
     def predict(self,examples):
@@ -109,6 +81,42 @@ def loadData(data_file, desc = "training", verbose = 1):
                                                 labels.count(1),
                                                 labels.count(-1)))
     return examples, labels, dim
+
+def errorrate(model,examples, labels):
+    """Compute the misclassification rate of the model.
+
+    Parameters:
+    model: An instance of LinearModel
+
+    examples: A sequence of sparse encoded examples.
+    lables: A sequence of class labels, either 1 or -1. 
+    """
+    n = 0
+    err = 0
+    for p,y in izip(model.predict(examples),labels):
+        z = p*y
+        if np.isinf(p) or np.isnan(p) or z<0:
+            err += 1
+        n += 1
+    errrate = err / n
+    return errrate * 100.0
+
+def rmse(model,examples, labels):
+    """Compute the root mean squared error of the model.
+
+    Parameters:
+    model: An instance of LinearModel
+
+    examples: A sequence of sparse encoded examples.
+    lables: A sequence of regression targets.
+    """
+    n = 0
+    err = 0
+    for p,y in izip(model.predict(examples),labels):
+        err += (p-y)**2.0
+        n += 1
+    err /= n
+    return np.sqrt(err)
 
 def computeError(lm,texamples,tlabels,loss):
     err = 100.0

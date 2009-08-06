@@ -2,6 +2,15 @@ import numpy as np
 import gzip
 #from time import time
 
+"""The data type of the 
+"""
+sparsedtype = np.dtype("u4,f4")
+densedtype = np.float32
+
+def dense2sparse(x):
+    return np.array([(nnz, x[nnz]) for nnz in x.nonzero()[0]],dtype = sparsedtype)
+    
+
 def load(filename):
     if filename.endswith('.npz'):
         return loadNpz(filename)
@@ -19,7 +28,7 @@ def loadDat(filename):
     labels = []
     examples = []
     global_max = -1
-    t_pair = np.dtype("u4,f4")
+    t_pair = sparsedtype
     if filename.endswith('gz'):
         f=gzip.open(filename,'r')
     else:

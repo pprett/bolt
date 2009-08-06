@@ -194,7 +194,7 @@ cdef class SGD:
         self.epochs = epochs
         self.regularizer = regularizer
 
-    def train(self, model, loss, examples, labels, verbose = 1, shuffle = False):
+    def train(self, model, loss, examples, labels, verbose = 0, shuffle = False):
         """
 
         Parameters: 
