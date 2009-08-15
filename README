@@ -62,6 +62,17 @@ To install bolt on your system, use
 
    python setup.py install
 
+TODOS
+-----
+
+* Proper learning rate for regression.
+
+* L2 projection similar to [Shwartz et al. 07].
+
+* Progress handler to monitor learning progress (e.g. learning curves). 
+
+* L1 regularization or Elastic Net [Hui & Hasties, 05]
+
 
 References
 ----------
