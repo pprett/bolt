@@ -21,9 +21,9 @@ cdef extern from "math.h":
 cdef class LossFunction:
     """Base class for convex loss functions"""
     cpdef double loss(self,p, y):
-         raise NotImplementedError()
+        raise NotImplementedError()
     cpdef double dloss(self,p, y):
-         raise NotImplementedError()
+        raise NotImplementedError()
 
 cdef class ModifiedHuber(LossFunction):
     """Modified Huber loss function for binary
@@ -60,7 +60,6 @@ cdef class Hinge(LossFunction):
         if z < 1:
             return (1 - z) * y
         return 0
-
     cpdef  double dloss(self,p,y):
         cdef double z = p*y
         if z < 1:
@@ -77,7 +76,7 @@ cdef class Log(LossFunction):
             return exp(-z) * y
         if z < -18:
             return -z * y
-        return log(1+exp(-z)) * y
+        return log(1.0+exp(-z)) * y
 
     cpdef  double dloss(self,p,y):
         cdef double z = p*y
@@ -85,26 +84,22 @@ cdef class Log(LossFunction):
             return exp(-z) * y
         if z < -18:
             return y
-        return y / (exp(z) + 1)
+        return y / (exp(z) + 1.0)
 
 cdef class SquaredError(LossFunction):
     """
     """
     cpdef  double loss(self,p,y):
         return 0.5 * (p-y) * (p-y)
-
     cpdef  double dloss(self,p,y):
         return p-y
-
 
 cdef class Huber(LossFunction):
     """
     """
     cdef double c
-    
     def __init__(self,c):
         self.c = c
-    
     cpdef  double loss(self,p,y):
         cdef double r = p-y
         cdef double abs_r = abs(r)
@@ -128,25 +123,24 @@ cdef class Huber(LossFunction):
 # ----------------------------------------
 
 def predict(example, np.ndarray w, double bias):
-     cdef object[Pair] x = example
-     cdef int xnnz = x.shape[0]
-     cdef int wdim = w.shape[0]
-     cdef double y = 0.0
-     if xnnz == 0:
-         y = bias
-     else:
-         y = dot_checked(<double *>w.data,<Pair *>&(x[0]),xnnz,wdim) + bias
-     return y
-
-# ----------------------------------------
-# C functions for fast sparse-dense vector operations
-# ----------------------------------------
+    cdef object[Pair] x = example
+    cdef int xnnz = x.shape[0]
+    cdef int wdim = w.shape[0]
+    cdef double y = 0.0
+    if xnnz == 0:
+        y = bias
+    else:
+        y = dot_checked(<double *>w.data,<Pair *>&(x[0]),xnnz,wdim) + bias
+    return y
+  
+ # ----------------------------------------
+ # C functions for fast sparse-dense vector operations
+ # ----------------------------------------
 
 cdef struct Pair:
     np.uint32_t idx
     np.float32_t val
-
-
+    
 cdef inline double max(double a, double b):
     return a if a >= b else b
 
@@ -188,13 +182,11 @@ cdef class SGD:
     """Plain stochastic gradient descent solver.
     """
     cdef int epochs
-    cdef double regularizer
     
-    def __init__(self, epochs, regularizer):
+    def __init__(self, epochs):
         self.epochs = epochs
-        self.regularizer = regularizer
 
-    def train(self, model, loss, examples, labels, verbose = 0, shuffle = False):
+    def train(self, model, examples, labels, verbose = 0, shuffle = False):
         """
 
         Parameters: 
@@ -210,13 +202,14 @@ cdef class SGD:
           * SGD implementation by Leon Buttuo. 
 
         """
+        cdef LossFunction loss = model.loss
         cdef int m = model.m
         cdef int n = len(examples)
         cdef np.ndarray w = model.w
         cdef double *wdata = <double *>w.data
         cdef double wscale = 1.0
         cdef double bias = 0.0,z,p,t,y,wnorm, s = 0.0
-        cdef double reg = self.regularizer
+        cdef double reg = model.reg
         cdef object[Pair] x = None
         cdef Pair *xdata = NULL
         cdef int xnnz,nscale,nadd
@@ -275,7 +268,7 @@ cdef class SGD:
             if verbose > 1:
                 print("Scalings: %d, Adds: %d" %(nscale, nadd))
             if verbose > 0:
-                print("Norm: %.2f, Bias: %.6f" % (wnorm,bias))
+                print("Norm: %.2f, NNZs: %d, Bias: %.6f" % (wnorm,w.nonzero()[0].shape[0],bias))
                 print("Total training time: %.2f seconds." % (time()-t1))
 
         model.w = w * wscale

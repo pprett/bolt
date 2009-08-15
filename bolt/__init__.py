@@ -18,16 +18,21 @@ class LinearModel(object):
     """A linear model: y = x*w + b. 
     """
 
-    def __init__(self, m):
+    def __init__(self, m, loss = ModifiedHuber(), reg = 0.001):
         """Create a linear model with an
         m-dimensional vector w = [0,..,0] and b = 0.
 
         Parameters:
-        m: The dimensionality of the classification problem (i.e. the number of features). 
+        m: The dimensionality of the classification problem (i.e. the number of features).
+        loss: The loss function (default ModifiedHuber)
+        reg: The regularization parameter lambda. 
         """
         self.m = m
+        self.loss = loss
+        self.reg = reg
         self.w = np.zeros((m),dtype=np.float64)
         self.bias = 0.0
+
 
     def __call__(self,x):
         """Predicts the target value for the given example. 
@@ -41,10 +46,6 @@ class LinearModel(object):
         else:
             sparsex = dense2sparse(x)
             return predict(sparsex, self.w, self.bias)
-
-
-        #raise ValueError, "feature vector in sparse or dense encoding expected. "
-        
 
     def predict(self,examples):
         """Evaluates y = x*w + b for each
@@ -119,6 +120,8 @@ def rmse(model,examples, labels):
     return np.sqrt(err)
 
 def computeError(lm,texamples,tlabels,loss):
+    if type(loss) is not int:
+        raise ValueError, "integer expected for loss."
     err = 100.0
     if loss < 5:
         err = errorrate(lm,texamples,tlabels)
@@ -147,14 +150,12 @@ def main():
 
         if options.test_only and options.test_file:
             parser.error("options --test-only and -t are mutually exclusive.")
-            
+
         verbose = options.verbose
         data_file = args[0]
         examples, labels, dim = loadData(data_file, verbose = verbose)
         
         if not options.test_only:
-            lm = LinearModel(dim)
-            sgd = SGD(options.epochs, options.regularizer)
             if verbose > 0:
                 print("---------")
                 print("Training:")
@@ -167,7 +168,10 @@ def main():
                 loss = loss_class()
             if not loss:
                 raise Exception, "cannot create loss function."
-            sgd.train(lm,loss,examples,labels,verbose = verbose, shuffle = options.shuffle)
+
+            lm = LinearModel(dim,loss = loss, reg = options.regularizer)
+            sgd = SGD(options.epochs)
+            sgd.train(lm,examples,labels,verbose = verbose, shuffle = options.shuffle)
             err = computeError(lm,examples,labels, options.loss)
             if verbose > 0:
                 print("error: %f%%." % (err))

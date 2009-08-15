@@ -61,8 +61,6 @@ class IndentedHelpFormatterWithNL(IndentedHelpFormatter):
       result.append("\n")
     return "".join(result)
 
-
-
 def check_loss(option, opt_str, value, parser):
     if value not in loss_functions:
         raise OptionValueError("%d is not a valid loss function." % value)
@@ -77,6 +75,11 @@ def check_epsilon(option, opt_str, value, parser):
     if value <= 0.0:
         raise OptionValueError("epsilon must be larger than 0.0." % value)
     setattr(parser.values, option.dest, value)
+
+def check_alpha(option,opt_str, value, parser):
+    if value < 0.0 or value > 1.0:
+        raise OptionValueError("alpha must be in [0,1]. ")
+    setattr(parser.values, option.dest,value)
 
 def parseArguments():
     epilog = """the epilog."""
@@ -110,6 +113,14 @@ def parseArguments():
                       type="float",
                       default=0.0001,
                       metavar="float")
+    #parser.add_option("-a","--alpha",
+    #                  action="callback",
+    #                  dest="alpha",
+    #                  callback=check_alpha,
+    #                  help="Elastic net hyper-parameter [default %default].",
+    #                  type="float",
+    #                  default=0.0,
+    #                  metavar="float")
     parser.add_option("-c","--epsilon",
                       action="callback",
                       dest="epsilon",

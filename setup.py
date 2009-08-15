@@ -1,6 +1,9 @@
 from distutils.core import setup
 from distutils.extension import Extension
-from Cython.Distutils import build_ext
+import os.path
+
+import numpy
+numpy_path = os.path.join(numpy.__path__[0], 'core', 'include')
 
 setup(
     name = "bolt",
@@ -12,7 +15,6 @@ setup(
     author='Peter Prettenhofer',
     author_email='peter.prettenhofer@gmail.com',
     packages=['bolt'],
-    cmdclass = {'build_ext': build_ext},
     scripts = ["sb"],
     long_description = """Really long text here. Can be ReST""" 
 )
