@@ -12,24 +12,32 @@ import parse
 
 loss_functions = {0:Hinge, 1:ModifiedHuber, 2:Log, 5:SquaredError, 6:Huber}
 
-
-
 class LinearModel(object):
     """A linear model: y = x*w + b. 
     """
 
-    def __init__(self, m, loss = ModifiedHuber(), reg = 0.001):
+    def __init__(self, m, loss = ModifiedHuber(), reg = 0.001, alpha = 1.0):
         """Create a linear model with an
         m-dimensional vector w = [0,..,0] and b = 0.
 
         Parameters:
         m: The dimensionality of the classification problem (i.e. the number of features).
         loss: The loss function (default ModifiedHuber)
-        reg: The regularization parameter lambda. 
+        reg: The regularization parameter lambda.
+        alpha: The elastic net hyper-paramter alpha. Blends L2 and L1 norm regularization (default 1.0). 
         """
+        if m <= 0:
+            raise ValueError, "Number of dimensions must be larger than 0."
+        if loss == None:
+            raise ValueError, "Loss function must not be None."
+        if reg < 0.0:
+            raise ValueError, "reg must be larger than 0. "
+        if alpha < 0.0 or alpha > 1.0:
+            raise ValueError, "alpha must be in [0,1]."
         self.m = m
         self.loss = loss
         self.reg = reg
+        self.alpha = alpha
         self.w = np.zeros((m),dtype=np.float64)
         self.bias = 0.0
 
@@ -77,10 +85,10 @@ def loadData(data_file, desc = "training", verbose = 1):
         if verbose > 0:
             print(" [done]")
 
-    if verbose > 0:
+    if verbose > 1:
         print("%d (%d+%d) examples loaded. " % (len(examples),
-                                                labels.count(1),
-                                                labels.count(-1)))
+                                                labels[labels==1.0].shape[0],
+                                                labels[labels==-1.0].shape[0]))
     return examples, labels, dim
 
 def errorrate(model,examples, labels):
@@ -169,7 +177,7 @@ def main():
             if not loss:
                 raise Exception, "cannot create loss function."
 
-            lm = LinearModel(dim,loss = loss, reg = options.regularizer)
+            lm = LinearModel(dim,loss = loss, reg = options.regularizer, alpha = options.alpha)
             sgd = SGD(options.epochs)
             sgd.train(lm,examples,labels,verbose = verbose, shuffle = options.shuffle)
             err = computeError(lm,examples,labels, options.loss)

@@ -10,19 +10,27 @@ densedtype = np.float32
 def dense2sparse(x):
     return np.array([(nnz, x[nnz]) for nnz in x.nonzero()[0]],dtype = sparsedtype)
     
-
 def load(filename):
-    if filename.endswith('.npz'):
+    """Load a dataset from the given filename.
+
+    If the filename ends with '.npy' it is assumed to be stored in binary format as a numpy archive (first example array, second labels; finally number of dimensions).
+
+    Else it is assumed to be stored in svm^light format (textual). Number of dimensions are computed on the fly. 
+    """
+    if filename.endswith('.npy'):
         return loadNpz(filename)
     else:
         return loadDat(filename)
 
 def loadNpz(filename):
-    print 'loading numpy archive'
-    f=np.load(filename)
-    examples = f['arr_0']
-    labels = f['arr_1']
-    return examples,labels
+    f = open(filename,'r')
+    try:
+        examples = np.load(f)
+        labels = np.load(f)
+        dim = np.load(f)
+        return examples,labels,dim
+    finally:
+        f.close()
 
 def loadDat(filename):
     labels = []
@@ -50,7 +58,7 @@ def loadDat(filename):
             if local_max > global_max:
                 global_max = local_max
             examples.append(a)
-        return examples,labels, global_max+1
+        return np.array(examples),np.array(labels), global_max+1
     finally:
         f.close()
         #print "data loaded in %f sec" % (time()-t1)

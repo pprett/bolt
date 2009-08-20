@@ -113,14 +113,14 @@ def parseArguments():
                       type="float",
                       default=0.0001,
                       metavar="float")
-    #parser.add_option("-a","--alpha",
-    #                  action="callback",
-    #                  dest="alpha",
-    #                  callback=check_alpha,
-    #                  help="Elastic net hyper-parameter [default %default].",
-    #                  type="float",
-    #                  default=0.0,
-    #                  metavar="float")
+    parser.add_option("-a","--alpha",
+                      action="callback",
+                      dest="alpha",
+                      callback=check_alpha,
+                      help="Elastic net hyper-parameter [default %default]. alpha < 1 is computationally intensive.",
+                      type="float",
+                      default=1.0,
+                      metavar="float")
     parser.add_option("-c","--epsilon",
                       action="callback",
                       dest="epsilon",

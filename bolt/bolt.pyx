@@ -208,11 +208,12 @@ cdef class SGD:
         cdef np.ndarray w = model.w
         cdef double *wdata = <double *>w.data
         cdef double wscale = 1.0
+        cdef double alpha = model.alpha
         cdef double bias = 0.0,z,p,t,y,wnorm, s = 0.0
         cdef double reg = model.reg
         cdef object[Pair] x = None
         cdef Pair *xdata = NULL
-        cdef int xnnz,nscale,nadd
+        cdef int xnnz,nscale,nadd,count
         cdef double maxw = 1.0 / np.sqrt(reg)
         cdef double typw = np.sqrt(maxw)
         cdef double eta0 = typw /max(
@@ -229,11 +230,17 @@ cdef class SGD:
                 data = zip(examples,labels)
                 np.random.shuffle(data)
                 examples,labels = zip(*data)
-            #count = 0
+            count = 0
             for x,y in izip(examples,labels):
                 eta = 1.0 / (reg * t)
-                s = 1 - eta * reg
+                s = 1 - eta * reg * alpha
                 wscale *= s
+                if alpha < 1.0:
+                    if count == 0:
+                        mask = np.sign(w) # np.greater(w*w,0.0)
+                        count = 10
+                    w -= (eta * reg * (1.0 - alpha)  / wscale) * mask
+                    count -= 1
                 if wscale < 1e-9:
                     nscale += 1
                     w*=wscale
@@ -252,12 +259,7 @@ cdef class SGD:
                     bias += etd * 0.01
                     nadd += 1
                 t += 1
-                #count += 1
-                #print w, bias
-                #print t,eta,s,wscale,p,y,etd
-                #if count > 10:
-                #    return
-                
+                                
             # floating-point under-/overflow check.
             if np.any(np.isinf(w)) or np.any(np.isnan(w)) or np.isnan(bias) or np.isinf(bias):
                 #print bias, np.any(np.isinf(w)), np.any(np.isnan(w))
