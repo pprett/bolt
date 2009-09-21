@@ -6,13 +6,12 @@ import sys
 cimport numpy as np
 
 from time import time
-from itertools import izip
-
-version = "0.1"
+from itertools import izip, count
 
 cdef extern from "math.h":
     cdef extern double exp(double x)
     cdef extern double log(double x)
+    cdef extern double sqrt(double x)
 
 # ----------------------------------------
 # Extension Types for Loss Functions
@@ -25,7 +24,22 @@ cdef class LossFunction:
     cpdef double dloss(self,p, y):
         raise NotImplementedError()
 
-cdef class ModifiedHuber(LossFunction):
+cdef class Regression(LossFunction):
+    """Base class for loss functions for regression."""
+    cpdef double loss(self,p, y):
+        raise NotImplementedError()
+    cpdef double dloss(self,p, y):
+        raise NotImplementedError()
+
+
+cdef class Classification(LossFunction):
+    """Base class for loss functions for classification."""
+    cpdef double loss(self,p, y):
+        raise NotImplementedError()
+    cpdef double dloss(self,p, y):
+        raise NotImplementedError()
+
+cdef class ModifiedHuber(Classification):
     """Modified Huber loss function for binary
     classification tasks with y in {-1,1}.
     Its equivalent to quadratically smoothed SVM
@@ -51,7 +65,10 @@ cdef class ModifiedHuber(LossFunction):
         else:
             return 4*y
 
-cdef class Hinge(LossFunction):
+    def __reduce__(self):
+        return ModifiedHuber,()
+
+cdef class Hinge(Classification):
     """SVM classification loss for binary
     classification tasks with y in {-1,1}.
     """
@@ -63,10 +80,14 @@ cdef class Hinge(LossFunction):
     cpdef  double dloss(self,p,y):
         cdef double z = p*y
         if z < 1:
-            return 1*y
+            return y
         return 0
 
-cdef class Log(LossFunction):
+    def __reduce__(self):
+        return Hinge,()
+
+
+cdef class Log(Classification):
     """Logistic regression loss for binary classification
     tasks with y in {-1,1}.
     """
@@ -86,15 +107,21 @@ cdef class Log(LossFunction):
             return y
         return y / (exp(z) + 1.0)
 
-cdef class SquaredError(LossFunction):
+    def __reduce__(self):
+        return Log,()
+
+cdef class SquaredError(Regression):
     """
     """
     cpdef  double loss(self,p,y):
         return 0.5 * (p-y) * (p-y)
     cpdef  double dloss(self,p,y):
-        return p-y
+        return y - p
 
-cdef class Huber(LossFunction):
+    def __reduce__(self):
+        return SquaredError,()
+
+cdef class Huber(Regression):
     """
     """
     cdef double c
@@ -109,7 +136,7 @@ cdef class Huber(LossFunction):
             return self.c * abs_r - (0.5*self.c*self.c)
 
     cpdef  double dloss(self,p,y):
-        cdef double r = p-y
+        cdef double r = y - p 
         cdef double abs_r = abs(r)
         if abs_r <= self.c:
             return r
@@ -117,6 +144,9 @@ cdef class Huber(LossFunction):
             return self.c
         else:
             return -self.c
+
+    def __reduce__(self):
+        return Huber,(self.c,)
 
 # ----------------------------------------
 # Python function for external prediction
@@ -140,9 +170,24 @@ def predict(example, np.ndarray w, double bias):
 cdef struct Pair:
     np.uint32_t idx
     np.float32_t val
+
+cdef struct State:
+    double t
+    double bias
+    double wscale
+    double reg
+    int m
+    int n
+    int nadd
+    int nscale
+    double u
+
     
 cdef inline double max(double a, double b):
     return a if a >= b else b
+
+cdef inline double min(double a, double b):
+    return a if a <= b else b
 
 cdef double dot(double *w, Pair *x, int nnz):
     """Dot product of weight vector w and example x. 
@@ -276,4 +321,3 @@ cdef class SGD:
         model.w = w * wscale
         model.bias = bias
 
-        
