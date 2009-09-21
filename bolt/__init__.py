@@ -6,11 +6,13 @@ from itertools import izip
 from time import time
 import cPickle as pickle
 
-from bolt import version,predict,SGD,LossFunction,ModifiedHuber,Hinge,Log,SquaredError,Huber
+from bolt import predict,SGD,LossFunction,Classification,Regression,ModifiedHuber,Hinge,Log,SquaredError,Huber
 from io import load, densedtype, sparsedtype, dense2sparse
 import parse
 
 loss_functions = {0:Hinge, 1:ModifiedHuber, 2:Log, 5:SquaredError, 6:Huber}
+
+version = "0.1"
 
 class LinearModel(object):
     """A linear model: y = x*w + b. 
@@ -60,10 +62,15 @@ class LinearModel(object):
         example x in examples. 
 
         Parameters:
-        examples: a sequence of examples. 
+        examples: a sequence of examples.
+
+        Return:
+        A generator over the predictions.
         """
         for x in examples:
             yield self.__call__(x)
+
+    
 
 
 def loadData(data_file, desc = "training", verbose = 1):
@@ -127,18 +134,34 @@ def rmse(model,examples, labels):
     err /= n
     return np.sqrt(err)
 
-def computeError(lm,texamples,tlabels,loss):
-    if type(loss) is not int:
-        raise ValueError, "integer expected for loss."
-    err = 100.0
-    if loss < 5:
-        err = errorrate(lm,texamples,tlabels)
-    else:
-        err = rmse(lm,texamples,tlabels)
-    return err
+def cost(model,examples,labels):
+    loss = model.loss
+    cost = 0
+    for p,y in izip(model.predict(examples),labels):
+        cost += loss.loss(p,y)
+    print ("cost: %f." % (cost))
+        
 
-def writePredictions(lm,texamples,tlabels,predictions_file):
-    f = prediction_file
+def error(lm,texamples,tlabels):
+    """Report the error of the model on the
+    test examples. If the loss function of the model
+    is 
+    """
+    if isinstance(lm.loss,Classification):
+        err = errorrate(lm,texamples,tlabels)
+        print("error-rate: %f%%." % (err))
+    elif isinstance(lm.loss,Regression):
+        err = rmse(lm,texamples,tlabels)
+        print("rmse: %f." % (err))
+    else:
+        raise ValueError, "lm.loss: either Regression or Classification loss expected"
+
+def writePredictions(lm,examples,predictions_file):
+    """Write model predictions to file.
+    The prediction file has as many lines as len(examples).
+    The i-th line contains the prediction for the i-th example, encoded as
+    a floating point number """
+    f = predictions_file
     out = sys.stdout if f == "-" else open(f,"w+")
     try:
         for p in lm.predict(examples):
@@ -149,7 +172,7 @@ def writePredictions(lm,texamples,tlabels,predictions_file):
 
 def main():
     try: 
-        options, args, parser  = parse.parseArguments()
+        options, args, parser  = parse.parseArguments(version)
         if len(args) < 1 or len(args) > 3:
             parser.error("incorrect number of arguments. ")
 
@@ -177,12 +200,13 @@ def main():
             if not loss:
                 raise Exception, "cannot create loss function."
 
-            lm = LinearModel(dim,loss = loss, reg = options.regularizer, alpha = options.alpha)
+            lm = LinearModel(dim,loss = loss,
+			     reg = options.regularizer,
+			     alpha = options.alpha)
             sgd = SGD(options.epochs)
-            sgd.train(lm,examples,labels,verbose = verbose, shuffle = options.shuffle)
-            err = computeError(lm,examples,labels, options.loss)
-            if verbose > 0:
-                print("error: %f%%." % (err))
+            sgd.train(lm,examples,labels,verbose = verbose,
+		      shuffle = options.shuffle)
+            error(lm,examples,labels)
             if options.model_file:
                 f = open(options.model_file, 'w+')
                 try:
@@ -194,14 +218,13 @@ def main():
                 texamples, tlabels, tdim = loadData(options.test_file,
                                                     desc = "test", verbose = verbose)
                 if options.prediction_file:
-                    writePredictions(lm,texamples,tlabels,options.prediction_file)
+                    writePredictions(lm,texamples,options.prediction_file)
                 else:
                     print("--------")
                     print("Testing:")
                     print("--------")
                     t1 = time()
-                    err = computeError(lm,texamples,tlabels,options.loss)
-                    print("error: %f%%." % (err))
+                    error(lm,texamples,tlabels)
                     print("Total prediction time: %.2f seconds." % (time()-t1))
             
         else:
@@ -214,16 +237,14 @@ def main():
             if not lm:
                 raise Exception, "cannot deserialize model in '%s'. " % options.model_file
             if options.prediction_file:
-                writePredictions(lm,examples,labels,options.prediction_file)
+                writePredictions(lm,examples,options.prediction_file)
             else:
                 print("--------")
                 print("Testing:")
                 print("--------")
                 t1 = time()
-                err = computeError(lm,texamples,tlabels,options.loss)
-                print("error: %f%%." % (err))
+                error(lm,examples,labels)
                 print("Total prediction time: %.2f seconds." % (time()-t1))
-
 
     except Exception as exc:
         print "error: ", exc

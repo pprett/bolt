@@ -1,8 +1,6 @@
 from optparse import *
 import textwrap
 
-from bolt import version
-
 loss_functions = [0,1,2,5,6]
 
 class IndentedHelpFormatterWithNL(IndentedHelpFormatter):
@@ -81,7 +79,7 @@ def check_alpha(option,opt_str, value, parser):
         raise OptionValueError("alpha must be in [0,1]. ")
     setattr(parser.values, option.dest,value)
 
-def parseArguments():
+def parseArguments(version):
     epilog = """the epilog."""
     parser = OptionParser(usage="%prog [options] example_file",
                           version="%prog "+version,
@@ -121,14 +119,14 @@ def parseArguments():
                       type="float",
                       default=1.0,
                       metavar="float")
-    parser.add_option("-c","--epsilon",
+    parser.add_option("-e","--epsilon",
                       action="callback",
                       dest="epsilon",
                       callback=check_epsilon,
                       help="Size of the regression tube. ",
                       type="float",
                       metavar="float")
-    parser.add_option("-e","--epochs", 
+    parser.add_option("-E","--epochs", 
                       dest="epochs",
                       help="Number of epochs to perform [default %default]. ",
                       default=5,
