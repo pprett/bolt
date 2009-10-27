@@ -22,8 +22,9 @@ function takes the following form,
 Where, 'penalty' is a term which penalizes model complexity (usually
 the l2-norm of the weight vector w) and 'loss' is a
 convex loss function such as hinge loss or squared error. Popular
-linear models such as ridge regression, logistic regression or support
-vector machines can be expressed in the above framework.
+linear models such as ridge regression, logistic regression or
+(linear) support vector machines can be expressed in the above
+framework.
 
 Bolt features: 
 
@@ -31,6 +32,8 @@ Bolt features:
      learning rate and some engineering tricks. 
 
    * Different loss functions for classification and regression. 
+
+   * Different penalties (e.g. L2, L1, elastic-net). 
 
    * Simple, yet powerful commandline interface similar to SVM^light.
 
@@ -43,7 +46,7 @@ numeric computing library for python.
 Requirements
 ------------
 
-To install bolt you need:
+To install Bolt you need:
 
    * Python 2.5 or 2.6
    * C-compiler (tested with gcc 4.3.3)
@@ -67,11 +70,8 @@ TODOS
 
 * Proper learning rate for regression.
 
-* L2 projection similar to [Shwartz et al. 07].
-
 * Progress handler to monitor learning progress (e.g. learning curves). 
 
-* L1 regularization or Elastic Net [Hui & Hasties, 05]
 
 
 References
@@ -93,3 +93,10 @@ York, NY, USA. ACM.
 stochastic gradient descent algorithms. In ICML '04: Proceedings of
 the twenty-first international conference on Machine learning, pages
 116+, New York, NY, USA. ACM. 
+
+[Tsuruoka, Y., Tsujii, J., and Ananiadou, S., 2009] Stochastic gradient
+descent training for l1-regularized log-linear models with cumulative
+penalty. In Proceedings of the Joint Conference of the 47th Annual
+Meeting of the ACL and the 4th International Joint Conference on
+Natural Language Processing of the AFNLP, pages 477-485, Suntec,
+Singapore. Association for Computational Linguistics.  
