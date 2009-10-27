@@ -10,7 +10,7 @@ setup(
     license = "MIT",
     ext_modules = [Extension("bolt/bolt", ["bolt/bolt.c"], extra_link_args=["-O3", "-ffast-math"], library_dirs=['/usr/local/lib'],
 )],
-    version = "0.1",
+    version = "1.0",
     description="Bolt Online Learning Toolbox",
     author='Peter Prettenhofer',
     author_email='peter.prettenhofer@gmail.com',

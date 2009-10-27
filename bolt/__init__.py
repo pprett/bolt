@@ -13,7 +13,7 @@ import eval
 
 from model import LinearModel
 
-version = "0.1"
+version = "1.0"
 
 def writePredictions(lm,examples,predictions_file):
     """Write model predictions to file.

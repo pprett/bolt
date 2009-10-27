@@ -9,6 +9,8 @@ from time import time
 from io import loadData
 from model import LinearModel
 
+version = "1.0"
+
 def train(examples, labels, model,options):
     sgd = bolt.SGD(options.epochs)
     sgd.train(model,examples,labels,verbose = (options.verbose-1),
@@ -50,7 +52,6 @@ def crossvalidation(examples, labels, model, options, seed = None):
 
 def main():
     try:
-	version = "0.1"
 	parser  = parse.parseCV(version)
 	options, args = parser.parse_args()
         if len(args) < 1 or len(args) > 1:
