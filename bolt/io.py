@@ -44,14 +44,13 @@ def loadDat(filename):
     else:
         f=open(filename,'r')
 
-#    t1 = time()
     try:
         for i,line in enumerate(f):
             tokens = line.split('#')[0].rstrip().split()
             label = float(tokens[0])
             labels.append(label)
             del tokens[0]
-            if tokens[0].startswith("qid"):
+            if len(tokens) > 0 and tokens[0].startswith("qid"):
                 qids.append(int(tokens[0].split(":")[1]))
                 del tokens[0]
             tokens=[(int(t[0]),float(t[1]))
@@ -93,3 +92,22 @@ def loadData(data_file, desc = "training", verbose = 1):
                                                 labels[labels==1.0].shape[0],
                                                 labels[labels==-1.0].shape[0]))
     return examples, labels, dim
+
+import sys
+def svmlToNpy():
+    if sys.argv < 3 or "--help" in sys.argv:
+	print """Usage: %s in-file out-file
+
+	Converts the svm^light encoded ´in-file´ into the binary encoded ´out-file´.
+	"""
+	sys.exit(-2)
+    in_filename, out_filename = sys.argv[1:]
+    
+    examples, labels, dim = loadDat(in_filename)
+    f = open(out_filename,'w+b')
+    try:
+        np.save(f,examples)
+	np.save(f,labels)
+	np.save(f,dim)
+    finally:
+        f.close()

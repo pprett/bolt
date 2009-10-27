@@ -15,6 +15,6 @@ setup(
     author='Peter Prettenhofer',
     author_email='peter.prettenhofer@gmail.com',
     packages=['bolt'],
-    scripts = ["sb","sb_cv"],
+    scripts = ["sb","sb_cv","svml2npy"],
     long_description = """Really long text here. Can be ReST""" 
 )
