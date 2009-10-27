@@ -6,155 +6,14 @@ from itertools import izip
 from time import time
 import cPickle as pickle
 
-from bolt import predict,SGD,LossFunction,Classification,Regression,ModifiedHuber,Hinge,Log,SquaredError,Huber
-from io import load, densedtype, sparsedtype, dense2sparse
+from bolt import predict,SGD,LossFunction,Classification,Regression,ModifiedHuber,loss_functions
+from io import loadData
 import parse
+import eval
 
-loss_functions = {0:Hinge, 1:ModifiedHuber, 2:Log, 5:SquaredError, 6:Huber}
+from model import LinearModel
 
 version = "0.1"
-
-class LinearModel(object):
-    """A linear model: y = x*w + b. 
-    """
-
-    def __init__(self, m, loss = ModifiedHuber(), reg = 0.001, alpha = 1.0):
-        """Create a linear model with an
-        m-dimensional vector w = [0,..,0] and b = 0.
-
-        Parameters:
-        m: The dimensionality of the classification problem (i.e. the number of features).
-        loss: The loss function (default ModifiedHuber)
-        reg: The regularization parameter lambda.
-        alpha: The elastic net hyper-paramter alpha. Blends L2 and L1 norm regularization (default 1.0). 
-        """
-        if m <= 0:
-            raise ValueError, "Number of dimensions must be larger than 0."
-        if loss == None:
-            raise ValueError, "Loss function must not be None."
-        if reg < 0.0:
-            raise ValueError, "reg must be larger than 0. "
-        if alpha < 0.0 or alpha > 1.0:
-            raise ValueError, "alpha must be in [0,1]."
-        self.m = m
-        self.loss = loss
-        self.reg = reg
-        self.alpha = alpha
-        self.w = np.zeros((m),dtype=np.float64)
-        self.bias = 0.0
-
-
-    def __call__(self,x):
-        """Predicts the target value for the given example. 
-        
-        Return:
-        -------
-        y = x*w + b
-        """
-        if x.dtype == sparsedtype:
-            return predict(x, self.w, self.bias)
-        else:
-            sparsex = dense2sparse(x)
-            return predict(sparsex, self.w, self.bias)
-
-    def predict(self,examples):
-        """Evaluates y = x*w + b for each
-        example x in examples. 
-
-        Parameters:
-        examples: a sequence of examples.
-
-        Return:
-        A generator over the predictions.
-        """
-        for x in examples:
-            yield self.__call__(x)
-
-    
-
-
-def loadData(data_file, desc = "training", verbose = 1):
-    if verbose > 0:
-        print "loading %s data ..." % desc,
-        
-    sys.stdout.flush()
-    try:
-        examples, labels, dim = load(data_file)
-    except IOError as (errno, strerror):
-        if verbose > 0:
-            print(" [fail]")
-        raise Exception, "cannot open '%s' - %s." % (data_file,strerror)
-    except Exception as exc:
-        if verbose > 0:
-            print(" [fail]")
-        raise Exception, exc
-    else:
-        if verbose > 0:
-            print(" [done]")
-
-    if verbose > 1:
-        print("%d (%d+%d) examples loaded. " % (len(examples),
-                                                labels[labels==1.0].shape[0],
-                                                labels[labels==-1.0].shape[0]))
-    return examples, labels, dim
-
-def errorrate(model,examples, labels):
-    """Compute the misclassification rate of the model.
-
-    Parameters:
-    model: An instance of LinearModel
-
-    examples: A sequence of sparse encoded examples.
-    lables: A sequence of class labels, either 1 or -1. 
-    """
-    n = 0
-    err = 0
-    for p,y in izip(model.predict(examples),labels):
-        z = p*y
-        if np.isinf(p) or np.isnan(p) or z<0:
-            err += 1
-        n += 1
-    errrate = err / n
-    return errrate * 100.0
-
-def rmse(model,examples, labels):
-    """Compute the root mean squared error of the model.
-
-    Parameters:
-    model: An instance of LinearModel
-
-    examples: A sequence of sparse encoded examples.
-    lables: A sequence of regression targets.
-    """
-    n = 0
-    err = 0
-    for p,y in izip(model.predict(examples),labels):
-        err += (p-y)**2.0
-        n += 1
-    err /= n
-    return np.sqrt(err)
-
-def cost(model,examples,labels):
-    loss = model.loss
-    cost = 0
-    for p,y in izip(model.predict(examples),labels):
-        cost += loss.loss(p,y)
-    print ("cost: %f." % (cost))
-        
-
-def error(lm,texamples,tlabels):
-    """Report the error of the model on the
-    test examples. If the loss function of the model
-    is 
-    """
-    if isinstance(lm.loss,Classification):
-        err = errorrate(lm,texamples,tlabels)
-        print("error-rate: %f%%." % (err))
-    elif isinstance(lm.loss,Regression):
-        err = rmse(lm,texamples,tlabels)
-        print("rmse: %f." % (err))
-    else:
-        raise ValueError, "lm.loss: either Regression or Classification loss expected"
 
 def writePredictions(lm,examples,predictions_file):
     """Write model predictions to file.
@@ -172,8 +31,9 @@ def writePredictions(lm,examples,predictions_file):
 
 def main():
     try: 
-        options, args, parser  = parse.parseArguments(version)
-        if len(args) < 1 or len(args) > 3:
+        parser  = parse.parseSB(version)
+	options, args = parser.parse_args()
+        if len(args) < 1 or len(args) > 1:
             parser.error("incorrect number of arguments. ")
 
         if options.test_only and not options.model_file:
@@ -202,11 +62,13 @@ def main():
 
             lm = LinearModel(dim,loss = loss,
 			     reg = options.regularizer,
-			     alpha = options.alpha)
+			     alpha = options.alpha,
+			     norm = options.norm)
             sgd = SGD(options.epochs)
             sgd.train(lm,examples,labels,verbose = verbose,
 		      shuffle = options.shuffle)
-            error(lm,examples,labels)
+            err = eval.error(lm,examples,labels)
+	    print("error: %.4f" % err)
             if options.model_file:
                 f = open(options.model_file, 'w+')
                 try:
@@ -224,7 +86,8 @@ def main():
                     print("Testing:")
                     print("--------")
                     t1 = time()
-                    error(lm,texamples,tlabels)
+                    err = eval.error(lm,texamples,tlabels)
+		    print("error: %.4f" % err)
                     print("Total prediction time: %.2f seconds." % (time()-t1))
             
         else:
@@ -243,11 +106,12 @@ def main():
                 print("Testing:")
                 print("--------")
                 t1 = time()
-                error(lm,examples,labels)
+                err = eval.error(lm,examples,labels)
+		print("error: %.4f" % err)
                 print("Total prediction time: %.2f seconds." % (time()-t1))
 
     except Exception as exc:
-        print "error: ", exc
+        print "[ERROR] ", exc
 
 if __name__ == "__main__":
     main() 

@@ -64,14 +64,19 @@ def check_loss(option, opt_str, value, parser):
         raise OptionValueError("%d is not a valid loss function." % value)
     setattr(parser.values, option.dest, value)
 
+def check_norm(option, opt_str, value, parser):
+    if value not in [1,2]:
+        raise OptionValueError("%d is not a valid penalty." % value)
+    setattr(parser.values, option.dest, value)
+
 def check_verbosity(option, opt_str, value, parser):
     if value not in range(3):
         raise OptionValueError("%d is not a valid verbosity level." % value)
     setattr(parser.values, option.dest, value)
 
-def check_epsilon(option, opt_str, value, parser):
+def check_pos(option, opt_str, value, parser):
     if value <= 0.0:
-        raise OptionValueError("epsilon must be larger than 0.0." % value)
+        raise OptionValueError("%s must be larger than 0.0." % (opt_str, value))
     setattr(parser.values, option.dest, value)
 
 def check_alpha(option,opt_str, value, parser):
@@ -79,7 +84,7 @@ def check_alpha(option,opt_str, value, parser):
         raise OptionValueError("alpha must be in [0,1]. ")
     setattr(parser.values, option.dest,value)
 
-def parseArguments(version):
+def parse(version):
     epilog = """the epilog."""
     parser = OptionParser(usage="%prog [options] example_file",
                           version="%prog "+version,
@@ -122,16 +127,35 @@ def parseArguments(version):
     parser.add_option("-e","--epsilon",
                       action="callback",
                       dest="epsilon",
-                      callback=check_epsilon,
+                      callback=check_pos,
                       help="Size of the regression tube. ",
                       type="float",
                       metavar="float")
+    parser.add_option("-n","--norm",
+                      action="callback",
+                      dest="norm",
+                      callback=check_norm,
+                      help="Penalty to use. \n1: L1 norm.\n"+
+                      "2: L2 norm [default]. \n",
+                      type="int",
+                      metavar="[1,2]",
+		      default = 2)
     parser.add_option("-E","--epochs", 
                       dest="epochs",
                       help="Number of epochs to perform [default %default]. ",
                       default=5,
                       metavar="int",
                       type="int")
+    parser.add_option("--shuffle",
+                      action="store_true",
+                      dest="shuffle",
+                      default=False,
+                      help="Shuffle the training data after each epoche.")
+
+    return parser
+
+def parseSB(version):
+    parser = parse(version)
     parser.add_option("-p", "--predictions",
                       dest="prediction_file",
                       help="Write predicitons to FILE. If FILE is '-' write to stdout [either -t or --test-only are required].",
@@ -144,23 +168,21 @@ def parseArguments(version):
                       dest="model_file",
                       help="If --test-only: Apply seralized model in FILE to example_file. \nelse: store trained model in FILE.",
                       metavar = "FILE") 
-    parser.add_option("-q", "--quadratic",
-                      action="store_true",
-                      dest="fxpairing",
-                      default=False,
-                      help="Create and use quadratic features.")
-    parser.add_option("--shuffle",
-                      action="store_true",
-                      dest="shuffle",
-                      default=False,
-                      help="Shuffle the training data after each epoche.")
     parser.add_option("--test-only",
                       action="store_true",
                       dest="test_only",
                       default=False,
                       help="Apply serialized model in option -m to example_file [requires -m].")
-
-    options, args = parser.parse_args()
-    return (options,args,parser)
+    return parser
     
   
+def parseCV(version):
+    parser = parse(version)
+    parser.add_option("-f","--folds", 
+		      dest="nfolds",
+		      help="number of folds [default %default].",
+		      default=10,
+		      type="int",
+		      metavar="int")
+    return parser
+

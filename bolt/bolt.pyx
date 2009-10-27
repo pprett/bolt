@@ -8,10 +8,15 @@ cimport numpy as np
 from time import time
 from itertools import izip, count
 
+
+
+loss_functions = {0:Hinge, 1:ModifiedHuber, 2:Log, 5:SquaredError, 6:Huber}
+
 cdef extern from "math.h":
     cdef extern double exp(double x)
     cdef extern double log(double x)
     cdef extern double sqrt(double x)
+
 
 # ----------------------------------------
 # Extension Types for Loss Functions
@@ -52,9 +57,9 @@ cdef class ModifiedHuber(Classification):
         if z >= 1:
             return 0
         elif z >= -1:
-            return (1-z) * (1-z) * y
+            return (1-z) * (1-z) 
         else:
-            return -4*z*y
+            return -4*z
 
     cpdef  double dloss(self,p,y):
         cdef double z = p*y
@@ -75,7 +80,7 @@ cdef class Hinge(Classification):
     cpdef  double loss(self,p,y):
         cdef double z = p*y
         if z < 1:
-            return (1 - z) * y
+            return (1 - z)
         return 0
     cpdef  double dloss(self,p,y):
         cdef double z = p*y
@@ -94,10 +99,10 @@ cdef class Log(Classification):
     cpdef double loss(self,p,y):
         cdef double z = p*y
         if z > 18:
-            return exp(-z) * y
+            return exp(-z)
         if z < -18:
             return -z * y
-        return log(1.0+exp(-z)) * y
+        return log(1.0+exp(-z)) 
 
     cpdef  double dloss(self,p,y):
         cdef double z = p*y
@@ -235,8 +240,12 @@ cdef class SGD:
         """
 
         Parameters: 
-
-        Structure:
+	model: The LinearModel that is going to be trained. The model has to be configured properly. 
+	examples: The training instances. The object has to support __iter__.
+	labels: The corresponding training labels. The object has to support __iter__.
+	verbose: The verbosity level. If 0 no output to stdout.
+	shuffle: Whether or not the training data should be shuffled after each epoch. 
+        
 
         Engineering tricks:
 
@@ -244,7 +253,9 @@ cdef class SGD:
 
         References:
 
-          * SGD implementation by Leon Buttuo. 
+          * SGD implementation by Leon Buttuo.
+	  * PEGASOS algorithm by Shavel-Shwartz et al.
+	  * L1 penalty by Tsuruoka et al. 
 
         """
         cdef LossFunction loss = model.loss
@@ -254,17 +265,26 @@ cdef class SGD:
         cdef double *wdata = <double *>w.data
         cdef double wscale = 1.0
         cdef double alpha = model.alpha
-        cdef double bias = 0.0,z,p,t,y,wnorm, s = 0.0
+        cdef double b = 0.0,z,p,y,s,wnorm,t,update = 0.0
         cdef double reg = model.reg
         cdef object[Pair] x = None
         cdef Pair *xdata = NULL
-        cdef int xnnz,nscale,nadd,count
-        cdef double maxw = 1.0 / np.sqrt(reg)
-        cdef double typw = np.sqrt(maxw)
-        cdef double eta0 = typw /max(
-            1.0,loss.dloss(-typw,1.0))
+        cdef int xnnz,nscale=0,nadd=0,count=0
+        cdef int norm = model.norm
+        cdef np.ndarray q = None
+        cdef double *qdata
+        cdef double u = 0.0
+        cdef int usebias = 1
+        if model.biasterm == False:
+            usebias = 0
+        if norm == 1:
+            q = np.zeros((w.shape[0],))
+            qdata = <double *>q.data
+            
+        maxw = 1.0 / np.sqrt(reg)
+        typw = np.sqrt(maxw)
+        eta0 = typw /max(1.0,loss.dloss(-typw,1.0))
         t = 1.0 / (eta0 * reg)
-        #print "maxw: %f, typw: %f, eta0: %f, t: %f" % (maxw,typw,eta0,t)
         
         for e in range(self.epochs):
             if verbose > 0:
@@ -278,46 +298,54 @@ cdef class SGD:
             count = 0
             for x,y in izip(examples,labels):
                 eta = 1.0 / (reg * t)
-                s = 1 - eta * reg * alpha
-                wscale *= s
-                if alpha < 1.0:
-                    if count == 0:
-                        mask = np.sign(w) # np.greater(w*w,0.0)
-                        count = 10
-                    w -= (eta * reg * (1.0 - alpha)  / wscale) * mask
-                    count -= 1
-                if wscale < 1e-9:
-                    nscale += 1
-                    w*=wscale
-                    wscale = 1
+                
                 xnnz = x.shape[0]
-                if xnnz == 0: # handle all zero input examples. 
-                    p = bias
-                else:
-                    xdata = <Pair *>&(x[0])
-                    p = (dot(wdata, xdata,
-                         xnnz) * wscale) + bias
-                etd = eta * loss.dloss(p,y)
-                if etd != 0:
+                xdata = <Pair *>np.PyArray_DATA(x) 
+                p = (dot(wdata, xdata, xnnz) * wscale) + b
+                update = eta * loss.dloss(p,y)
+                if update != 0:
                     add(wdata, xdata,
-                        xnnz,(etd / wscale))
-                    bias += etd * 0.01
+                        xnnz,(update / wscale))
+                    if usebias == 1:
+                        b += update * 0.01
                     nadd += 1
+
+                if norm == 2:
+                    wscale *= 1 - eta * reg
+                    if wscale < 1e-9:
+                        nscale += 1
+                        w*=wscale
+                        wscale = 1
+                else:
+                    u += reg*eta
+                    l1penalty(wdata, qdata, xdata, xnnz, u)
+                
                 t += 1
                                 
             # floating-point under-/overflow check.
-            if np.any(np.isinf(w)) or np.any(np.isnan(w)) or np.isnan(bias) or np.isinf(bias):
-                #print bias, np.any(np.isinf(w)), np.any(np.isnan(w))
+            if np.any(np.isinf(w)) or np.any(np.isnan(w)) or np.isnan(b) or np.isinf(b):
                 raise ValueError, "floating-point under-/overflow occured."
 
             # report epoche information
-            wnorm = np.dot(w,w) * wscale * wscale
             if verbose > 1:
                 print("Scalings: %d, Adds: %d" %(nscale, nadd))
             if verbose > 0:
-                print("Norm: %.2f, NNZs: %d, Bias: %.6f" % (wnorm,w.nonzero()[0].shape[0],bias))
+                wnorm = np.dot(w,w) * wscale * wscale
+                print("Norm: %.2f, NNZs: %d, Bias: %.6f" % (wnorm,w.nonzero()[0].shape[0],b))
                 print("Total training time: %.2f seconds." % (time()-t1))
 
         model.w = w * wscale
-        model.bias = bias
+        model.bias = b
 
+cdef l1penalty(double *w, double *q, Pair *x, int nnz, double u):
+    cdef double z = 0.0
+    cdef Pair pair
+    for i from 0 <= i < nnz:
+        pair = x[i]
+        j = pair.idx
+        z = w[j]
+        if w[j] > 0:
+            w[j] = max(0,w[j] - (u + q[j]))
+        elif w[j] < 0:
+            w[j] = min(0,w[j] + (u - q[j]))
+        q[j] += (w[j] - z)

@@ -1,3 +1,4 @@
+import sys
 import numpy as np
 import gzip
 #from time import time
@@ -67,3 +68,28 @@ def loadDat(filename):
     finally:
         f.close()
         #print "data loaded in %f sec" % (time()-t1)
+
+def loadData(data_file, desc = "training", verbose = 1):
+    if verbose > 0:
+        print "loading %s data ..." % desc,
+        
+    sys.stdout.flush()
+    try:
+        examples, labels, dim = load(data_file)
+    except IOError as (errno, strerror):
+        if verbose > 0:
+            print(" [fail]")
+        raise Exception, "cannot open '%s' - %s." % (data_file,strerror)
+    except Exception as exc:
+        if verbose > 0:
+            print(" [fail]")
+        raise Exception, exc
+    else:
+        if verbose > 0:
+            print(" [done]")
+
+    if verbose > 1:
+        print("%d (%d+%d) examples loaded. " % (len(examples),
+                                                labels[labels==1.0].shape[0],
+                                                labels[labels==-1.0].shape[0]))
+    return examples, labels, dim
