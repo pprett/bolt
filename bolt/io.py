@@ -98,7 +98,7 @@ def svmlToNpy():
     if sys.argv < 3 or "--help" in sys.argv:
 	print """Usage: %s in-file out-file
 
-	Converts the svm^light encoded ´in-file´ into the binary encoded ´out-file´.
+	Converts the svm^light encoded in-file into the binary encoded out-file.
 	"""
 	sys.exit(-2)
     in_filename, out_filename = sys.argv[1:]

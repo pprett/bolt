@@ -2,16 +2,18 @@ from __future__ import division
 
 import sys
 import numpy as np
-from itertools import izip
-from time import time
 import cPickle as pickle
 
-from bolt import predict,SGD,LossFunction,Classification,Regression,ModifiedHuber,loss_functions
-from io import loadData
+from itertools import izip
+from time import time
+
 import parse
 import eval
 
+from bolt import predict,SGD,LossFunction,Classification,Regression,loss_functions, Hinge, ModifiedHuber, Log, SquaredError, Huber
+from io import loadData,sparsedtype,dense2sparse
 from model import LinearModel
+from eval import errorrate
 
 version = "1.0"
 

@@ -59,6 +59,13 @@ class IndentedHelpFormatterWithNL(IndentedHelpFormatter):
       result.append("\n")
     return "".join(result)
 
+  def format_epilog(self, epilog):
+    if epilog:
+      return "\n" + epilog + "\n"
+    else:
+      return ""
+
+
 def check_loss(option, opt_str, value, parser):
     if value not in loss_functions:
         raise OptionValueError("%d is not a valid loss function." % value)
@@ -85,11 +92,41 @@ def check_alpha(option,opt_str, value, parser):
     setattr(parser.values, option.dest,value)
 
 def parse(version):
-    epilog = """the epilog."""
+    epilog = """More details in:
+
+[Shwartz, S. S., Singer, Y., and Srebro, N., 2007] Pegasos: Primal
+estimated sub-gradient solver for svm. In ICML '07: Proceedings of the
+24th international conference on Machine learning, pages 807-814, New
+York, NY, USA. ACM. 
+
+[Zhang, T., 2004] Solving large scale linear prediction problems using
+stochastic gradient descent algorithms. In ICML '04: Proceedings of
+the twenty-first international conference on Machine learning, pages
+116+, New York, NY, USA. ACM. 
+
+[Tsuruoka, Y., Tsujii, J., and Ananiadou, S., 2009] Stochastic gradient
+descent training for l1-regularized log-linear models with cumulative
+penalty. In Proceedings of the Joint Conference of the 47th Annual
+Meeting of the ACL and the 4th International Joint Conference on
+Natural Language Processing of the AFNLP, pages 477-485, Suntec,
+Singapore. Association for Computational Linguistics.  """
+
+    description = """Bolt Online Learning Toolbox V%s: Discriminative learning of linear models using stochastic gradient descent.
+
+Copyright: Peter Prettenhofer <peter.prettenhofer@gmail.com>
+
+This software is available for non-commercial use only. It must not
+be modified and distributed without prior permission of the author.
+The author is not responsible for implications from the use of this
+software.
+
+http://github.com/pprett/bolt""" % version
+    
     parser = OptionParser(usage="%prog [options] example_file",
                           version="%prog "+version,
                           epilog=epilog,
-                          formatter=IndentedHelpFormatterWithNL())
+                          formatter=IndentedHelpFormatterWithNL(),
+			  description = description)
     parser.add_option("-v","--verbose", action="callback",
                       callback=check_verbosity,
                       dest="verbose",

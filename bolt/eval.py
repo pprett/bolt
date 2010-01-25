@@ -10,6 +10,8 @@ import bolt
 def errorrate(model,examples, labels):
     """Compute the misclassification rate of the model.
 
+    zero/one loss: if p*y > 0 then 0 else 1
+
     Parameters:
     model: An instance of LinearModel
 
@@ -20,7 +22,7 @@ def errorrate(model,examples, labels):
     err = 0
     for p,y in izip(model.predict(examples),labels):
         z = p*y
-        if np.isinf(p) or np.isnan(p) or z<0:
+        if np.isinf(p) or np.isnan(p) or z <= 0:
             err += 1
         n += 1
     errrate = err / n
