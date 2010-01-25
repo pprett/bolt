@@ -78,7 +78,7 @@ def main():
 	mean, std = crossvalidation(examples,labels, model, options)
 	print "cv-error: %.4f (%.4f)" % (mean,std)
 
-    except Exception as exc:
+    except Exception, exc:
         print "[ERROR] ", exc
 
 

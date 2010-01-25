@@ -75,11 +75,11 @@ def loadData(data_file, desc = "training", verbose = 1):
     sys.stdout.flush()
     try:
         examples, labels, dim = load(data_file)
-    except IOError as (errno, strerror):
+    except IOError, (errno, strerror):
         if verbose > 0:
             print(" [fail]")
         raise Exception, "cannot open '%s' - %s." % (data_file,strerror)
-    except Exception as exc:
+    except Exception, exc:
         if verbose > 0:
             print(" [fail]")
         raise Exception, exc

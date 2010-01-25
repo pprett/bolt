@@ -15,7 +15,7 @@ from io import loadData,sparsedtype,dense2sparse
 from model import LinearModel
 from eval import errorrate
 
-version = "1.0"
+version = "1.1"
 
 def writePredictions(lm,examples,predictions_file):
     """Write model predictions to file.
@@ -112,7 +112,7 @@ def main():
 		print("error: %.4f" % err)
                 print("Total prediction time: %.2f seconds." % (time()-t1))
 
-    except Exception as exc:
+    except Exception, exc:
         print "[ERROR] ", exc
 
 if __name__ == "__main__":
