@@ -1,3 +1,12 @@
+"""
+Model Specifications
+===========================
+
+Classes:
+
+- `LinearModel`, a linear model for binary classification.
+
+"""
 import numpy as np
 
 from io import sparsedtype, dense2sparse
@@ -5,9 +14,10 @@ from io import sparsedtype, dense2sparse
 import bolt
 
 class LinearModel(object):
-    """A linear model: y = x*w + b. 
+    """A linear model of the form y = x*w + b. 
     """
 
+    #FIXME loss,reg,alpha,norm should be in trainer not model. 
     def __init__(self, m, loss = bolt.ModifiedHuber(),
                  reg = 0.001, alpha = 1.0,
                  norm = 2, biasterm = True):
@@ -16,7 +26,7 @@ class LinearModel(object):
 
         Parameters:
         m: The dimensionality of the classification problem (i.e. the number of features).
-        loss: The loss function (default ModifiedHuber)
+        loss: The loss function (default ModifiedHuber) 
         reg: The regularization parameter lambda.
         alpha: The elastic net hyper-paramter alpha. Blends L2 and L1 norm regularization (default 1.0). 
         """

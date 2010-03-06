@@ -4,12 +4,14 @@ import os.path
 
 import numpy
 numpy_path = os.path.join(numpy.__path__[0], 'core', 'include')
-
+# use additional compiler flags: "-ffast-math" "-g"
 setup(
     name = "bolt",
     license = "MIT",
-    ext_modules = [Extension("bolt/bolt", ["bolt/bolt.c"], extra_link_args=["-O3", "-ffast-math"], library_dirs=['/usr/local/lib'],
-)],
+    ext_modules = [Extension("bolt/bolt", ["bolt/bolt.c"],
+                             extra_link_args=["-O3"],
+                             library_dirs=['/usr/local/lib'],
+                             extra_compile_args=["-O3","-g"],)],
     version = "1.0",
     description="Bolt Online Learning Toolbox",
     author='Peter Prettenhofer',
