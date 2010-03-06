@@ -1,3 +1,17 @@
+"""
+Input/Output module
+===================
+
+An instance in Bolt is represented as a sparse vector via a numpy record array.
+The data type of the record array is `sparsedtype` which is a tuple (uint32,float64).
+
+Classes
+-------
+
+-`MemoryDataset`, an in-memory dataset. 
+
+"""
+
 import sys
 import numpy as np
 import gzip
@@ -11,8 +25,27 @@ densedtype = np.float32
 def dense2sparse(x):
     return np.array([(nnz, x[nnz]) for nnz in x.nonzero()[0]],dtype = sparsedtype)
 
-class MemoryDataset:
-    """A dataset implementation loads the data into memory. 
+class Dataset(object):
+    """Dataset interface.
+    """
+
+    def __iter__(self):
+        pass
+
+    def iterinstances(self):
+        pass
+
+    def iterlabels(self):
+        pass
+
+    def shuffle(self, seed = None):
+        pass
+
+class MemoryDataset(Dataset):
+    """An in-memory dataset.
+    The instances and labels are stored as two parallel arrays.
+    Access to the parallel arrays is via an indexing array which
+    allows convenient shuffeling. 
     """
     def __init__(self, dim, instances, labels):
         assert len(instances) == len(labels)
