@@ -129,7 +129,7 @@ def main(args):
     cats = news.categories()
     cats = dict(((i,c) for i,c in enumerate(news.categories())))
     k = len(cats)
-
+    
     model = MLinearModel(dtrain.dim,k)
     ova = OVA(loss = bolt.ModifiedHuber(), reg = 0.0001)
     ova.train(model,dtrain, epochs = 20)
