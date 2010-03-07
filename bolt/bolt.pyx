@@ -270,11 +270,6 @@ cdef class SGD:
         cdef double alpha = model.alpha
         cdef double b = 0.0,p,y,wnorm,t,update = 0.0
         cdef double reg = model.reg
-        
-        cdef np.ndarray[object] instances = dataset.instances
-        cdef double *labels = <double *>np.PyArray_DATA(dataset.labels)
-        cdef np.ndarray idx = np.arange(n)
-        cdef int *idxdata = <int *>np.PyArray_DATA(idx) 
         cdef np.ndarray x = None
         cdef Pair *xdata = NULL
         cdef int xnnz,nscale=0,nadd=0
