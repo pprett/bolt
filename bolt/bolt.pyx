@@ -263,13 +263,8 @@ cdef class SGD:
         """
         cdef LossFunction loss = model.loss
         cdef int m = model.m
-<<<<<<< HEAD:bolt/bolt.pyx
-        cdef int n = len(examples)
-
-        # weight vector w as a numpy array
-=======
         cdef int n = dataset.n
->>>>>>> 0938ff176582958c666cb81c3b4492a856826b9b:bolt/bolt.pyx
+
         cdef np.ndarray w = model.w
 
         # weight vector w as c array
@@ -289,6 +284,7 @@ cdef class SGD:
         cdef double u = 0.0
         cdef int usebias = 1
         cdef double sumloss = 0.0
+        cdef int count = 0
         if model.biasterm == False:
             usebias = 0
         if norm == 1:
@@ -306,25 +302,13 @@ cdef class SGD:
             t1=time()
             nadd = nscale = 0
             if shuffle:
-<<<<<<< HEAD:bolt/bolt.pyx
-                data = zip(examples,labels)
-                np.random.shuffle(data)
-                examples,labels = zip(*data)
-            for x,y in izip(examples,labels):
-=======
                 dataset.shuffle()
-            
             for x,y in dataset:
->>>>>>> 0938ff176582958c666cb81c3b4492a856826b9b:bolt/bolt.pyx
                 eta = 1.0 / (reg * t)
                 xnnz = np.PyArray_DIM(x,0) 
                 xdata = <Pair *>np.PyArray_DATA(x) 
                 p = (dot(wdata, xdata, xnnz) * wscale) + b
-<<<<<<< HEAD:bolt/bolt.pyx
                 sumloss += loss.loss(p,y)
-=======
-                
->>>>>>> 0938ff176582958c666cb81c3b4492a856826b9b:bolt/bolt.pyx
                 update = eta * loss.dloss(p,y)
                 if update != 0:
                     add(wdata, xdata,
