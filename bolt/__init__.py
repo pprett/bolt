@@ -1,3 +1,30 @@
+"""
+Bolt
+====
+
+Bolt online learning toolbox.
+
+Documentation is available in the docstrings. 
+
+Subpackages
+-----------
+
+model
+   Model specifications. 
+
+bolt
+   Extension module containing loss functions, and the SGD solver. 
+
+io
+   Input/Output routines; reading datasets, writing predictions.
+
+eval
+   Evaluation metrics. 
+
+parse
+   Command line parsing. 
+
+"""
 from __future__ import division
 
 import sys
@@ -11,26 +38,31 @@ import parse
 import eval
 
 from bolt import predict,SGD,LossFunction,Classification,Regression,loss_functions, Hinge, ModifiedHuber, Log, SquaredError, Huber
-from io import loadData,sparsedtype,dense2sparse
+from io import MemoryDataset,sparsedtype,dense2sparse
 from model import LinearModel
 from eval import errorrate
 
-version = "1.1"
+version = "1.2"
 
-def writePredictions(lm,examples,predictions_file):
+def writePredictions(lm,ds,pfile):
     """Write model predictions to file.
     The prediction file has as many lines as len(examples).
     The i-th line contains the prediction for the i-th example, encoded as
-    a floating point number """
-    f = predictions_file
+    a floating point number
+
+    Parameters:
+    lm: A `LinearModel`
+    ds: A `Dataset`
+    pfile: The filename to which predictions are written
+    """
+    f = pfile
     out = sys.stdout if f == "-" else open(f,"w+")
     try:
-        for p in lm.predict(examples):
+        for p in lm.predict(ds.iterinstances()):
             out.write("%.6f\n" % p)
     finally:
         out.close()
     
-
 def main():
     try: 
         parser  = parse.parseSB(version)
@@ -46,7 +78,7 @@ def main():
 
         verbose = options.verbose
         data_file = args[0]
-        examples, labels, dim = loadData(data_file, verbose = verbose)
+        dtrain = MemoryDataset.load(data_file, verbose = verbose)
         
         if not options.test_only:
             if verbose > 0:
@@ -62,15 +94,15 @@ def main():
             if not loss:
                 raise Exception, "cannot create loss function."
 
-            lm = LinearModel(dim,loss = loss,
+            lm = LinearModel(dtrain.dim,loss = loss,
 			     reg = options.regularizer,
 			     alpha = options.alpha,
 			     norm = options.norm,
 			     biasterm = options.biasterm)
             sgd = SGD(options.epochs)
-            sgd.train(lm,examples,labels,verbose = verbose,
+            sgd.train(lm,dtrain,verbose = verbose,
 		      shuffle = options.shuffle)
-            err = eval.error(lm,examples,labels)
+            err = eval.error(lm,dtrain)
 	    print("error: %.4f" % err)
             if options.model_file:
                 f = open(options.model_file, 'w+')
@@ -80,16 +112,17 @@ def main():
                     f.close()
                 
             if options.test_file:
-                texamples, tlabels, tdim = loadData(options.test_file,
-                                                    desc = "test", verbose = verbose)
+                dtest = MemoryDataset.load(options.test_file,
+                                           desc = "test", verbose = verbose)
+                
                 if options.prediction_file:
-                    writePredictions(lm,texamples,options.prediction_file)
+                    writePredictions(lm,dtest,options.prediction_file)
                 else:
                     print("--------")
                     print("Testing:")
                     print("--------")
                     t1 = time()
-                    err = eval.error(lm,texamples,tlabels)
+                    err = eval.error(lm,dtest)
 		    print("error: %.4f" % err)
                     print("Total prediction time: %.2f seconds." % (time()-t1))
             
@@ -103,13 +136,13 @@ def main():
             if not lm:
                 raise Exception, "cannot deserialize model in '%s'. " % options.model_file
             if options.prediction_file:
-                writePredictions(lm,examples,options.prediction_file)
+                writePredictions(lm,dtrain,options.prediction_file)
             else:
                 print("--------")
                 print("Testing:")
                 print("--------")
                 t1 = time()
-                err = eval.error(lm,examples,labels)
+                err = eval.error(lm,dtrain)
 		print("error: %.4f" % err)
                 print("Total prediction time: %.2f seconds." % (time()-t1))
 

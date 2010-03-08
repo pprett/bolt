@@ -4,9 +4,11 @@ import numpy as np
 import sys
 
 cimport numpy as np
+cimport cython
 
 from time import time
-from itertools import izip, count
+from itertools import izip
+
 
 
 
@@ -201,7 +203,7 @@ cdef double dot(double *w, Pair *x, int nnz):
     cdef Pair pair
     for i from 0 <= i < nnz:
         pair = x[i]
-        sum +=w[pair.idx]*pair.val
+        sum += w[pair.idx] * pair.val
     return sum
 
 cdef double dot_checked(double *w, Pair *x, int nnz, int wdim):
@@ -235,8 +237,9 @@ cdef class SGD:
     
     def __init__(self, epochs):
         self.epochs = epochs
-
-    def train(self, model, examples, labels, verbose = 0, shuffle = False):
+        
+    @cython.boundscheck(False)
+    def train(self, model, dataset, verbose = 0, shuffle = False):
         """
 
         Parameters: 
@@ -260,9 +263,13 @@ cdef class SGD:
         """
         cdef LossFunction loss = model.loss
         cdef int m = model.m
+<<<<<<< HEAD:bolt/bolt.pyx
         cdef int n = len(examples)
 
         # weight vector w as a numpy array
+=======
+        cdef int n = dataset.n
+>>>>>>> 0938ff176582958c666cb81c3b4492a856826b9b:bolt/bolt.pyx
         cdef np.ndarray w = model.w
 
         # weight vector w as c array
@@ -271,11 +278,11 @@ cdef class SGD:
         # norm of w
         cdef double wscale = 1.0
         cdef double alpha = model.alpha
-        cdef double b = 0.0,z,p,y,s,wnorm,t,update = 0.0
+        cdef double b = 0.0,p,y,wnorm,t,update = 0.0
         cdef double reg = model.reg
-        cdef object[Pair] x = None
+        cdef np.ndarray x = None
         cdef Pair *xdata = NULL
-        cdef int xnnz,nscale=0,nadd=0,count=0
+        cdef int xnnz,nscale=0,nadd=0
         cdef int norm = model.norm
         cdef np.ndarray q = None
         cdef double *qdata
@@ -299,16 +306,25 @@ cdef class SGD:
             t1=time()
             nadd = nscale = 0
             if shuffle:
+<<<<<<< HEAD:bolt/bolt.pyx
                 data = zip(examples,labels)
                 np.random.shuffle(data)
                 examples,labels = zip(*data)
             for x,y in izip(examples,labels):
+=======
+                dataset.shuffle()
+            
+            for x,y in dataset:
+>>>>>>> 0938ff176582958c666cb81c3b4492a856826b9b:bolt/bolt.pyx
                 eta = 1.0 / (reg * t)
-                
-                xnnz = x.shape[0]
+                xnnz = np.PyArray_DIM(x,0) 
                 xdata = <Pair *>np.PyArray_DATA(x) 
                 p = (dot(wdata, xdata, xnnz) * wscale) + b
+<<<<<<< HEAD:bolt/bolt.pyx
                 sumloss += loss.loss(p,y)
+=======
+                
+>>>>>>> 0938ff176582958c666cb81c3b4492a856826b9b:bolt/bolt.pyx
                 update = eta * loss.dloss(p,y)
                 if update != 0:
                     add(wdata, xdata,
