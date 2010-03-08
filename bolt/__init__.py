@@ -104,6 +104,7 @@ def main():
 		      shuffle = options.shuffle)
             err = eval.error(lm,dtrain)
 	    print("error: %.4f" % err)
+            sys.stdout.flush()
             if options.model_file:
                 f = open(options.model_file, 'w+')
                 try:

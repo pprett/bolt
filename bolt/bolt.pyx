@@ -1,3 +1,7 @@
+# encoding: utf-8
+# cython: profile=True
+# filename: bolt.pyx
+
 from __future__ import division
 
 import numpy as np
@@ -9,16 +13,12 @@ cimport cython
 from time import time
 from itertools import izip
 
-
-
-
 loss_functions = {0:Hinge, 1:ModifiedHuber, 2:Log, 5:SquaredError, 6:Huber}
 
 cdef extern from "math.h":
     cdef extern double exp(double x)
     cdef extern double log(double x)
     cdef extern double sqrt(double x)
-
 
 # ----------------------------------------
 # Extension Types for Loss Functions
@@ -158,16 +158,17 @@ cdef class Huber(Regression):
 # ----------------------------------------
 # Python function for external prediction
 # ----------------------------------------
-
-def predict(example, np.ndarray w, double bias):
-    cdef object[Pair] x = example
+@cython.boundscheck(False)
+@cython.wraparound(False)
+def predict(np.ndarray x, np.ndarray w,
+            double bias):
     cdef int xnnz = x.shape[0]
     cdef int wdim = w.shape[0]
     cdef double y = 0.0
     if xnnz == 0:
         y = bias
     else:
-        y = dot_checked(<double *>w.data,<Pair *>&(x[0]),xnnz,wdim) + bias
+        y = dot_checked(<double *>w.data,<Pair *>x.data,xnnz,wdim) + bias
     return y
   
  # ----------------------------------------
@@ -177,18 +178,6 @@ def predict(example, np.ndarray w, double bias):
 cdef struct Pair:
     np.uint32_t idx
     np.float32_t val
-
-cdef struct State:
-    double t
-    double bias
-    double wscale
-    double reg
-    int m
-    int n
-    int nadd
-    int nscale
-    double u
-
     
 cdef inline double max(double a, double b):
     return a if a >= b else b
@@ -237,19 +226,18 @@ cdef class SGD:
     
     def __init__(self, epochs):
         self.epochs = epochs
-        
+
     @cython.boundscheck(False)
+    @cython.wraparound(False)
     def train(self, model, dataset, verbose = 0, shuffle = False):
-        """
+        """Train `model` on the `dataset` using SGD.
 
         Parameters: 
         model: The LinearModel that is going to be trained. The model has to be configured properly. 
-        examples: The training instances. The object has to support __iter__.
-        labels: The corresponding training labels. The object has to support __iter__.
+        dataset: The `Dataset`. 
         verbose: The verbosity level. If 0 no output to stdout.
         shuffle: Whether or not the training data should be shuffled after each epoch. 
         
-
         Engineering tricks:
 
           * explicit scaling factor of weight vector w. 
@@ -265,21 +253,23 @@ cdef class SGD:
         cdef int m = model.m
         cdef int n = dataset.n
 
-        cdef np.ndarray w = model.w
-
+        cdef np.ndarray[np.float64_t, ndim=1, mode="c"] w = model.w
         # weight vector w as c array
         cdef double *wdata = <double *>w.data
-
         # norm of w
         cdef double wscale = 1.0
+
+        # training instance
+        cdef np.ndarray x = None
+        cdef Pair *xdata = NULL
+        
         cdef double alpha = model.alpha
         cdef double b = 0.0,p,y,wnorm,t,update = 0.0
         cdef double reg = model.reg
-        cdef np.ndarray x = None
-        cdef Pair *xdata = NULL
+        
         cdef int xnnz,nscale=0,nadd=0
         cdef int norm = model.norm
-        cdef np.ndarray q = None
+        cdef np.ndarray[np.float64_t, ndim=1, mode="c"] q = None
         cdef double *qdata
         cdef double u = 0.0
         cdef int usebias = 1
@@ -288,9 +278,10 @@ cdef class SGD:
         if model.biasterm == False:
             usebias = 0
         if norm == 1:
-            q = np.zeros((w.shape[0],))
+            q = np.zeros((m,), dtype = np.float64, order = "c" )
             qdata = <double *>q.data
-            
+
+        # computing eta0
         maxw = 1.0 / np.sqrt(reg)
         typw = np.sqrt(maxw)
         eta0 = typw /max(1.0,loss.dloss(-typw,1.0))
@@ -305,8 +296,8 @@ cdef class SGD:
                 dataset.shuffle()
             for x,y in dataset:
                 eta = 1.0 / (reg * t)
-                xnnz = np.PyArray_DIM(x,0) 
-                xdata = <Pair *>np.PyArray_DATA(x) 
+                xnnz = x.shape[0]
+                xdata = <Pair *>x.data
                 p = (dot(wdata, xdata, xnnz) * wscale) + b
                 sumloss += loss.loss(p,y)
                 update = eta * loss.dloss(p,y)
@@ -329,11 +320,6 @@ cdef class SGD:
                 
                 t += 1
                 count += 1
-                
-                                
-            # floating-point under-/overflow check.
-            if np.any(np.isinf(w)) or np.any(np.isnan(w)) or np.isnan(b) or np.isinf(b):
-                raise ValueError, "floating-point under-/overflow occured."
 
             # report epoche information
             if verbose > 1:
@@ -343,6 +329,9 @@ cdef class SGD:
                 print("Norm: %.2f, NNZs: %d, Bias: %.6f, T: %d, Avg. loss: %.6f" % (wnorm,w.nonzero()[0].shape[0],b,count,sumloss/count))
                 print("Total training time: %.2f seconds." % (time()-t1))
 
+        # floating-point under-/overflow check.
+        if np.any(np.isinf(w)) or np.any(np.isnan(w))or np.isnan(b) or np.isinf(b):
+            raise ValueError, "floating-point under-/overflow occured."
         model.w = w * wscale
         model.bias = b
 

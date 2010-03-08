@@ -16,7 +16,6 @@ import sys
 import numpy as np
 import gzip
 
-
 """
 """
 sparsedtype = np.dtype("u4,f4")
@@ -55,6 +54,7 @@ class MemoryDataset(Dataset):
         self.labels = labels
         self._shuffle = np.arange(self.n)
         self.classes = np.unique1d(labels)
+        
 
     def __iter__(self):
         for i in self._shuffle:
@@ -75,6 +75,8 @@ class MemoryDataset(Dataset):
 
     @classmethod
     def load(cls, data_file, desc = "training", verbose = 1):
+        """Factory method to deserialize a `Dataset`. 
+        """
         if verbose > 0:
             print "loading %s data ..." % desc,
         sys.stdout.flush()

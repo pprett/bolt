@@ -42,7 +42,7 @@ class LinearModel(object):
         self.loss = loss
         self.reg = reg
         self.alpha = alpha
-        self.w = np.zeros((m),dtype=np.float64)
+        self.w = np.zeros((m), dtype=np.float64, order = "c")
         self.bias = 0.0
         self.norm = norm
         self.biasterm = biasterm
