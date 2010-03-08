@@ -135,7 +135,7 @@ http://github.com/pprett/bolt""" % version
                       metavar="[0,1,2]",
                       type="int")
    
-    parser.add_option("-l",
+    parser.add_option("-l","--loss",
                       action="callback",
                       callback=check_loss,
                       help="Loss function to use. \n0: Hinge loss.\n"+
@@ -147,7 +147,7 @@ http://github.com/pprett/bolt""" % version
                       metavar="[0..]",
                       default=1)
     
-    parser.add_option("-r",
+    parser.add_option("-r","--reg",
                       dest="regularizer",
                       help="Regularization term lambda [default %default]. ",
                       type="float",
@@ -188,6 +188,11 @@ http://github.com/pprett/bolt""" % version
                       dest="shuffle",
                       default=False,
                       help="Shuffle the training data after each epoche.")
+    parser.add_option("-b","--bias",
+                      action="store_true",
+                      dest="biasterm",
+                      default=False,
+                      help="Use a biased hyperplane (w^t x + b) [default %default].")
 
     return parser
 

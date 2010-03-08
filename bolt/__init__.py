@@ -65,7 +65,8 @@ def main():
             lm = LinearModel(dim,loss = loss,
 			     reg = options.regularizer,
 			     alpha = options.alpha,
-			     norm = options.norm)
+			     norm = options.norm,
+			     biasterm = options.biasterm)
             sgd = SGD(options.epochs)
             sgd.train(lm,examples,labels,verbose = verbose,
 		      shuffle = options.shuffle)

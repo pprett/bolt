@@ -240,11 +240,11 @@ cdef class SGD:
         """
 
         Parameters: 
-	model: The LinearModel that is going to be trained. The model has to be configured properly. 
-	examples: The training instances. The object has to support __iter__.
-	labels: The corresponding training labels. The object has to support __iter__.
-	verbose: The verbosity level. If 0 no output to stdout.
-	shuffle: Whether or not the training data should be shuffled after each epoch. 
+        model: The LinearModel that is going to be trained. The model has to be configured properly. 
+        examples: The training instances. The object has to support __iter__.
+        labels: The corresponding training labels. The object has to support __iter__.
+        verbose: The verbosity level. If 0 no output to stdout.
+        shuffle: Whether or not the training data should be shuffled after each epoch. 
         
 
         Engineering tricks:
@@ -254,15 +254,21 @@ cdef class SGD:
         References:
 
           * SGD implementation by Leon Buttuo.
-	  * PEGASOS algorithm by Shavel-Shwartz et al.
-	  * L1 penalty by Tsuruoka et al. 
+          * PEGASOS algorithm by Shavel-Shwartz et al.
+          * L1 penalty by Tsuruoka et al. 
 
         """
         cdef LossFunction loss = model.loss
         cdef int m = model.m
         cdef int n = len(examples)
+
+        # weight vector w as a numpy array
         cdef np.ndarray w = model.w
+
+        # weight vector w as c array
         cdef double *wdata = <double *>w.data
+
+        # norm of w
         cdef double wscale = 1.0
         cdef double alpha = model.alpha
         cdef double b = 0.0,z,p,y,s,wnorm,t,update = 0.0
@@ -275,6 +281,7 @@ cdef class SGD:
         cdef double *qdata
         cdef double u = 0.0
         cdef int usebias = 1
+        cdef double sumloss = 0.0
         if model.biasterm == False:
             usebias = 0
         if norm == 1:
@@ -295,13 +302,13 @@ cdef class SGD:
                 data = zip(examples,labels)
                 np.random.shuffle(data)
                 examples,labels = zip(*data)
-            count = 0
             for x,y in izip(examples,labels):
                 eta = 1.0 / (reg * t)
                 
                 xnnz = x.shape[0]
                 xdata = <Pair *>np.PyArray_DATA(x) 
                 p = (dot(wdata, xdata, xnnz) * wscale) + b
+                sumloss += loss.loss(p,y)
                 update = eta * loss.dloss(p,y)
                 if update != 0:
                     add(wdata, xdata,
@@ -321,6 +328,8 @@ cdef class SGD:
                     l1penalty(wdata, qdata, xdata, xnnz, u)
                 
                 t += 1
+                count += 1
+                
                                 
             # floating-point under-/overflow check.
             if np.any(np.isinf(w)) or np.any(np.isnan(w)) or np.isnan(b) or np.isinf(b):
@@ -331,7 +340,7 @@ cdef class SGD:
                 print("Scalings: %d, Adds: %d" %(nscale, nadd))
             if verbose > 0:
                 wnorm = np.dot(w,w) * wscale * wscale
-                print("Norm: %.2f, NNZs: %d, Bias: %.6f" % (wnorm,w.nonzero()[0].shape[0],b))
+                print("Norm: %.2f, NNZs: %d, Bias: %.6f, T: %d, Avg. loss: %.6f" % (wnorm,w.nonzero()[0].shape[0],b,count,sumloss/count))
                 print("Total training time: %.2f seconds." % (time()-t1))
 
         model.w = w * wscale
