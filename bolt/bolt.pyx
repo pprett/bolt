@@ -1,5 +1,4 @@
 # encoding: utf-8
-# cython: profile=True
 # filename: bolt.pyx
 
 from __future__ import division
