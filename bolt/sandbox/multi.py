@@ -1,13 +1,14 @@
 """
 
 """
+
 import numpy as np
 import bolt
 
 from time import time
 
 class BinaryDataset(bolt.io.Dataset):
-    """A `Dataset` wrapper which masks the class labels. 
+    """A `Dataset` wrapper which binarizes the class labels. 
     """
     def __init__(self,dataset,c):
         """
@@ -33,12 +34,13 @@ class BinaryDataset(bolt.io.Dataset):
     def shuffle(self, seed = None):
         self._dataset.shuffle(seed)
 
-class MLinearModel(object):
+class GeneralizedLinearModel(object):
     """A generalized linear model of the form z = max_y w * f(x,y) + b_y.
     """
 
     def __init__(self, m, k):
-        """Create a generalized linear model for classification problems with `k` classes. 
+        """Create a generalized linear model for
+	classification problems with `k` classes. 
 
         Parameters:
         m: The dimensionality of the input data (i.e., the number of features).
@@ -47,11 +49,11 @@ class MLinearModel(object):
         if m <= 0:
             raise ValueError, "Number of dimensions must be larger than 0."
         if k <= 2:
-            raise ValueError, "Number of classes must be larger than 2 (if 2 use binary model)"
+            raise ValueError, "Number of classes must be larger than 2 (if 2 use `LinearModel`.)"
         self.m = m
         self.k = k
-        self.W = np.zeros((k,m),dtype=np.float64)
-        self.b = np.zeros((k,),dtype=np.float64)
+        self.W = np.zeros((k,m), dtype=np.float64, order = "c")
+        self.b = np.zeros((k,), dtype=np.float64, order = "c")
 
 
     def __call__(self,x):
@@ -59,7 +61,7 @@ class MLinearModel(object):
         
         Return:
         -------
-        class
+        The class idx. 
         """
         return self._predict(x)
             
@@ -79,9 +81,7 @@ class MLinearModel(object):
 
     def _predict(self,x):
         ps = np.array([bolt.predict(x, self.W[i], self.b[i]) for i in range(self.k)])
-
-        #ps = np.array([sum([self.W[i,j]*v for j,v in x])+self.b[i] for i in range(self.k)])
-        c = np.argmax(ps)
+	c = np.argmax(ps)
         return c
 
 class OVA(object):
@@ -96,41 +96,43 @@ class OVA(object):
         self.reg = reg
         self.biasterm = biasterm
 
-    def train(self, model, dataset, epochs = 5, verbose = 1, shuffle = False):
+    def train(self, glm, dataset, epochs = 5, verbose = 1, shuffle = False):
         classes = dataset.classes
-        assert model.k == len(classes)
+        assert glm.k == len(classes)
         sgd = bolt.SGD(epochs)
         t1 = time()
         for i,c in enumerate(classes):
-            bmodel = bolt.LinearModel(model.m,loss = self.loss, reg = self.reg,
+            bmodel = bolt.LinearModel(glm.m,loss = self.loss, reg = self.reg,
                                       biasterm = self.biasterm)
             dtmp = BinaryDataset(dataset,c)
             sgd.train(bmodel,dtmp, verbose = 0,
 		      shuffle = shuffle)
-            model.W[i] = bmodel.w.T
-            model.b[i] = bmodel.bias
+            glm.W[i] = bmodel.w.T
+            glm.b[i] = bmodel.bias
             if verbose > 0:
                 print("Model %d trained. \nTotal training time %f seconds. " % (i,time() - t1))
 
 def main(args):
-    from nltk.corpus import news
     import nltk
 
     ftrain = args[0]
     ftest = args[1]
 
-    #dim, itrain, ltrain = bolt.io.loadNpz(ftrain)
-    #dim, itest, ltest = bolt.io.loadNpz(ftest)
-
     dtrain = bolt.io.MemoryDataset.load(ftrain, verbose = 0)
     dtest = bolt.io.MemoryDataset.load(ftest, verbose = 0)
     assert dtrain.dim == dtest.dim
 
-    cats = news.categories()
-    cats = dict(((i,c) for i,c in enumerate(news.categories())))
+    cats = '''alt.atheism rec.autos sci.space comp.graphics rec.motorcycles
+    soc.religion.christian comp.os.ms-windows.misc rec.sport.baseball
+    talk.politics.guns comp.sys.ibm.pc.hardware rec.sport.hockey
+    talk.politics.mideast comp.sys.mac.hardware sci.crypt
+    talk.politics.misc comp.windows.x sci.electronics
+    talk.religion.misc misc.forsale sci.med'''.split()
+    
+    cats = dict(((i,c) for i,c in enumerate(cats)))
     k = len(cats)
     
-    model = MLinearModel(dtrain.dim,k)
+    model = GeneralizedLinearModel(dtrain.dim,k)
     ova = OVA(loss = bolt.ModifiedHuber(), reg = 0.0001)
     ova.train(model,dtrain, epochs = 20)
 
@@ -171,3 +173,4 @@ def main(args):
 if __name__ == "__main__":
     import sys
     main(sys.argv[1:])
+
