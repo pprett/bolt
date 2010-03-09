@@ -1,0 +1,20 @@
+# Lines starting with '#' are considered comments.
+# Ignore emacs backup files
+*~
+# Ignore (generated) html files,
+*.html
+
+# Ignore objects and archives.
+*.[oa]
+
+# Ignore python byte-code
+*.pyc
+
+# Ignore bolt/old
+bolt/old/*
+
+# Ignore build
+build/*
+
+# Ignore data (npy)
+*.npy
