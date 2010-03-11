@@ -122,12 +122,26 @@ def main(args):
     dtest = bolt.io.MemoryDataset.load(ftest, verbose = 0)
     assert dtrain.dim == dtest.dim
 
-    cats = '''alt.atheism rec.autos sci.space comp.graphics rec.motorcycles
-    soc.religion.christian comp.os.ms-windows.misc rec.sport.baseball
-    talk.politics.guns comp.sys.ibm.pc.hardware rec.sport.hockey
-    talk.politics.mideast comp.sys.mac.hardware sci.crypt
-    talk.politics.misc comp.windows.x sci.electronics
-    talk.religion.misc misc.forsale sci.med'''.split()
+    cats = ['alt.atheism',
+ 'comp.graphics',
+ 'comp.os.ms-windows.misc',
+ 'comp.sys.ibm.pc.hardware',
+ 'comp.sys.mac.hardware',
+ 'comp.windows.x',
+ 'misc.forsale',
+ 'rec.autos',
+ 'rec.motorcycles',
+ 'rec.sport.baseball',
+ 'rec.sport.hockey',
+ 'sci.crypt',
+ 'sci.electronics',
+ 'sci.med',
+ 'sci.space',
+ 'soc.religion.christian',
+ 'talk.politics.guns',
+ 'talk.politics.mideast',
+ 'talk.politics.misc',
+ 'talk.religion.misc']
     
     cats = dict(((i,c) for i,c in enumerate(cats)))
     k = len(cats)
@@ -173,4 +187,3 @@ def main(args):
 if __name__ == "__main__":
     import sys
     main(sys.argv[1:])
-
