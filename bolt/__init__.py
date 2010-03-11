@@ -37,7 +37,7 @@ from time import time
 import parse
 import eval
 
-from bolt import predict,SGD,LossFunction,Classification,Regression,loss_functions, Hinge, ModifiedHuber, Log, SquaredError, Huber
+from bolt import predict,SGD,LossFunction,Classification,Regression,loss_functions, Hinge, ModifiedHuber, Log, SquaredError, Huber, PEGASOS
 from io import MemoryDataset,sparsedtype,dense2sparse
 from model import LinearModel
 from eval import errorrate
@@ -91,18 +91,26 @@ def main():
                 loss = loss_class(options.epsilon)
             else:
                 loss = loss_class()
-            if not loss:
-                raise Exception, "cannot create loss function."
-
-            lm = LinearModel(dtrain.dim,loss = loss,
-			     reg = options.regularizer,
-			     alpha = options.alpha,
-			     norm = options.norm,
+            
+            lm = LinearModel(dtrain.dim,
 			     biasterm = options.biasterm)
-            sgd = SGD(options.epochs)
-            sgd.train(lm,dtrain,verbose = verbose,
+
+            if options.clstype == "sgd":
+                sgd = SGD(loss, options.regularizer,
+                          norm = options.norm,
+                          alpha = options.alpha,
+                          epochs = options.epochs)
+            
+                sgd.train(lm,dtrain,verbose = verbose,
 		      shuffle = options.shuffle)
-            err = eval.error(lm,dtrain)
+            elif options.clstype == "pegasos":
+                pegasos = PEGASOS(options.regularizer,
+                          epochs = options.epochs)
+                pegasos.train(lm,dtrain,verbose = verbose,
+                              shuffle = options.shuffle)
+            else:
+                parser.error("classifier type \"%s\" not supported." % options.clstype)
+            err = eval.error(lm,dtrain,loss)
 	    print("error: %.4f" % err)
             sys.stdout.flush()
             if options.model_file:
@@ -123,7 +131,7 @@ def main():
                     print("Testing:")
                     print("--------")
                     t1 = time()
-                    err = eval.error(lm,dtest)
+                    err = eval.error(lm,dtest,loss)
 		    print("error: %.4f" % err)
                     print("Total prediction time: %.2f seconds." % (time()-t1))
             
@@ -143,7 +151,7 @@ def main():
                 print("Testing:")
                 print("--------")
                 t1 = time()
-                err = eval.error(lm,dtrain)
+                err = eval.error(lm,dtrain,loss)
 		print("error: %.4f" % err)
                 print("Total prediction time: %.2f seconds." % (time()-t1))
 

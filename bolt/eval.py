@@ -69,7 +69,7 @@ def cost(model,ds, loss):
         cost += loss.loss(p,y)
     print ("cost: %f." % (cost))
 
-def error(model,ds):
+def error(model, ds, loss):
     """Report the error of the model on the
     test examples. If the loss function of the model
     is
@@ -79,9 +79,9 @@ def error(model,ds):
     ds: A `Dataset`
     """
     err = 0.0
-    if isinstance(model.loss,bolt.Classification):
+    if isinstance(loss,bolt.Classification):
         err = errorrate(model,ds)
-    elif isinstance(model.loss,bolt.Regression):
+    elif isinstance(loss,bolt.Regression):
         err = rmse(model,ds)
     else:
         raise ValueError, "lm.loss: either Regression or Classification loss expected"

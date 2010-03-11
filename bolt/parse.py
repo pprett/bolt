@@ -71,6 +71,11 @@ def check_loss(option, opt_str, value, parser):
         raise OptionValueError("%d is not a valid loss function." % value)
     setattr(parser.values, option.dest, value)
 
+def check_clstype(option, opt_str, value, parser):
+    if value.lower() not in ["sgd","pegasos"]:
+        raise OptionValueError("%d is not a valid classifier type." % value)
+    setattr(parser.values, option.dest, value.lower())
+
 def check_norm(option, opt_str, value, parser):
     if value not in [1,2]:
         raise OptionValueError("%d is not a valid penalty." % value)
@@ -146,6 +151,15 @@ http://github.com/pprett/bolt""" % version
                       dest="loss",
                       metavar="[0..]",
                       default=1)
+
+    parser.add_option("-c","--clstype",
+                      action="callback",
+                      callback=check_clstype,
+                      help="Classifier type. \nsgd: Stochastic Gradient Descent [default].\n"+
+                      "pegasos: Primal Estimated sub-GrAdient SOlver for SVM. \n",
+                      type="string",
+                      dest="clstype",
+                      default="sgd")
     
     parser.add_option("-r","--reg",
                       dest="regularizer",

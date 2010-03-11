@@ -17,34 +17,20 @@ class LinearModel(object):
     """A linear model of the form y = x*w + b. 
     """
 
-    #FIXME loss,reg,alpha,norm should be in trainer not model. 
-    def __init__(self, m, loss = bolt.ModifiedHuber(),
-                 reg = 0.001, alpha = 1.0,
-                 norm = 2, biasterm = True):
+    
+    def __init__(self, m, biasterm = True):
         """Create a linear model with an
         m-dimensional vector w = [0,..,0] and b = 0.
 
         Parameters:
         m: The dimensionality of the classification problem (i.e. the number of features).
-        loss: The loss function (default ModifiedHuber) 
-        reg: The regularization parameter lambda.
-        alpha: The elastic net hyper-paramter alpha. Blends L2 and L1 norm regularization (default 1.0). 
+         
         """
         if m <= 0:
             raise ValueError, "Number of dimensions must be larger than 0."
-        if loss == None:
-            raise ValueError, "Loss function must not be None."
-        if reg < 0.0:
-            raise ValueError, "reg must be larger than 0. "
-        if alpha < 0.0 or alpha > 1.0:
-            raise ValueError, "alpha must be in [0,1]."
         self.m = m
-        self.loss = loss
-        self.reg = reg
-        self.alpha = alpha
         self.w = np.zeros((m), dtype=np.float64, order = "c")
         self.bias = 0.0
-        self.norm = norm
         self.biasterm = biasterm
 
 

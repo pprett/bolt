@@ -80,12 +80,12 @@ cdef class Hinge(Classification):
     """
     cpdef  double loss(self,p,y):
         cdef double z = p*y
-        if z < 1:
+        if z < 1.0:
             return (1 - z)
         return 0
     cpdef  double dloss(self,p,y):
         cdef double z = p*y
-        if z < 1:
+        if z < 1.0:
             return y
         return 0
 
@@ -222,9 +222,30 @@ cdef class SGD:
     """Plain stochastic gradient descent solver.
     """
     cdef int epochs
+    cdef double reg
+    cdef LossFunction loss
+    cdef int norm
+    cdef double alpha
     
-    def __init__(self, epochs):
+    def __init__(self, loss, reg, epochs = 5, norm = 2, alpha = 1.0):
+        """
+        Parameters:
+        loss: The loss function (default ModifiedHuber) 
+        reg: The regularization parameter lambda.
+        alpha: The elastic net hyper-paramter alpha. Blends L2 and L1 norm regularization (default 1.0).
+        """
+        if loss == None:
+            raise ValueError, "Loss function must not be None."
+        if reg < 0.0:
+            raise ValueError, "reg must be larger than 0. "
+        if alpha < 0.0 or alpha > 1.0:
+            raise ValueError, "alpha must be in [0,1]."
+        self.loss = loss
+        self.reg = reg
         self.epochs = epochs
+        self.norm = norm
+        self.alpha = alpha
+        
 
     @cython.boundscheck(False)
     @cython.wraparound(False)
@@ -248,9 +269,10 @@ cdef class SGD:
           * L1 penalty by Tsuruoka et al. 
 
         """
-        cdef LossFunction loss = model.loss
+        cdef LossFunction loss = self.loss
         cdef int m = model.m
         cdef int n = dataset.n
+        cdef double reg = self.reg
 
         cdef np.ndarray[np.float64_t, ndim=1, mode="c"] w = model.w
         # weight vector w as c array
@@ -262,24 +284,26 @@ cdef class SGD:
         cdef np.ndarray x = None
         cdef Pair *xdata = NULL
         
-        cdef double alpha = model.alpha
-        cdef double b = 0.0,p,y,wnorm,t,update = 0.0
-        cdef double reg = model.reg
-        
-        cdef int xnnz,nscale=0,nadd=0
-        cdef int norm = model.norm
+        # Variables for penalty term
+        cdef int norm = self.norm
+        cdef double alpha = self.alpha
         cdef np.ndarray[np.float64_t, ndim=1, mode="c"] q = None
         cdef double *qdata
         cdef double u = 0.0
-        cdef int usebias = 1
-        cdef double sumloss = 0.0
-        cdef int count = 0
-        if model.biasterm == False:
-            usebias = 0
         if norm == 1:
             q = np.zeros((m,), dtype = np.float64, order = "c" )
             qdata = <double *>q.data
 
+        # bias term (aka offset or intercept)
+        cdef int usebias = 1
+        if model.biasterm == False:
+            usebias = 0
+
+        cdef double b = 0.0,p,y,wnorm,t,update = 0.0
+        cdef double sumloss = 0.0
+        cdef int xnnz,nscale=0,nadd=0
+        cdef int count = 0
+        
         # computing eta0
         maxw = 1.0 / np.sqrt(reg)
         typw = np.sqrt(maxw)
@@ -346,3 +370,111 @@ cdef l1penalty(double *w, double *q, Pair *x, int nnz, double u):
         elif w[j] < 0:
             w[j] = min(0,w[j] + (u - q[j]))
         q[j] += (w[j] - z)
+
+########################################
+#
+# PEGASOS
+#
+########################################
+        
+cdef class PEGASOS:
+    """PEGASOS SVM solver.
+    """
+    cdef int epochs
+    cdef double reg
+    
+    def __init__(self, reg, epochs):
+        if reg < 0.0:
+            raise ValueError, "reg must be larger than 0. "
+        self.epochs = epochs
+        self.reg = reg
+
+    @cython.boundscheck(False)
+    @cython.wraparound(False)
+    def train(self, model, dataset, verbose = 0, shuffle = False):
+        """Train `model` on the `dataset` using PEGASOS.
+
+        Parameters: 
+        model: The `LinearModel` that is going to be trained. 
+        dataset: The `Dataset`. 
+        verbose: The verbosity level. If 0 no output to stdout.
+        shuffle: Whether or not the training data should be shuffled after each epoch. 
+        """
+        cdef LossFunction loss = Hinge()
+        cdef int m = model.m
+        cdef int n = dataset.n
+        cdef double reg = self.reg
+
+        cdef np.ndarray[np.float64_t, ndim=1, mode="c"] w = model.w
+        # weight vector w as c array
+        cdef double *wdata = <double *>w.data
+        # norm of w
+        cdef double wscale = 1.0
+        cdef double wnorm = np.dot(w,w)
+
+        # training instance
+        cdef np.ndarray x = None
+        cdef Pair *xdata = NULL
+        
+        cdef double b = 0.0,p = 0.0,y = 0.0,update = 0.0
+        
+        
+        cdef int xnnz,nscale=0,nadd=0
+        
+        cdef int usebias = 1
+        cdef double sumloss = 0.0
+        cdef int t = 1
+        
+        if model.biasterm == False:
+            usebias = 0
+
+        for e in range(self.epochs):
+            if verbose > 0:
+                print("-- Epoch %d" % (e+1))
+            t1=time()
+            nadd = nscale = 0
+            if shuffle:
+                dataset.shuffle()
+            for x,y in dataset:
+                eta = 1.0 / (reg * t)
+                xnnz = x.shape[0]
+                xdata = <Pair *>x.data
+                p = (dot(wdata, xdata, xnnz) * wscale) + b
+                sumloss += loss.loss(p,y)
+                update = eta * loss.dloss(p,y)
+                
+                if update != 0.0:
+                    add(wdata, xdata,
+                        xnnz,update / wscale)
+                    if usebias == 1:
+                        b += update * 0.01
+                    nadd += 1
+                    wnorm = np.dot(w,w)
+                    
+                wscale *= 1 - eta * reg
+                
+                # Projection
+                div = (wnorm * wscale * wscale)
+                div = 1.0 if div == 0.0 else (1.0 / np.sqrt(reg)) / div
+                wscale *= min(1.0, div)
+                
+                if wscale < 1e-9:
+                    nscale += 1
+                    w*=wscale
+                    wscale = 1
+                t += 1
+
+            # report epoche information
+            if verbose > 1:
+                print("Scalings: %d, Adds: %d" %(nscale, nadd))
+            if verbose > 0:
+                wnorm = np.dot(w,w) * wscale * wscale
+                print("Norm: %.2f, NNZs: %d, Bias: %.6f, T: %d, Avg. loss: %.6f" % (wnorm,w.nonzero()[0].shape[0],b,t+1,sumloss/(t+1)))
+                print("Total training time: %.2f seconds." % (time()-t1))
+
+        # floating-point under-/overflow check.
+        if np.any(np.isinf(w)) or np.any(np.isnan(w))or np.isnan(b) or np.isinf(b):
+            raise ValueError, "floating-point under-/overflow occured."
+        model.w = w * wscale
+        model.bias = b
+
