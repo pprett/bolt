@@ -40,6 +40,9 @@ class Dataset(object):
     def shuffle(self, seed = None):
         pass
 
+    def split(self,folds):
+	pass
+
 class MemoryDataset(Dataset):
     """An in-memory dataset.
     The instances and labels are stored as two parallel arrays.
@@ -52,40 +55,65 @@ class MemoryDataset(Dataset):
         self.n = len(instances)
         self.instances = instances
         self.labels = labels
-        self._shuffle = np.arange(self.n)
+        self._idx = np.arange(self.n)
         self.classes = np.unique1d(labels)
         
 
     def __iter__(self):
-        for i in self._shuffle:
+        for i in self._idx:
             yield (self.instances[i],self.labels[i])
 
     def iterinstances(self):
-        for i in self._shuffle:
+        for i in self._idx:
             yield self.instances[i]
 
     def iterlabels(self):
-        for i in self._shuffle:
+        for i in self._idx:
             yield self.labels[i]
 
     def shuffle(self, seed = None):
+	"""Shuffles the index array using `numpy.random.shuffle`.
+	A `seed` for the pseudo random number generator can be provided.
+	"""
         rs = np.random.RandomState()
         rs.seed(seed)
-        rs.shuffle(self._shuffle)
+        rs.shuffle(self._idx)
+
+    def split(self, nfolds):
+	"""Split the `Dataset` into `nfolds` new `Dataset` objects.
+	The split is done according to the index array.
+	"""
+	r = self.n % nfolds
+	num = self.n-r
+	folds = np.split(self._idx[:num],nfolds)
+	dsets = []
+	for fold in folds:
+	    dsets.append(MemoryDataset(self.dim, self.instances[fold],
+				       self.labels[fold]))
+	return np.array(dsets,dtype=np.object)
 
     @classmethod
-    def load(cls, data_file, desc = "training", verbose = 1):
+    def merge(cls, dsets):
+	"""Merge a sequence of `Dataset` objects. 
+	"""
+	assert len(dsets) > 1
+	instances = np.concatenate([ds.instances[ds._idx] for ds in dsets])
+	labels = np.concatenate([ds.labels[ds._idx] for ds in dsets])
+	return MemoryDataset(dsets[0].dim, instances, labels)        
+
+    @classmethod
+    def load(cls, fname, verbose = 1):
         """Factory method to deserialize a `Dataset`. 
         """
         if verbose > 0:
-            print "loading %s data ..." % desc,
+            print "loading data ...",
         sys.stdout.flush()
         try:
-            dim, instances, labels = loadData(data_file)
+            dim, instances, labels = loadData(fname)
         except IOError, (errno, strerror):
             if verbose > 0:
                 print(" [fail]")
-            raise Exception, "cannot open '%s' - %s." % (data_file,strerror)
+            raise Exception, "cannot open '%s' - %s." % (fname,strerror)
         except Exception, exc:
             if verbose > 0:
                 print(" [fail]")
@@ -99,6 +127,19 @@ class MemoryDataset(Dataset):
                                                     labels[labels==1.0].shape[0],
                                                     labels[labels==-1.0].shape[0]))
         return MemoryDataset(dim, instances, labels)
+
+
+    def store(self,fname):
+	"""Store `Dataset` in binary form.
+	Uses `numpy.save` for serialization.
+	"""
+	f = open(fname,'w+b')
+	try:
+	    np.save(f,self.instances)
+	    np.save(f,self.labels)
+	    np.save(f,self.dim)
+	finally:
+	    f.close()
 
 def loadData(filename):
     """Load a dataset from the given filename.
@@ -173,11 +214,6 @@ def svmlToNpy():
 	sys.exit(-2)
     in_filename, out_filename = sys.argv[1:]
     
-    instances, labels, dim = loadDat(in_filename)
-    f = open(out_filename,'w+b')
-    try:
-        np.save(f,instances)
-	np.save(f,labels)
-	np.save(f,dim)
-    finally:
-        f.close()
+    ds = Dataset.load(in_filename)
+    ds.store(out_filename)
+    

@@ -68,7 +68,7 @@ def main():
         parser  = parse.parseSB(version)
 	options, args = parser.parse_args()
         if len(args) < 1 or len(args) > 1:
-            parser.error("incorrect number of arguments. ")
+            parser.error("incorrect number of arguments (use `--help` for help).")
 
         if options.test_only and not options.model_file:
             parser.error("option -m is required for --test-only.")
@@ -114,7 +114,7 @@ def main():
                 
             if options.test_file:
                 dtest = MemoryDataset.load(options.test_file,
-                                           desc = "test", verbose = verbose)
+                                           verbose = verbose)
                 
                 if options.prediction_file:
                     writePredictions(lm,dtest,options.prediction_file)
