@@ -348,7 +348,7 @@ cdef class SGD:
             if verbose > 1:
                 print("Scalings: %d, Adds: %d" %(nscale, nadd))
             if verbose > 0:
-                wnorm = np.dot(w,w) * wscale * wscale
+                wnorm = sqrt(np.dot(w,w) * wscale * wscale)
                 print("Norm: %.2f, NNZs: %d, Bias: %.6f, T: %d, Avg. loss: %.6f" % (wnorm,w.nonzero()[0].shape[0],b,count,sumloss/count))
                 print("Total training time: %.2f seconds." % (time()-t1))
 
@@ -404,6 +404,7 @@ cdef class PEGASOS:
         cdef int m = model.m
         cdef int n = dataset.n
         cdef double reg = self.reg
+        cdef double invsqrtreg = 1.0 / np.sqrt(reg)
 
         cdef np.ndarray[np.float64_t, ndim=1, mode="c"] w = model.w
         # weight vector w as c array
@@ -418,7 +419,6 @@ cdef class PEGASOS:
         
         cdef double b = 0.0,p = 0.0,y = 0.0,update = 0.0
         
-        
         cdef int xnnz,nscale=0,nadd=0
         
         cdef int usebias = 1
@@ -426,7 +426,7 @@ cdef class PEGASOS:
         cdef int t = 1
         
         if model.biasterm == False:
-            usebias = 0
+            usebias = 0        
 
         for e in range(self.epochs):
             if verbose > 0:
@@ -455,8 +455,8 @@ cdef class PEGASOS:
                 
                 # Projection
                 div = (wnorm * wscale * wscale)
-                div = 1.0 if div == 0.0 else (1.0 / np.sqrt(reg)) / div
-                wscale *= min(1.0, div)
+                if div > 0.0:
+                    wscale *= min(1.0, invsqrtreg / sqrt(div))
                 
                 if wscale < 1e-9:
                     nscale += 1
@@ -468,7 +468,7 @@ cdef class PEGASOS:
             if verbose > 1:
                 print("Scalings: %d, Adds: %d" %(nscale, nadd))
             if verbose > 0:
-                wnorm = np.dot(w,w) * wscale * wscale
+                wnorm = sqrt(np.dot(w,w) * wscale * wscale)
                 print("Norm: %.2f, NNZs: %d, Bias: %.6f, T: %d, Avg. loss: %.6f" % (wnorm,w.nonzero()[0].shape[0],b,t+1,sumloss/(t+1)))
                 print("Total training time: %.2f seconds." % (time()-t1))
 
