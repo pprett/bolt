@@ -15,8 +15,10 @@ Classes
 import sys
 import numpy as np
 import gzip
+import random
 
 from itertools import izip
+from collections import defaultdict
 
 """
 """
@@ -105,13 +107,16 @@ class MemoryDataset(Dataset):
 
     @classmethod
     def load(cls, fname, verbose = 1):
-        """Factory method to deserialize a `Dataset`. 
-        """
         if verbose > 0:
             print "loading data ...",
         sys.stdout.flush()
         try:
-            dim, instances, labels = loadData(fname)
+            loader = None
+            if fname.endswith('.npy'):
+                loader = loadNpz
+            else:
+                loader = loadDat
+            dim, instances,labels = loader(fname, qids = False)
         except IOError, (errno, strerror):
             if verbose > 0:
                 print(" [fail]")
@@ -143,40 +148,108 @@ class MemoryDataset(Dataset):
 	finally:
 	    f.close()
 
-def loadData(filename):
-    """Load a dataset from the given filename.
 
-    If the filename ends with '.npy' it is assumed
-    to be stored in binary format as a numpy archive
-    (first example array, second labels;
-    finally number of dimensions).
+class RankingDataset(Dataset):
+    
 
-    Else it is assumed to be stored in svm^light
-    format (textual). Number of dimensions are computed
-    on the fly. 
-    """
-    loader = None
-    if filename.endswith('.npy'):
-        loader = loadNpz
-    else:
-        loader = loadDat
-    dim, instances,labels = loader(filename)
-    return dim, instances, labels
+    def __init__(self, dim, instances, labels, qids):
+        assert len(instances) == len(labels) == len(qids)
+        self.dim = dim
+        self.n = len(instances)
+        self.instances = instances
+        self.labels = labels
+        self._idx = np.arange(self.n)
+        
+        self.qids = qids
+        self._buildindex()
+        
 
-def loadNpz(filename):
+    def _buildindex(self):
+        print("building index... ")
+        index =  defaultdict(lambda: defaultdict(list))
+        for x, y, q in izip(self.instances, self.labels, self.qids):
+            index[q][y].append(x)
+        for q in index:
+            for y in index[q]:
+                n = len(index[q][y])
+                index[q][y].insert(0,n)
+
+        # remove queries with constant labels
+        for q in index.keys():
+            m = len(index[q].keys())
+            if m < 2:
+                index.pop(q)
+        self.queries = np.array(index.keys())
+        self.index = index
+        self.nqueries = len(self.queries)
+        print("[done]")
+
+    def _sample(self):
+        q = self.queries[np.random.randint(self.nqueries)]
+        query = self.index[q]
+        ya, yb = random.sample(query.keys(),2)
+        i = np.random.randint(query[ya][0]) + 1
+        j = np.random.randint(query[yb][0]) + 1
+        return (q, ya, query[ya][i],
+                yb, query[yb][j])
+
+    def __iter__(self):
+        pass
+
+    def iterinstances(self):
+        pass
+
+    def iterlabels(self):
+        pass
+
+    @classmethod
+    def load(cls,fname, verbose = 1):
+        if verbose > 0:
+            print "loading data ...",
+        sys.stdout.flush()
+        try:
+            loader = None
+            if fname.endswith('.npy'):
+                loader = loadNpz
+            else:
+                loader = loadDat
+            dim, instances,labels,queries = loader(fname, qids = True)
+        except IOError, (errno, strerror):
+            if verbose > 0:
+                print(" [fail]")
+            raise Exception, "cannot open '%s' - %s." % (fname,strerror)
+        except Exception, exc:
+            if verbose > 0:
+                print(" [fail]")
+            raise Exception, exc
+        else:
+            if verbose > 0:
+                print(" [done]")
+
+        if verbose > 1:
+            print("%d (%d+%d) examples loaded. " % (len(instances),
+                                                    labels[labels==1.0].shape[0],
+                                                    labels[labels==-1.0].shape[0]))
+        return RankingDataset(dim, instances, labels, queries)
+
+def loadNpz(filename, qids = False):
     f = open(filename,'r')
     try:
         instances = np.load(f)
         labels = np.load(f)
         dim = np.load(f)
-        return dim, instances, labels
+        res = [dim, instances, labels]
+        if qids:
+            qids = np.load(f)
+            res.append(qids)
+        return res
     finally:
         f.close()
 
-def loadDat(filename):
+def loadDat(filename, qids = False):
     labels = []
     instances = []
-    qids = []
+    queries = []
     global_max = -1
     t_pair = sparsedtype
     if filename.endswith('gz'):
@@ -191,7 +264,7 @@ def loadDat(filename):
             labels.append(label)
             del tokens[0]
             if len(tokens) > 0 and tokens[0].startswith("qid"):
-                qids.append(int(tokens[0].split(":")[1]))
+                queries.append(int(tokens[0].split(":")[1]))
                 del tokens[0]
             tokens=[(int(t[0]),float(t[1]))
                     for t in (t.split(':')
@@ -203,7 +276,12 @@ def loadDat(filename):
             if local_max > global_max:
                 global_max = local_max
             instances.append(a)
-        return global_max+1, np.array(instances,dtype=np.object),np.array(labels)
+        res = [global_max+1, np.array(instances,dtype=np.object),
+               np.array(labels)]
+        if qids:
+            res.append(np.array(queries, dtype = np.int32))
+        return res
+    
     finally:
         f.close()
         
