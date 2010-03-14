@@ -203,7 +203,7 @@ def loadDat(filename):
             if local_max > global_max:
                 global_max = local_max
             instances.append(a)
-        return np.array(instances,dtype=np.object),np.array(labels), global_max+1
+        return global_max+1, np.array(instances,dtype=np.object),np.array(labels)
     finally:
         f.close()
         
