@@ -91,26 +91,28 @@ class OVA(object):
     that predicts the class or all-other classes.
     """
 
-    def __init__(self, loss = bolt.ModifiedHuber(), reg = 0.00001, biasterm = True):
+    def __init__(self, loss = bolt.ModifiedHuber(),
+                 reg = 0.00001, biasterm = True,
+                 epochs = 5):
         self.loss = loss
         self.reg = reg
         self.biasterm = biasterm
+        self.epochs = epochs
 
-    def train(self, glm, dataset, epochs = 5, verbose = 1, shuffle = False):
+    def train(self, glm, dataset, verbose = 1, shuffle = False):
         classes = dataset.classes
         assert glm.k == len(classes)
-        sgd = bolt.SGD(epochs)
+        sgd = bolt.SGD(self.loss, self.reg, self.epochs)
         t1 = time()
         for i,c in enumerate(classes):
-            bmodel = bolt.LinearModel(glm.m,loss = self.loss, reg = self.reg,
-                                      biasterm = self.biasterm)
+            bmodel = bolt.LinearModel(glm.m, biasterm = self.biasterm)
             dtmp = BinaryDataset(dataset,c)
             sgd.train(bmodel,dtmp, verbose = 0,
 		      shuffle = shuffle)
             glm.W[i] = bmodel.w.T
             glm.b[i] = bmodel.bias
             if verbose > 0:
-                print("Model %d trained. \nTotal training time %f seconds. " % (i,time() - t1))
+                print("Model %d trained. \nTotal training time %.2f seconds. " % (i,time() - t1))
 
 def main(args):
     import nltk
@@ -147,8 +149,8 @@ def main(args):
     k = len(cats)
     
     model = GeneralizedLinearModel(dtrain.dim,k)
-    ova = OVA(loss = bolt.ModifiedHuber(), reg = 0.0001)
-    ova.train(model,dtrain, epochs = 20)
+    ova = OVA(loss = bolt.ModifiedHuber(), reg = 0.0001, epochs = 20)
+    ova.train(model,dtrain)
 
     ref = [cats[y] for y in dtest.iterlabels()]
     pred = [cats[z] for z in model.predict(dtest.iterinstances())]

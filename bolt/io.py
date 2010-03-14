@@ -16,6 +16,8 @@ import sys
 import numpy as np
 import gzip
 
+from itertools import izip
+
 """
 """
 sparsedtype = np.dtype("u4,f4")
@@ -47,7 +49,9 @@ class MemoryDataset(Dataset):
     """An in-memory dataset.
     The instances and labels are stored as two parallel arrays.
     Access to the parallel arrays is via an indexing array which
-    allows convenient shuffeling. 
+    allows convenient shuffeling.
+
+    TODO: implement in Cython if CEP 307 is done.
     """
     def __init__(self, dim, instances, labels):
         assert len(instances) == len(labels)
@@ -58,10 +62,8 @@ class MemoryDataset(Dataset):
         self._idx = np.arange(self.n)
         self.classes = np.unique1d(labels)
         
-
     def __iter__(self):
-        for i in self._idx:
-            yield (self.instances[i],self.labels[i])
+        return izip(self.instances[self._idx],self.labels[self._idx])
 
     def iterinstances(self):
         for i in self._idx:
