@@ -96,20 +96,18 @@ def main():
 			     biasterm = options.biasterm)
 
             if options.clstype == "sgd":
-                sgd = SGD(loss, options.regularizer,
+                trainer = SGD(loss, options.regularizer,
                           norm = options.norm,
                           alpha = options.alpha,
                           epochs = options.epochs)
             
-                sgd.train(lm,dtrain,verbose = verbose,
-		      shuffle = options.shuffle)
             elif options.clstype == "pegasos":
-                pegasos = PEGASOS(options.regularizer,
+                trainer = PEGASOS(options.regularizer,
                           epochs = options.epochs)
-                pegasos.train(lm,dtrain,verbose = verbose,
-                              shuffle = options.shuffle)
             else:
                 parser.error("classifier type \"%s\" not supported." % options.clstype)
+            trainer.train(lm,dtrain,verbose = verbose,
+		      shuffle = options.shuffle)
             err = eval.error(lm,dtrain,loss)
 	    print("error: %.4f" % err)
             sys.stdout.flush()

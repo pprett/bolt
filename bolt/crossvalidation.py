@@ -11,16 +11,9 @@ from model import LinearModel
 
 version = "1.1"
 
-def train(ds, model,options):
-    sgd = bolt.SGD(options.epochs)
-    sgd.train(model,ds,verbose = (options.verbose-1),
-	      shuffle = options.shuffle)
-    return model
-
-def crossvalidation(ds, model, options, seed = None):
-    verbose = options.verbose
+def crossvalidation(ds, trainer, model, nfolds = 10, verbose = 1, shuffle = False, error = eval.errorrate, seed = None):
     n = ds.n
-    nfolds = options.nfolds
+    ds.shuffle(seed = seed)
     folds = ds.split(nfolds)
     err = []
     for foldidx in range(nfolds):
@@ -34,11 +27,13 @@ def crossvalidation(ds, model, options, seed = None):
         trainidxs = range(nfolds)
         del trainidxs[foldidx]
         dtrain = MemoryDataset.merge(folds[trainidxs])
-        lm = train(dtrain, lm, options)
-	e = eval.error(lm,dtest)
+        trainer.train(lm, dtrain,
+                      verbose = (verbose-1),
+                      shuffle = shuffle)
+	e = error(lm,dtest)
 	if verbose > 0:
-	    fid = ("fold-%d" % (foldidx+1)).ljust(8)
-	    print("error %s %.4f" % (fid , e))
+	    fid = ("%d" % (foldidx+1)).ljust(5)
+	    print("%s %.4f" % (fid , e))
         err.append(e)
 	if verbose > 1:
 	    print "Total time for fold-%d: %f" % (foldidx+1, time()-t1)
@@ -63,13 +58,28 @@ def main():
 	    loss = loss_class()
 	if not loss:
 	    raise Exception, "Cannot create loss function."
-	
-        model = LinearModel(ds.dim,loss = loss,
-			    reg = options.regularizer,
-			    alpha = options.alpha,
-			    norm = options.norm)
-	mean, std = crossvalidation(ds, model, options)
-	print("%s %s %.4f (%.4f)" % ("error","avg".ljust(8), mean,std))
+
+        lm = LinearModel(ds.dim,
+			 biasterm = options.biasterm)
+        if options.clstype == "sgd":
+            trainer = bolt.SGD(loss, options.regularizer,
+                          norm = options.norm,
+                          alpha = options.alpha,
+                          epochs = options.epochs)
+            
+        elif options.clstype == "pegasos":
+            trainer = bolt.PEGASOS(options.regularizer,
+                          epochs = options.epochs)
+        else:
+            parser.error("classifier type \"%s\" not supported." % options.clstype)
+        print("%s %s" % ("Fold".ljust(5), "Error"))
+	mean, std = crossvalidation(ds, trainer, lm,
+                                    nfolds = options.nfolds,
+                                    shuffle = options.shuffle,
+                                    error = eval.errorrate,
+                                    verbose = options.verbose,
+                                    seed = options.seed)
+	print("%s %.4f (%.4f)" % ("avg".ljust(5), mean,std))
 
     except Exception, exc:
         print "[ERROR] ", exc

@@ -240,5 +240,11 @@ def parseCV(version):
 		      default=10,
 		      type="int",
 		      metavar="int")
+    parser.add_option("-s","--seed", 
+		      dest="seed",
+		      help="seed for CV shuffle [default %default].",
+		      default=None,
+		      type="int",
+		      metavar="int")
     return parser
 
