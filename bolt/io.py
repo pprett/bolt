@@ -16,6 +16,7 @@ import sys
 import numpy as np
 import gzip
 import random
+import re
 
 from itertools import izip
 from collections import defaultdict
@@ -55,7 +56,7 @@ class MemoryDataset(Dataset):
 
     TODO: implement in Cython if CEP 307 is done.
     """
-    def __init__(self, dim, instances, labels):
+    def __init__(self, dim, instances, labels, qids = None):
         assert len(instances) == len(labels)
         self.dim = dim
         self.n = len(instances)
@@ -63,17 +64,26 @@ class MemoryDataset(Dataset):
         self.labels = labels
         self._idx = np.arange(self.n)
         self.classes = np.unique1d(labels)
+	self.qids = qids
         
     def __iter__(self):
+	"""Iterate over training examples."""
         return izip(self.instances[self._idx],self.labels[self._idx])
 
     def iterinstances(self):
+	"""Iterate over instances. """
         for i in self._idx:
             yield self.instances[i]
 
     def iterlabels(self):
+	"""Iterate over labels. """
         for i in self._idx:
             yield self.labels[i]
+
+    def iterqids(self):
+	"""Iterate over query ids. """
+	for i in self._idx:
+	    yield self.qids[i]
 
     def shuffle(self, seed = None):
 	"""Shuffles the index array using `numpy.random.shuffle`.
@@ -92,8 +102,11 @@ class MemoryDataset(Dataset):
 	folds = np.split(self._idx[:num],nfolds)
 	dsets = []
 	for fold in folds:
+	    splitqids = None
+	    if self.qids != None:
+		splitqids = self.qids[fold]
 	    dsets.append(MemoryDataset(self.dim, self.instances[fold],
-				       self.labels[fold]))
+				       self.labels[fold], qids = splitqids))
 	return np.array(dsets,dtype=np.object)
 
     @classmethod
@@ -103,10 +116,25 @@ class MemoryDataset(Dataset):
 	assert len(dsets) > 1
 	instances = np.concatenate([ds.instances[ds._idx] for ds in dsets])
 	labels = np.concatenate([ds.labels[ds._idx] for ds in dsets])
-	return MemoryDataset(dsets[0].dim, instances, labels)        
+	qids = None
+	if np.all([ds.qids != None for ds in dsets]):
+	    qids = np.concatenate([ds.qids[ds._idx] for ds in dsets])
+	return MemoryDataset(dsets[0].dim, instances, labels, qids = qids)        
 
     @classmethod
-    def load(cls, fname, verbose = 1):
+    def load(cls, fname, verbose = 1, qids = False):
+	"""Loads the dataset from `fname`.
+	Currently, two formats are supported: a) numpy binary format and b)
+	svm^light format. For binary format the extension of `fname` has to be
+	'.npy', otherwise svm^light format is assumed. For svm^light formatted files gzip is supported.
+
+	Parameters:
+	-----------
+	fname: The file name of the seralized `Dataset`.
+	verbose: Verbose output.
+	qids: Whether to load qids or not.
+
+	"""
         if verbose > 0:
             print "loading data ...",
         sys.stdout.flush()
@@ -116,7 +144,7 @@ class MemoryDataset(Dataset):
                 loader = loadNpz
             else:
                 loader = loadDat
-            dim, instances,labels = loader(fname, qids = False)
+            data = loader(fname, qids = qids)
         except IOError, (errno, strerror):
             if verbose > 0:
                 print(" [fail]")
@@ -133,7 +161,7 @@ class MemoryDataset(Dataset):
             print("%d (%d+%d) examples loaded. " % (len(instances),
                                                     labels[labels==1.0].shape[0],
                                                     labels[labels==-1.0].shape[0]))
-        return MemoryDataset(dim, instances, labels)
+        return MemoryDataset(*data)
 
 
     def store(self,fname):
@@ -145,6 +173,8 @@ class MemoryDataset(Dataset):
 	    np.save(f,self.instances)
 	    np.save(f,self.labels)
 	    np.save(f,self.dim)
+	    if self.qids != None:
+		np.save(f,self.qids)
 	finally:
 	    f.close()
 
@@ -233,6 +263,8 @@ class RankingDataset(Dataset):
         return RankingDataset(dim, instances, labels, queries)
 
 def loadNpz(filename, qids = False):
+    """Load data from numpy binary format.
+    """
     f = open(filename,'r')
     try:
         instances = np.load(f)
@@ -247,6 +279,8 @@ def loadNpz(filename, qids = False):
         f.close()
 
 def loadDat(filename, qids = False):
+    """Load data from svm^light formatted file.
+    """
     labels = []
     instances = []
     queries = []
@@ -256,7 +290,7 @@ def loadDat(filename, qids = False):
         f=gzip.open(filename,'r')
     else:
         f=open(filename,'r')
-
+    
     try:
         for i,line in enumerate(f):
             tokens = line.split('#')[0].rstrip().split()
@@ -266,10 +300,11 @@ def loadDat(filename, qids = False):
             if len(tokens) > 0 and tokens[0].startswith("qid"):
                 queries.append(int(tokens[0].split(":")[1]))
                 del tokens[0]
+	    
             tokens=[(int(t[0]),float(t[1]))
                     for t in (t.split(':')
                               for t in tokens if t != '')]
-            a=np.array(tokens, dtype=t_pair)
+	    a = np.array(tokens, dtype = sparsedtype)
             local_max = 0.0
             if a.shape[0]>0:
                 local_max = a['f0'].max()
@@ -286,14 +321,17 @@ def loadDat(filename, qids = False):
         f.close()
         
 def svmlToNpy():
-    if sys.argv < 3 or "--help" in sys.argv:
+    if len(sys.argv < 3) or "--help" in sys.argv:
 	print """Usage: %s in-file out-file
 
 	Converts the svm^light encoded in-file into the binary encoded out-file.
 	""" % "svml2npy"
 	sys.exit(-2)
-    in_filename, out_filename = sys.argv[1:]
-    
-    ds = Dataset.load(in_filename)
+    in_filename, out_filename = sys.argv[1:3]
+    if "--qids" in sys.argv:
+	qids = True
+    else:
+	qids = False
+    ds = Dataset.load(in_filename, qids = qids)
     ds.store(out_filename)
     
