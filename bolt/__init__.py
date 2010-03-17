@@ -22,7 +22,9 @@ eval
    Evaluation metrics. 
 
 parse
-   Command line parsing. 
+   Command line parsing.
+
+see http://github.com/pprett/bolt
 
 """
 from __future__ import division
