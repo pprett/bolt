@@ -6,8 +6,8 @@ import pstats, cProfile
 
 import bolt
 
-ftrain =  "/media/disk-3/data/corpora/rcv1/train.npy"
-ftest = "/media/disk-3/data/corpora/rcv1/test.npy"
+ftrain =  "/mnt/disk1/corpora/rcv1-ccat/train.dat"
+ftest = "/mnt/disk1/corpora/rcv1-ccat/test.dat"
 
 def runPegasos(dtrain, dtest):
     lm = bolt.LinearModel(dtrain.dim, biasterm = False)
@@ -21,9 +21,13 @@ def runSGD(dtrain, dtest):
     pegasos.train(lm,dtrain,verbose=1)
     print "SGD fin. "
 
-dtrain = bolt.MemoryDataset.load(ftrain, verbose = 0)
-dtest = bolt.MemoryDataset.load(ftest, verbose = 0)
-cProfile.runctx("runPegasos(dtrain, dtest)", globals(), locals(), "Profile.prof")
+def runIO(fname):
+    ds = bolt.MemoryDataset.load(fname, verbose = 0)
+    print "fin DS.load"
+
+#dtrain = bolt.MemoryDataset.load(ftrain, verbose = 0)
+#dtest = bolt.MemoryDataset.load(ftest, verbose = 0)
+cProfile.runctx("runIO(ftrain)", globals(), locals(), "Profile.prof")
 
 s = pstats.Stats("Profile.prof")
 s.strip_dirs().sort_stats("time").print_stats()

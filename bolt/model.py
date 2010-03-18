@@ -18,12 +18,13 @@ class LinearModel(object):
     """
 
     
-    def __init__(self, m, biasterm = True):
+    def __init__(self, m, biasterm = False):
         """Create a linear model with an
         m-dimensional vector w = [0,..,0] and b = 0.
 
         Parameters:
         m: The dimensionality of the classification problem (i.e. the number of features).
+	biasterm: Whether or not a bias term (aka offset or intercept) is incorporated. 
          
         """
         if m <= 0:
