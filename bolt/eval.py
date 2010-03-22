@@ -1,16 +1,16 @@
 """
-Evaluation
-==========
-
-This module contains various routines for model evaluation.
+The :mod:`eval` module contains various routines for model evaluation.
 
 Metrics
--------
+???????
 
-- `errorrate`, the error rate of the binary classifier.
-- `rmse`, the root mean squared error of a regressor.
-- `cost`, the cost of a model w.r.t. a given loss function.
-- `error`, the error (either errorrate or rmse) of the model.
+The following evaluation metrics are currently supported:
+
+  :func:`errorrate`: the error rate of the binary classifier.
+  
+  :func:`rmse`: the root mean squared error of a regressor.
+  
+  :func:`cost`: the cost of a model w.r.t. a given loss function.
 
 """
 from __future__ import division
@@ -26,9 +26,12 @@ def errorrate(model,ds):
 
     zero/one loss: if p*y > 0 then 0 else 1
 
-    Parameters:
-    model: A `LinearModel`
-    ds: A `Dataset`
+    Args:
+      model: A `LinearModel`.
+      ds: A `Dataset`.
+
+    Returns:
+      `(100.0 / n) * sum( p*y > 0 ? 0 : 1 for p,y in ds)`.
     """
     n = 0
     err = 0
@@ -43,11 +46,12 @@ def errorrate(model,ds):
 def rmse(model,ds):
     """Compute the root mean squared error of the model.
 
-    Parameters:
-    model: A `LinearModel`
-    ds: A `Dataset`
+    Args:
+      model: A `LinearModel`.
+      ds: A `Dataset`.
 
-    Return:
+    Returns:
+      `sum([(model(x)-y)**2.0 for x,y in ds])`.
     """
     n = 0
     err = 0
@@ -60,23 +64,29 @@ def rmse(model,ds):
 def cost(model,ds, loss):
     """The cost of the loss function.
 
-    Parameters:
-    model: A `LinearModel`
-    ds: A `Dataset`
+    Args:
+      model: A `LinearModel`.     
+      ds: A `Dataset`.
+      
+    Returns:
+      `sum([loss.(model(x),y) for x,y in ds])`
     """
     cost = 0
     for p,y in izip(model.predict(ds.iterinstances()),ds.iterlabels()):
         cost += loss.loss(p,y)
-    print ("cost: %f." % (cost))
+    return cost
 
 def error(model, ds, loss):
     """Report the error of the model on the
     test examples. If the loss function of the model
     is
 
-    Parameters:
-    model: A `LinearModel`
-    ds: A `Dataset`
+    Args:
+      model: A `LinearModel`.   
+      ds: A `Dataset`.
+
+    Returns:
+      Either `errorrate` or `rmse`; depending on the `loss` function.
     """
     err = 0.0
     if isinstance(loss,bolt.Classification):

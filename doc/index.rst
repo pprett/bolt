@@ -14,6 +14,7 @@ Contents:
 
    whatsnew.rst
    install.rst
+   overview.rst
    using.rst
 
 

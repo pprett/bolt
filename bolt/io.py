@@ -1,14 +1,9 @@
 """
-Input/Output module
-===================
+The :mod:`bolt.io` module provides :class:`Dataset` specifications and routines for convenient input/output. 
 
-An instance in Bolt is represented as a sparse vector via a numpy record array.
-The data type of the record array is `sparsedtype` which is a tuple (uint32,float64).
+The module provides the following classes:
 
-Classes
--------
-
--`MemoryDataset`, an in-memory dataset. 
+  :class:`bolt.io.MemoryDataset` : an in-memory dataset. 
 
 """
 
@@ -21,12 +16,28 @@ import re
 from itertools import izip
 from collections import defaultdict
 
-"""
-"""
+
 sparsedtype = np.dtype("u4,f4")
+"""The data type of sparse vectors.
+
+Example:
+
+>>> x = np.array([(0,1),(4,0.2)], dtype = sparsedtype)
+  
+"""
+
 densedtype = np.float32
 
 def dense2sparse(x):
+    """Convert `numpy` arrays of `bolt.io.densetype` to sparse arrays of `bolt.io.sparsetype`.
+
+    Example:
+
+    >>> x = np.array([1,0,0,0,0.2], dtype = bolt.io.densedtype)
+    >>> bolt.dense2sparse(x)
+    array([(0L, 1.0), (4L, 0.2)], 
+      dtype=bolt.io.sparsedtype)
+    """
     return np.array([(nnz, x[nnz]) for nnz in x.nonzero()[0]],dtype = sparsedtype)
 
 class Dataset(object):
@@ -34,19 +45,20 @@ class Dataset(object):
     """
 
     def __iter__(self):
+	"""Iterate over training examples."""
         pass
 
     def iterinstances(self):
+	"""Iterate over instances. """
         pass
 
     def iterlabels(self):
+	"""Iterate over labels. """
         pass
 
     def shuffle(self, seed = None):
-        pass
-
-    def split(self,folds):
-	pass
+	"""Permutates the order of the `Dataset`"""
+        pass    
 
 class MemoryDataset(Dataset):
     """An in-memory dataset.
@@ -54,9 +66,21 @@ class MemoryDataset(Dataset):
     Access to the parallel arrays is via an indexing array which
     allows convenient shuffeling.
 
-    TODO: implement in Cython if CEP 307 is done.
+    .. todo:
+      Implement in Cython if CEP 307 is done.
     """
     def __init__(self, dim, instances, labels, qids = None):
+	"""
+	
+	:arg dim: The dimensionality of the data; the number of features.
+	:type dim: integer
+        :arg instances: An array of instances.
+	:type instances: :class:`numpy.ndarray(dtype=numpy.object)`
+	:arg labels: An array of encoded labels associated with the `instances`. 
+	:type labels: :class:`numpy.ndarray(dtype=numpy.float64)`
+        :arg qids: An optional array of datatype int32 which holds the query ids of the associated example.
+	:type qids: :class:`numpy.ndarray(dtype=numpy.float64)` or `None`
+	"""
         assert len(instances) == len(labels)
         self.dim = dim
         self.n = len(instances)
@@ -95,7 +119,11 @@ class MemoryDataset(Dataset):
 
     def split(self, nfolds):
 	"""Split the `Dataset` into `nfolds` new `Dataset` objects.
-	The split is done according to the index array.
+	The split is done according to the index array. If `MemoryDataset.n % nfolds` is not 0 the remaining examples are discarded. 
+
+	:arg nfolds: The number of folds
+	:type nfolds: integer
+	:returns: An array of `nfolds` MemoryDataset objects; one for each fold
 	"""
 	r = self.n % nfolds
 	num = self.n-r
@@ -111,7 +139,10 @@ class MemoryDataset(Dataset):
 
     @classmethod
     def merge(cls, dsets):
-	"""Merge a sequence of `Dataset` objects. 
+	"""Merge a sequence of :class:`Dataset` objects.
+
+	:arg dsets: A list of :class:`MemoryDataset`
+	:returns: A :class:`MemoryDataset` containing the merged examples. 
 	"""
 	assert len(dsets) > 1
 	instances = np.concatenate([ds.instances[ds._idx] for ds in dsets])
@@ -124,16 +155,35 @@ class MemoryDataset(Dataset):
     @classmethod
     def load(cls, fname, verbose = 1, qids = False):
 	"""Loads the dataset from `fname`.
-	Currently, two formats are supported: a) numpy binary format and b)
-	svm^light format. For binary format the extension of `fname` has to be
-	'.npy', otherwise svm^light format is assumed. For svm^light formatted files gzip is supported.
+	
+	Currently, two formats are supported:
+	  a. numpy binary format
+	  b. SVM^light format
 
-	Parameters:
-	-----------
-	fname: The file name of the seralized `Dataset`.
-	verbose: Verbose output.
-	qids: Whether to load qids or not.
+	For binary format the extension of `fname` has to be
+	`.npy`, otherwise SVM^light format is assumed.
+	For gzipped files thefilename must end with `.gz`.
 
+	:arg fname: The file name of the seralized :class:`Dataset`
+	:arg verbose: Verbose output
+	:type verbose: integer
+	:arg qids: Whether to load qids or not
+	:type qids: True or False
+	:returns: The :class:`MemoryDataset`
+
+	Examples:
+
+          SVM^light format:
+	  
+	  >>> ds = bolt.io.MemoryDataset.load('train.txt')
+
+	  Gzipped SVM^light format:
+	
+	  >>> ds = bolt.io.MemoryDataset.load('train.txt.gz')
+
+          Binary format:
+	  
+	  >>> ds = bolt.io.MemoryDataset.load('train.npy')
 	"""
         if verbose > 0:
             print "loading data ...",
@@ -167,6 +217,8 @@ class MemoryDataset(Dataset):
     def store(self,fname):
 	"""Store `Dataset` in binary form.
 	Uses `numpy.save` for serialization.
+
+	:arg fname: The filename
 	"""
 	f = open(fname,'w+b')
 	try:
