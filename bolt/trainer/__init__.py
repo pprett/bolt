@@ -1,0 +1,3 @@
+"""The :mod:`trainer` module.
+
+"""
