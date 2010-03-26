@@ -259,7 +259,6 @@ class BinaryDataset(Dataset):
     def shuffle(self, seed = None):
         self._dataset.shuffle(seed)
 
-
 class RankingDataset(Dataset):
     
 
@@ -295,17 +294,45 @@ class RankingDataset(Dataset):
         self.nqueries = len(self.queries)
         print("[done]")
 
+    def _minus(self, xa, xb):
+        i,j = 0,0
+        nxa, nxb = xa.shape[0], xb.shape[0]
+        x = xa.tolist()
+        while 1:
+            if j == nxb:
+                break
+            if i == nxa:
+                x.extend(xb[j:])
+                break
+            if x[i][0] < xb[j][0]:
+                i += 1
+                continue
+            elif xb[j][0] < x[i][0]:
+                x.append(xb[j])
+                j += 1
+            else:
+                assert x[i][0] == xb[j][0]
+                x[i] = (x[i][0],x[i][1] - xb[j][1])
+                i += 1
+                j += 1
+        return np.array(sorted(x), dtype = sparsedtype)
+
     def _sample(self):
         q = self.queries[np.random.randint(self.nqueries)]
         query = self.index[q]
         ya, yb = random.sample(query.keys(),2)
         i = np.random.randint(query[ya][0]) + 1
         j = np.random.randint(query[yb][0]) + 1
-        return (q, ya, query[ya][i],
-                yb, query[yb][j])
 
+        y = np.sign(ya - yb)
+        xa = query[ya][i]
+        xb = query[yb][j]
+        x = self._minus(xa,xb)
+        return (q, y, x)
+    
     def __iter__(self):
-        pass
+        for i in xrange(self.T):
+            return 
 
     def iterinstances(self):
         pass

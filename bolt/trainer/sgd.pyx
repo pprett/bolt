@@ -535,3 +535,4 @@ cdef inline void scale(double *wscale, double *wnorm, double factor):
     """
     wscale[0] *= factor
     wnorm[0] *= (factor*factor)
+
