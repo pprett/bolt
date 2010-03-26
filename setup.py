@@ -14,7 +14,7 @@ setup(
                              library_dirs=['/usr/lib','/usr/local/lib',],
                              libraries=["cblas"],
                              extra_compile_args=["-O3","-g"],)],
-    version = "1.0",
+    version = "1.2",
     description="Bolt Online Learning Toolbox",
     author='Peter Prettenhofer',
     author_email='peter.prettenhofer@gmail.com',

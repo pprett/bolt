@@ -3,8 +3,11 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Bolt v1.2
-=========
+Bolt Online Learning Toolbox
+============================
+
+:Release: |version|
+:Date: |today|
 
 Bolt Online Learning Toolbox
 

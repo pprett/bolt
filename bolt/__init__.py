@@ -46,6 +46,8 @@ from eval import errorrate
 
 version = "1.2"
 
+__version__ = version
+
 def writePredictions(lm,ds,pfile):
     """Write model predictions to file.
     The prediction file has as many lines as len(examples).
