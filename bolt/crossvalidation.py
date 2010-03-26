@@ -2,14 +2,16 @@ import copy
 import numpy as np
 
 import eval
-import bolt
 import parse
 
+from trainer.sgd import SGD, Hinge, ModifiedHuber, Log, SquaredError, Huber, PEGASOS
 from time import time
 from io import MemoryDataset
 from model import LinearModel
 
-version = "1.1"
+__version__ = "1.2"
+
+loss_functions = {0:Hinge, 1:ModifiedHuber, 2:Log, 5:SquaredError, 6:Huber}
 
 def crossvalidation(ds, trainer, model, nfolds = 10, verbose = 1, shuffle = False, error = eval.errorrate, seed = None):
     n = ds.n
@@ -41,7 +43,7 @@ def crossvalidation(ds, trainer, model, nfolds = 10, verbose = 1, shuffle = Fals
     
 def main():
     try:
-	parser  = parse.parseCV(version)
+	parser  = parse.parseCV(__version__)
 	options, args = parser.parse_args()
         if len(args) < 1 or len(args) > 1:
             parser.error("Incorrect number of arguments. ")
@@ -50,7 +52,7 @@ def main():
         fname = args[0]
         ds = MemoryDataset.load(fname,verbose = verbose)
 
-	loss_class = bolt.loss_functions[options.loss]
+	loss_class = loss_functions[options.loss]
 	loss = None
 	if options.epsilon:
 	    loss = loss_class(options.epsilon)
@@ -62,13 +64,13 @@ def main():
         lm = LinearModel(ds.dim,
 			 biasterm = options.biasterm)
         if options.clstype == "sgd":
-            trainer = bolt.SGD(loss, options.regularizer,
+            trainer = SGD(loss, options.regularizer,
                           norm = options.norm,
                           alpha = options.alpha,
                           epochs = options.epochs)
             
         elif options.clstype == "pegasos":
-            trainer = bolt.PEGASOS(options.regularizer,
+            trainer = PEGASOS(options.regularizer,
                           epochs = options.epochs)
         else:
             parser.error("classifier type \"%s\" not supported." % options.clstype)

@@ -18,7 +18,7 @@ from __future__ import division
 from itertools import izip
 
 import numpy as np
-import bolt
+from trainer.sgd import Classification, Regression
 
 def errorrate(model,ds):
     """Compute the misclassification rate of the model.
@@ -89,9 +89,9 @@ def error(model, ds, loss):
       Either `errorrate` or `rmse`; depending on the `loss` function.
     """
     err = 0.0
-    if isinstance(loss,bolt.Classification):
+    if isinstance(loss,Classification):
         err = errorrate(model,ds)
-    elif isinstance(loss,bolt.Regression):
+    elif isinstance(loss,Regression):
         err = rmse(model,ds)
     else:
         raise ValueError, "lm.loss: either Regression or Classification loss expected"

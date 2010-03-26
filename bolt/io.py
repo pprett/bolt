@@ -230,6 +230,35 @@ class MemoryDataset(Dataset):
 	finally:
 	    f.close()
 
+class BinaryDataset(Dataset):
+    """A `Dataset` wrapper which binarizes the class labels.
+
+    Most methods are deligated to the wrapped `Dataset`. Only :method:`BinaryDataset.__iter__` and  :method:`BinaryDataset.labels` are wrapped.
+    """
+    def __init__(self,dataset,c):
+        """Creates a binary class wrapper for `dataset`.
+        
+        :arg dataset: The `Dataset` to wrap.
+        :arg c: The positive class. All other classes are treated as negative.
+        """
+        self._dataset = dataset
+        self.mask = lambda y: 1 if y == c else -1
+        self.n = dataset.n
+        self.dim = dataset.dim
+        self.classes = np.array([1,-1],dtype=np.float32)
+
+    def __iter__(self):
+        return ((x,self.mask(y)) for x,y in self._dataset)
+
+    def iterinstances(self):
+        return self._dataset.iterinstances()
+
+    def iterlabels(self):
+        return (self.mask(y) for y in self.iterlabels)
+
+    def shuffle(self, seed = None):
+        self._dataset.shuffle(seed)
+
 
 class RankingDataset(Dataset):
     

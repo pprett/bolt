@@ -39,14 +39,15 @@ from time import time
 import parse
 import eval
 
-from bolt import predict,SGD,LossFunction,Classification,Regression,loss_functions, Hinge, ModifiedHuber, Log, SquaredError, Huber, PEGASOS
+from trainer import OVA
+from trainer.sgd import predict,SGD,LossFunction,Classification,Regression,Hinge, ModifiedHuber, Log, SquaredError, Huber, PEGASOS
 from io import MemoryDataset,sparsedtype,dense2sparse
-from model import LinearModel
+from model import LinearModel, GeneralizedLinearModel
 from eval import errorrate
 
-version = "1.2"
+__version__ = "1.2"
 
-__version__ = version
+loss_functions = {0:Hinge, 1:ModifiedHuber, 2:Log, 5:SquaredError, 6:Huber}
 
 def writePredictions(lm,ds,pfile):
     """Write model predictions to file.
@@ -69,7 +70,7 @@ def writePredictions(lm,ds,pfile):
     
 def main():
     try: 
-        parser  = parse.parseSB(version)
+        parser  = parse.parseSB(__version__)
 	options, args = parser.parse_args()
         if len(args) < 1 or len(args) > 1:
             parser.error("incorrect number of arguments (use `--help` for help).")

@@ -2,8 +2,37 @@
 # cython: cdivision=True
 # cython: boundscheck=False
 # cython: wraparound=False
-# filename: bolt.pyx
+# filename: sgd.pyx
 
+"""
+The :mod:`bolt.trainer.sgd` module is the core of bolt. Its an extension
+module written in cython containing efficient implementations of Stochastic Gradient Descent and PEGASOS.
+
+The module contains two `Trainer` classes:
+
+  :class:`SGD`: A plain stochastic gradient descent implementation, supporting L2 and L1 regularization.
+  :class:`PEGASOS`: Similar to SGD, however, after each update it projects the current weight vector onto the L2 ball of radius 1/sqrt(lambda). 
+
+The module contains a number of concrete `LossFunction` implementations
+that can be plugged into the `SGD` trainer. Bolt provides `LossFunctions`
+for `Classification` and `Regression`.
+
+The following :class:`Classification` loss functions are supported:
+
+  :class:`ModifiedHuber`:
+  :class:`Hinge`: The loss function employed by the Support Vector Machine classifier.
+  :class:`Log`: The loss function of Logistic Regression.
+
+The following :class:`Regression` loss functions are supported:
+
+  :class:`SquaredError`: Standard squared error loss function. 
+  :class:`Huber`: Huber robust regression loss.
+
+The module also contains a number of utility function:
+
+  :func:`predict`: computes the dot product between a sparse and a dense feature vector. 
+
+"""
 from __future__ import division
 
 import numpy as np
@@ -15,7 +44,9 @@ cimport cython
 from time import time
 from itertools import izip
 
-loss_functions = {0:Hinge, 1:ModifiedHuber, 2:Log, 5:SquaredError, 6:Huber}
+__authors__ = [
+      '"Peter Prettenhofer" <peter.prettenhofer@gmail.com>'
+]
 
 cdef extern from "math.h":
     cdef extern double exp(double x)
@@ -429,7 +460,11 @@ cdef class PEGASOS:
         
         cdef int xnnz=0
         
+        # bias term (aka offset or intercept)
         cdef int usebias = 1
+        if model.biasterm == False:
+            usebias = 0
+        
         cdef double sumloss = 0.0
         cdef int t = 1, i = 0
 
@@ -449,6 +484,8 @@ cdef class PEGASOS:
                 if z < 1:
                     wnorm += add(wdata, wscale, xdata,
                                  xnnz,(eta*y))
+                    if usebias == 1:
+                        b += (eta*y) * 0.01
                     sumloss += (1-z)
                 scale(&wscale, &wnorm, 1 - (eta * reg))
                 project(wdata, &wscale, &wnorm, reg)

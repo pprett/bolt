@@ -8,7 +8,7 @@ numpy_path = os.path.join(numpy.__path__[0], 'core', 'include')
 setup(
     name = "bolt",
     license = "MIT",
-    ext_modules = [Extension("bolt/bolt", ["bolt/bolt.c"],
+    ext_modules = [Extension("bolt/trainer/sgd", ["bolt/trainer/sgd.c"],
                              include_dirs=['/usr/include/',numpy_path],
                              extra_link_args=["-O3"],
                              library_dirs=['/usr/lib','/usr/local/lib',],
@@ -18,7 +18,7 @@ setup(
     description="Bolt Online Learning Toolbox",
     author='Peter Prettenhofer',
     author_email='peter.prettenhofer@gmail.com',
-    packages=['bolt','bolt.sandbox'],
+    packages=['bolt','bolt.trainer', 'bolt.sandbox'],
     scripts = ["sb","sb_cv","svml2npy"],
     long_description = """Really long text here. Can be ReST""" 
 )
