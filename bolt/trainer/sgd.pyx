@@ -5,13 +5,16 @@
 # filename: sgd.pyx
 
 """
+The :mod:`bolt.trainer.sgd` Module
+??????????????????????????????????
+
 The :mod:`bolt.trainer.sgd` module is the core of bolt. Its an extension
 module written in cython containing efficient implementations of Stochastic Gradient Descent and PEGASOS.
 
 The module contains two `Trainer` classes:
 
-  :class:`SGD`: A plain stochastic gradient descent implementation, supporting L2 and L1 regularization.
-  :class:`PEGASOS`: Similar to SGD, however, after each update it projects the current weight vector onto the L2 ball of radius 1/sqrt(lambda). 
+  * :class:`SGD`: A plain stochastic gradient descent implementation, supporting L2 and L1 regularization.
+  * :class:`PEGASOS`: Similar to SGD, however, after each update it projects the current weight vector onto the L2 ball of radius 1/sqrt(lambda). 
 
 The module contains a number of concrete `LossFunction` implementations
 that can be plugged into the `SGD` trainer. Bolt provides `LossFunctions`
@@ -19,18 +22,19 @@ for `Classification` and `Regression`.
 
 The following :class:`Classification` loss functions are supported:
 
-  :class:`ModifiedHuber`:
-  :class:`Hinge`: The loss function employed by the Support Vector Machine classifier.
-  :class:`Log`: The loss function of Logistic Regression.
+  * :class:`ModifiedHuber`: A quadratical smoothed version of the hinge loss. 
+  * :class:`Hinge`: The loss function employed by the Support Vector Machine classifier.
+  * :class:`Log`: The loss function of Logistic Regression.
 
 The following :class:`Regression` loss functions are supported:
 
-  :class:`SquaredError`: Standard squared error loss function. 
-  :class:`Huber`: Huber robust regression loss.
+  * :class:`SquaredError`: Standard squared error loss function.
+  
+  * :class:`Huber`: Huber robust regression loss.
 
 The module also contains a number of utility function:
 
-  :func:`predict`: computes the dot product between a sparse and a dense feature vector. 
+  * :func:`predict`: computes the dot product between a sparse and a dense feature vector. 
 
 """
 from __future__ import division
@@ -64,9 +68,23 @@ cdef extern from "cblas.h":
 
 cdef class LossFunction:
     """Base class for convex loss functions"""
-    cpdef double loss(self,double p,double y):
+    cpdef double loss(self, double p, double y):
+        """Evaluate the loss function.
+        
+        :arg p: The prediction.
+        :type p: double
+        :arg y: The true value.
+        :type y: double
+        :returns: double"""
         raise NotImplementedError()
-    cpdef double dloss(self,double p,double y):
+    cpdef double dloss(self, double p, double y):
+        """Evaluate the derivative of the loss function.
+        
+        :arg p: The prediction.
+        :type p: double
+        :arg y: The true value.
+        :type y: double
+        :returns: double"""
         raise NotImplementedError()
 
 cdef class Regression(LossFunction):
@@ -88,7 +106,9 @@ cdef class ModifiedHuber(Classification):
     """Modified Huber loss function for binary
     classification tasks with y in {-1,1}.
     Its equivalent to quadratically smoothed SVM
-    with gamma = 2. See T. Zhang 'Solving
+    with gamma = 2.
+
+    See T. Zhang 'Solving
     Large Scale Linear Prediction Problems Using
     Stochastic Gradient Descent', ICML'04.
     """
@@ -266,6 +286,11 @@ cdef double add(double *w, double wscale, Pair *x, int nnz, double c):
 
 cdef class SGD:
     """Plain stochastic gradient descent solver.
+
+    References:
+
+          * SGD implementation by Leon Buttuo.
+          * L1 penalty by Tsuruoka et al. 
     """
     cdef int epochs
     cdef double reg
@@ -275,8 +300,9 @@ cdef class SGD:
     def __init__(self, loss, reg, epochs = 5, norm = 2):
         """
         Parameters:
-        loss: The loss function (default ModifiedHuber) 
-        reg: The regularization parameter lambda.
+        :arg loss: The :class:`LossFunction` (default ModifiedHuber) .
+        :arg reg: The regularization parameter lambda.
+        :type reg: float
         """
         if loss == None:
             raise ValueError, "Loss function must not be None."
@@ -290,17 +316,10 @@ cdef class SGD:
     def train(self, model, dataset, verbose = 0, shuffle = False):
         """Train `model` on the `dataset` using SGD.
 
-        Parameters: 
-        model: The LinearModel that is going to be trained. The model has to be configured properly. 
-        dataset: The `Dataset`. 
-        verbose: The verbosity level. If 0 no output to stdout.
-        shuffle: Whether or not the training data should be shuffled after each epoch. 
-        
-        References:
-
-          * SGD implementation by Leon Buttuo.
-          * L1 penalty by Tsuruoka et al. 
-
+        :arg model: The :class:`LinearModel` that is going to be trained. 
+        :arg dataset: The :class:`Dataset`. 
+        :arg verbose: The verbosity level. If 0 no output to stdout.
+        :arg shuffle: Whether or not the training data should be shuffled after each epoch. 
         """
         self._train(model, dataset, verbose, shuffle)
 
@@ -410,12 +429,10 @@ cdef l1penalty(double *w, double *q, Pair *x, int nnz, double u):
 ########################################
         
 cdef class PEGASOS:
-    """PEGASOS SVM solver.
+    """Primal estimated sub-gradient solver for svm
 
-    [Shwartz, S. S., Singer, Y., and Srebro, N., 2007] Pegasos: Primal
-    estimated sub-gradient solver for svm. In ICML '07: Proceedings of the
-    24th international conference on Machine learning, pages 807-814, New
-    York, NY, USA. ACM.
+    See Shwartz, S. et. al., Pegasos: Primal
+    estimated sub-gradient solver for svm. In ICML '07
     """
     cdef int epochs
     cdef double reg
@@ -427,17 +444,16 @@ cdef class PEGASOS:
         self.reg = reg
 
     def train(self, model, dataset, verbose = 0, shuffle = False):
+        """Train `model` on the `dataset` using PEGASOS.
+
+        :arg model: The :class:`LinearModel` that is going to be trained. 
+        :arg dataset: The :class:`Dataset`. 
+        :arg verbose: The verbosity level. If 0 no output to stdout.
+        :arg shuffle: Whether or not the training data should be shuffled after each epoch. 
+        """
         self._train(model, dataset, verbose, shuffle)
 
     cdef void _train(self, model, dataset, verbose, shuffle):
-        """Train `model` on the `dataset` using PEGASOS.
-
-        Parameters: 
-        model: The `LinearModel` that is going to be trained. 
-        dataset: The `Dataset`. 
-        verbose: The verbosity level. If 0 no output to stdout.
-        shuffle: Whether or not the training data should be shuffled after each epoch. 
-        """
         cdef int m = model.m
         cdef int n = dataset.n
         cdef double reg = self.reg

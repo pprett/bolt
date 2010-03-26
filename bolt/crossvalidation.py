@@ -35,11 +35,11 @@ def crossvalidation(ds, trainer, model, nfolds = 10, verbose = 1, shuffle = Fals
 	e = error(lm,dtest)
 	if verbose > 0:
 	    fid = ("%d" % (foldidx+1)).ljust(5)
-	    print("%s %.4f" % (fid , e))
+	    print("%s %s" % (fid , ("%.2f"%e).rjust(5)))
         err.append(e)
 	if verbose > 1:
 	    print "Total time for fold-%d: %f" % (foldidx+1, time()-t1)
-    return np.mean(err), np.std(err)
+    return np.array(err)
     
 def main():
     try:
@@ -75,13 +75,13 @@ def main():
         else:
             parser.error("classifier type \"%s\" not supported." % options.clstype)
         print("%s %s" % ("Fold".ljust(5), "Error"))
-	mean, std = crossvalidation(ds, trainer, lm,
+	err = crossvalidation(ds, trainer, lm,
                                     nfolds = options.nfolds,
                                     shuffle = options.shuffle,
                                     error = eval.errorrate,
                                     verbose = options.verbose,
                                     seed = options.seed)
-	print("%s %.4f (%.4f)" % ("avg".ljust(5), mean,std))
+	print("%s %s (%.2f)" % ("avg".ljust(5), ("%.2f"%np.mean(err)).rjust(5), np.std(err)))
 
     except Exception, exc:
         print "[ERROR] ", exc
@@ -89,5 +89,3 @@ def main():
 
 if __name__ == "__main__":
     main() 
-
-

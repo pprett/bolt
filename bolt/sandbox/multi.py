@@ -12,10 +12,10 @@ def main(args):
 
     ftrain = args[0]
     ftest = args[1]
+    print ftrain, ftest
 
     dtrain = bolt.io.MemoryDataset.load(ftrain, verbose = 0)
     dtest = bolt.io.MemoryDataset.load(ftest, verbose = 0)
-    assert dtrain.dim == dtest.dim
 
     cats = ['alt.atheism',
  'comp.graphics',
@@ -41,8 +41,10 @@ def main(args):
     cats = dict(((i,c) for i,c in enumerate(cats)))
     k = len(cats)
     
-    model = bolt.GeneralizedLinearModel(dtrain.dim,k)
-    ova = bolt.OVA(loss = bolt.ModifiedHuber(), reg = 0.0001, epochs = 20)
+    model = bolt.GeneralizedLinearModel(dtrain.dim,k, biasterm = False)
+    trainer = bolt.SGD(bolt.ModifiedHuber(), reg = 0.00001, epochs = 100)
+    #trainer = bolt.PEGASOS(reg = 0.001, epochs = 20)
+    ova = bolt.OVA(trainer)
     ova.train(model,dtrain)
 
     ref = [cats[y] for y in dtest.iterlabels()]

@@ -5,6 +5,7 @@ parametric models supported by Bolt.
 Currently, the following models are supported:
 
   :class:`bolt.model.LinearModel`: a linear model for binary classification and regression.
+  :class:`bolt.model.GeneralizedLinearModel`: a linear model for multi-class classification.
 
 """
 
@@ -64,7 +65,7 @@ class GeneralizedLinearModel(object):
     """A generalized linear model of the form z = max_y w * f(x,y) + b_y.
     """
 
-    def __init__(self, m, k):
+    def __init__(self, m, k, biasterm = False):
         """Create a generalized linear model for
 	classification problems with `k` classes. 
 
@@ -79,6 +80,7 @@ class GeneralizedLinearModel(object):
         self.m = m
         self.k = k
         self.W = np.zeros((k,m), dtype=np.float64, order = "c")
+        self.biasterm = biasterm
         self.b = np.zeros((k,), dtype=np.float64, order = "c")
 
 

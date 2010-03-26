@@ -233,7 +233,7 @@ class MemoryDataset(Dataset):
 class BinaryDataset(Dataset):
     """A `Dataset` wrapper which binarizes the class labels.
 
-    Most methods are deligated to the wrapped `Dataset`. Only :method:`BinaryDataset.__iter__` and  :method:`BinaryDataset.labels` are wrapped.
+    Most methods are deligated to the wrapped `Dataset`. Only :func:`BinaryDataset.__iter__` and  :func:`BinaryDataset.labels` are wrapped.
     """
     def __init__(self,dataset,c):
         """Creates a binary class wrapper for `dataset`.

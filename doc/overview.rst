@@ -6,15 +6,15 @@ Overview
 :Release: |version|
 :Date: |today|
 
-Bolt is structured in a number of modules. Each module provides an abstraction of common functionality. 
+Bolt is structured in a number of modules. Each module provides an abstraction of common functionality.
 
-  * The :mod:`model` Module
+  * The :mod:`bolt.model` Module
       Parametric models for (multi-class) classification and regression.
-  * The :mod:`bolt` Extension Module
-      Provides efficient trainers for models. 
-  * The :mod:`io` Module
+  * The :mod:`bolt.trainer` Module
+      Provides efficient trainers for models. Some trainers are implemented as Extension Modules. 
+  * The :mod:`bolt.io` Module
       Input/Output routines and dataset handeling. 
-  * The :mod:`eval` Module 
+  * The :mod:`bolt.eval` Module 
       Function related to evaluation purpose.
 
 Data Structures
@@ -39,6 +39,20 @@ The :mod:`model` Module
    :members:
    :show-inheritance:
    :undoc-members:
+   :inherited-members:
+
+The :mod:`trainer` Module
+-------------------------
+
+.. automodule:: bolt.trainer
+   :members:
+   :show-inheritance:
+   :undoc-members:
+   :inherited-members:
+
+.. automodule:: bolt.trainer.sgd
+   :members:
+   :show-inheritance:
    :inherited-members:
 
 The :mod:`io` Module

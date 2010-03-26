@@ -28,4 +28,29 @@ For convenience, Bolt offers routines to load datasets in binary or svm^light fo
 Multi-class classification
 --------------------------
 
-Bolt supports multi-class classification via **generalized linear models** (GLM). In the following, we will assume that we are given `k` different classes. 
+Bolt supports multi-class classification via **generalized linear models** (GLM). Currently, the only multi-class trainer is :class:`bolt.trainer.OVA` which trains `k` binary classifiers, where `k` is the number of different classes. At test time it predicts the class with the highest confidence. 
+
+First, lets get some data (e.g., the 20-newsgroups dataset): ::
+
+  import bolt
+  dtrain = bolt.io.MemoryDataset.load(ftrain, verbose = 0)
+  dtest = bolt.io.MemoryDataset.load(ftest, verbose = 0)
+
+Next, we create a :class:`bolt.model.GeneralizedLinearModel` ::
+
+  glm = bolt.GeneralizedLinearModel(dtrain.dim,k, biasterm = False)
+
+The GLM receives two parameters: the dimensionality of the input data and the number of classes `k`. The third parameters indicates that a class specific bias term is used. 
+
+In order to train the `glm` with the :class:`bolt.trainer.OVA` trainer we need instantiate the base trainer which is used by :class:`bolt.trainer.OVA` to train the binary classifiers. In the following example, we will use a :class:`bolt.trainer.sgd.SGD` trainer. ::
+
+    sgd = bolt.SGD(bolt.ModifiedHuber(), reg = 0.0001, epochs = 20)
+
+Now, we can create a :class:`bolt.trainer.OVA` trainer and train the `glm` on the training data: ::
+
+    ova = bolt.OVA(sgd)
+    ova.train(glm,dtrain)
+
+To get the predictions on the test data use :func:`bolt.model.GeneralizedLinearModel.predict` which gives you the index of the predicted class in `dtrain.classes`: ::
+
+    pred = [drain.classes[z] for z in model.predict(dtest.iterinstances())]
