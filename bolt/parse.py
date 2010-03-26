@@ -91,30 +91,18 @@ def check_pos(option, opt_str, value, parser):
         raise OptionValueError("%s must be larger than 0.0." % (opt_str, value))
     setattr(parser.values, option.dest, value)
 
-def check_alpha(option,opt_str, value, parser):
-    if value < 0.0 or value > 1.0:
-        raise OptionValueError("alpha must be in [0,1]. ")
-    setattr(parser.values, option.dest,value)
-
 def parse(version):
     epilog = """More details in:
 
-[Shwartz, S. S., Singer, Y., and Srebro, N., 2007] Pegasos: Primal
-estimated sub-gradient solver for svm. In ICML '07: Proceedings of the
-24th international conference on Machine learning, pages 807-814, New
-York, NY, USA. ACM. 
-
 [Zhang, T., 2004] Solving large scale linear prediction problems using
-stochastic gradient descent algorithms. In ICML '04: Proceedings of
-the twenty-first international conference on Machine learning, pages
-116+, New York, NY, USA. ACM. 
+stochastic gradient descent algorithms. In ICML '04. 
+
+[Shwartz, S. S., Singer, Y., and Srebro, N., 2007] Pegasos: Primal
+estimated sub-gradient solver for svm. In ICML '07. 
 
 [Tsuruoka, Y., Tsujii, J., and Ananiadou, S., 2009] Stochastic gradient
 descent training for l1-regularized log-linear models with cumulative
-penalty. In Proceedings of the Joint Conference of the 47th Annual
-Meeting of the ACL and the 4th International Joint Conference on
-Natural Language Processing of the AFNLP, pages 477-485, Suntec,
-Singapore. Association for Computational Linguistics.  """
+penalty. In ACL '09.  """
 
     description = """Bolt Online Learning Toolbox V%s: Discriminative learning of linear models using stochastic gradient descent.
 
@@ -166,14 +154,6 @@ http://github.com/pprett/bolt""" % version
                       help="Regularization term lambda [default %default]. ",
                       type="float",
                       default=0.0001,
-                      metavar="float")
-    parser.add_option("-a","--alpha",
-                      action="callback",
-                      dest="alpha",
-                      callback=check_alpha,
-                      help="Elastic net hyper-parameter [default %default]. alpha < 1 is computationally intensive.",
-                      type="float",
-                      default=1.0,
                       metavar="float")
     parser.add_option("-e","--epsilon",
                       action="callback",
@@ -229,6 +209,11 @@ def parseSB(version):
                       dest="test_only",
                       default=False,
                       help="Apply serialized model in option -m to example_file [requires -m].")
+    parser.add_option("--train-error",
+                      action="store_true",
+                      dest="computetrainerror",
+                      default=False,
+                      help="Compute training error [%default].")
     return parser
     
   

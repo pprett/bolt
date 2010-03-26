@@ -100,7 +100,6 @@ def main():
             if options.clstype == "sgd":
                 trainer = SGD(loss, options.regularizer,
                           norm = options.norm,
-                          alpha = options.alpha,
                           epochs = options.epochs)
             
             elif options.clstype == "pegasos":
@@ -110,9 +109,11 @@ def main():
                 parser.error("classifier type \"%s\" not supported." % options.clstype)
             trainer.train(lm,dtrain,verbose = verbose,
 		      shuffle = options.shuffle)
-            err = eval.error(lm,dtrain,loss)
-	    print("error: %.4f" % err)
-            sys.stdout.flush()
+
+	    if options.computetrainerror:
+		err = eval.error(lm,dtrain,loss)
+		print("error: %.4f" % err)
+		sys.stdout.flush()
             if options.model_file:
                 f = open(options.model_file, 'w+')
                 try:
@@ -151,7 +152,7 @@ def main():
                 print("Testing:")
                 print("--------")
                 t1 = time()
-                err = eval.error(lm,dtrain,loss)
+                err = eval.errorrate(lm,dtrain)
 		print("error: %.4f" % err)
                 print("Total prediction time: %.2f seconds." % (time()-t1))
 

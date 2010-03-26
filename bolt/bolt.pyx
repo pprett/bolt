@@ -240,26 +240,21 @@ cdef class SGD:
     cdef double reg
     cdef LossFunction loss
     cdef int norm
-    cdef double alpha
     
-    def __init__(self, loss, reg, epochs = 5, norm = 2, alpha = 1.0):
+    def __init__(self, loss, reg, epochs = 5, norm = 2):
         """
         Parameters:
         loss: The loss function (default ModifiedHuber) 
         reg: The regularization parameter lambda.
-        alpha: The elastic net hyper-paramter alpha. Blends L2 and L1 norm regularization (default 1.0).
         """
         if loss == None:
             raise ValueError, "Loss function must not be None."
         if reg < 0.0:
             raise ValueError, "reg must be larger than 0. "
-        if alpha < 0.0 or alpha > 1.0:
-            raise ValueError, "alpha must be in [0,1]."
         self.loss = loss
         self.reg = reg
         self.epochs = epochs
         self.norm = norm
-        self.alpha = alpha
 
     def train(self, model, dataset, verbose = 0, shuffle = False):
         """Train `model` on the `dataset` using SGD.
@@ -299,7 +294,6 @@ cdef class SGD:
         
         # Variables for penalty term
         cdef int norm = self.norm
-        cdef double alpha = self.alpha
         cdef np.ndarray[np.float64_t, ndim=1, mode="c"] q = None
         cdef double *qdata = NULL
         cdef double u = 0.0
