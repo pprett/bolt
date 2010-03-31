@@ -77,7 +77,7 @@ def check_clstype(option, opt_str, value, parser):
     setattr(parser.values, option.dest, value.lower())
 
 def check_norm(option, opt_str, value, parser):
-    if value not in [1,2]:
+    if value not in [1,2,3]:
         raise OptionValueError("%d is not a valid penalty." % value)
     setattr(parser.values, option.dest, value)
 
@@ -167,10 +167,16 @@ http://github.com/pprett/bolt""" % version
                       dest="norm",
                       callback=check_norm,
                       help="Penalty to use. \n1: L1 norm.\n"+
-                      "2: L2 norm [default]. \n",
+                      "2: L2 norm [default]. \n3: Elastic Net.\n",
                       type="int",
-                      metavar="[1,2]",
+                      metavar="[1,2,3]",
 		      default = 2)
+    parser.add_option("-a","--alpha",
+                      dest="alpha",
+                      help="Elastic Net hyperparameter [requires -n 3; default %default]. ",
+                      type="float",
+                      default=0.85,
+                      metavar="float")
     parser.add_option("-E","--epochs", 
                       dest="epochs",
                       help="Number of epochs to perform [default %default]. ",

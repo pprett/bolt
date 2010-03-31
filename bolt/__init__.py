@@ -103,7 +103,8 @@ def main():
             if options.clstype == "sgd":
                 trainer = SGD(loss, options.regularizer,
                           norm = options.norm,
-                          epochs = options.epochs)
+                          epochs = options.epochs,
+			  alpha = options.alpha)
             
             elif options.clstype == "pegasos":
                 trainer = PEGASOS(options.regularizer,
