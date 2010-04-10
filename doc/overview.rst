@@ -8,14 +8,7 @@ Overview
 
 Bolt is structured in a number of modules. Each module provides an abstraction of common functionality.
 
-  * The :mod:`bolt.model` Module
-      Parametric models for (multi-class) classification and regression.
-  * The :mod:`bolt.trainer` Module
-      Provides efficient trainers for models. Some trainers are implemented as Extension Modules. 
-  * The :mod:`bolt.io` Module
-      Input/Output routines and dataset handeling. 
-  * The :mod:`bolt.eval` Module 
-      Function related to evaluation purpose.
+
 
 Data Structures
 ---------------
@@ -26,14 +19,14 @@ Bolt itself is constructed around a number of primitive data structures:
   - **Sparse vectors**
       implemented via numpy record arrays (`numpy.recarray`). 
  
-Each `model.Model` is parametrized by a weight vector which is represented as a 1D `numpy.array`, allowing efficient random access. 
+Each :class:`bolt.model.Model` is parametrized by a weight vector which is represented as a 1D `numpy.array`, allowing efficient random access. 
 
 An instance (aka a feature vector), on the other hand, is represented as a s sparse vector via a numpy record array. The data type of the record array is `bolt.sparsedtype` which is a tuple (uint32,float64). 
 The advantage of record arrays is that they are mapped directly to C struct arrays. 
 
 
-The :mod:`model` Module
------------------------
+The :mod:`bolt.model` Module
+----------------------------
 
 .. automodule:: bolt.model
    :members:
@@ -41,8 +34,8 @@ The :mod:`model` Module
    :undoc-members:
    :inherited-members:
 
-The :mod:`trainer` Module
--------------------------
+The :mod:`bolt.trainer` Module
+------------------------------
 
 .. automodule:: bolt.trainer
    :members:
@@ -50,21 +43,24 @@ The :mod:`trainer` Module
    :undoc-members:
    :inherited-members:
 
+The :mod:`bolt.trainer.sgd` Module
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 .. automodule:: bolt.trainer.sgd
    :members:
    :show-inheritance:
    :undoc-members:
    :inherited-members:
 
-The :mod:`io` Module
------------------------
+The :mod:`bolt.io` Module
+-------------------------
 
 .. automodule:: bolt.io
    :members:
    :show-inheritance:
 
-The :mod:`eval` Module
------------------------
+The :mod:`bolt.eval` Module
+---------------------------
 
 .. automodule:: bolt.eval
    :members:

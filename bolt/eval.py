@@ -1,9 +1,6 @@
 """
 The :mod:`eval` module contains various routines for model evaluation.
 
-Metrics
-???????
-
 The following evaluation metrics are currently supported:
 
   :func:`errorrate`: the error rate of the binary classifier.
@@ -70,14 +67,13 @@ def cost(model,ds, loss):
 def error(model, ds, loss):
     """Report the error of the model on the
     test examples. If the loss function of the model
-    is
+    is :class:`bolt.trainer.sgd.Classification` then :func:`errorrate` is computes,
+    else :func:`rmse` is computed if loss function inherits from :class:`bolt.trainer.sgd.Regression`.
 
     :arg model: A :class:`bolt.model.LinearModel`.
     :arg ds: A :class:`bolt.io.Dataset`.
     :arg loss: A :class:`bolt.trainer.sgd.LossFunction`.
     :returns: Either :func:`errorrate` or :func:`rmse`; depending on the `loss` function.
-    
-    Returns:
       
     """
     err = 0.0

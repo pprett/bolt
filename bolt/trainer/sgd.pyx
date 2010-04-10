@@ -5,9 +5,6 @@
 # filename: sgd.pyx
 
 """
-The :mod:`bolt.trainer.sgd` Module
-??????????????????????????????????
-
 The :mod:`bolt.trainer.sgd` module is the core of bolt. Its an extension
 module written in cython containing efficient implementations of Stochastic Gradient Descent and PEGASOS.
 
@@ -218,6 +215,16 @@ cdef class Huber(Regression):
 # ----------------------------------------
 def predict(np.ndarray x, np.ndarray w,
             double bias):
+    """Computes x*w + b efficiently.
+
+    :arg x: the instance represented as a sparse vector. 
+    :type x: np.ndarray(dtype=bolt.sparsedtype)
+    :arg w: the weight vector represented as a dense vector.
+    :type w: np.ndarray(dtype=bolt.densedtype)
+    :arg b: the bias term (aka offset or intercept).
+    :type b: float
+    :returns: A double representing `x*w + b`.
+    """
     cdef int xnnz = x.shape[0]
     cdef int wdim = w.shape[0]
     cdef double y = 0.0
