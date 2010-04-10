@@ -1,7 +1,12 @@
 .. _install:
 
+=======
 Install
 =======
+
+Describes how to install Bolt on your machine. 
+
+.. contents::
 
 Requirements
 ------------

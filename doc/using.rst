@@ -6,9 +6,20 @@ Using Bolt
 :Release: |version|
 :Date: |today|
 
+Use Bolt via the CLI
+--------------------
+
+This subsection shows how to use Bolt via its command-line interface. 
+
+TODO
+
+Use Bolt via the API
+--------------------
+
+This subsection shows how to use Bolt via its Python API. We will discuss the use of Bolt for a) binary and for b) multi-class classification. 
 
 Binary classification
----------------------
+^^^^^^^^^^^^^^^^^^^^^
 
 To use Bolt for binary classification we first need some data. Bolt is aimed primarily at high-dimensional and sparse machine learning problems. Thus, instances are represented as sparse vectors. Bolt uses numpy record arrays to represent sparse vectors. The following example shows an instance `x` with features `0` and `4` set to `1` and `0.2`, respectively. All other features are assumed to be zero. ::
 
@@ -18,15 +29,39 @@ For binary classification, Bolt assumes that the class labels, either positive o
 
 Lets create some synthetic dataset to show how to use Bolt for binary classification...
 
-For convenience, Bolt offers routines to load datasets in binary or svm^light format via the :mod:io module. ::
+For convenience, Bolt offers routines to load datasets in binary or svm^light format via the :mod:`bolt.io` module. ::
 
-  dataset = bolt.io.MemoryDataset.load("train.dat.gz")
+  dtrain = bolt.io.MemoryDataset.load("train.dat.gz")
 
+Now we've to crate a linear model ::
 
+  lm = bolt.LinearModel(dtrain.dim, biasterm = False)
+
+The first parameter is mandatory and indicates the number of features in the training data. The second parameter specifies whether or not a biasterm should be included. That is, if `biasterm = True` the model computes `y = w*x + b` else `y = w*x`. Thus, `biasterm = False` forces the hyperplane to go through the origin. In general, this limitation does not harm the classificaton performance but makes the numerical operations more stable. 
+
+To train the model we first have to instantiate a model trainer - in this example we will use :class:`bolt.trainer.sgd.SGD` ::
+
+  sgd = bolt.SGD(bolt.ModifiedHuber(), reg = 0.0001, epochs = 20)
+
+The trainer receives a number of parameters, see :class:`bolt.trainer.sgd.SGD` for more information on the parameterization of stochastic gradient descent. Currently, only two trainers for binary classification are provided, :class:`bolt.trainer.sgd.SGD` and :class:`bolt.trainer.sgd.PEGASOS`. 
+
+To train the model on `dtrain` you can simply use the :func:`bolt.trainer.sgd.SGD.train` method::
+
+  sgd.train(lm, dtrain)
+
+Now the model `lm` is trained; You can evaluate the model on some test data via the :mod:`bolt.eval` module. ::
+
+  dtest = bolt.io.MemoryDataset.load("test.dat.gz")
+  bolt.eval.errorrate(lm,dtest)
+
+To inspect the model parameters, simply access the models attributes ::
+
+  print lm.w # gives the weight vector
+  print lm.b # gives the bias term
 
 
 Multi-class classification
---------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Bolt supports multi-class classification via **generalized linear models** (GLM). Currently, the only multi-class trainer is :class:`bolt.trainer.OVA` which trains `k` binary classifiers, where `k` is the number of different classes. At test time it predicts the class with the highest confidence. 
 

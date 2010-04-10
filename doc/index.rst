@@ -9,18 +9,21 @@ Bolt Online Learning Toolbox
 :Release: |version|
 :Date: |today|
 
-Bolt Online Learning Toolbox
+Bolt features discriminative learning of linear predictors (e.g. SVM or
+logistic regression) using stochastic gradient descent. Bolt is
+aimed at large-scale, high-dimensional and sparse machine-learning problems.
+In particular, problems encountered in information retrieval and
+natural language processing. 
 
-Contents:
+**Contents**:
 
 .. toctree::
+   :maxdepth: 1
 
-   whatsnew.rst
    install.rst
    overview.rst
    using.rst
-
-
+   whatsnew.rst
 
 Indices and tables
 ==================

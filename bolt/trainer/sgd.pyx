@@ -10,8 +10,8 @@ module written in cython containing efficient implementations of Stochastic Grad
 
 The module contains two `Trainer` classes:
 
-  * :class:`SGD`: A plain stochastic gradient descent implementation, supporting L2 and L1 regularization.
-  * :class:`PEGASOS`: Similar to SGD, however, after each update it projects the current weight vector onto the L2 ball of radius 1/sqrt(lambda). 
+  * :class:`SGD`: A plain stochastic gradient descent implementation, supporting various :class:`LossFunction` and different penalties, including L1, L2, and Elastic-net penalty.
+  * :class:`PEGASOS`: Similar to SGD, however, after each update it projects the current weight vector onto the L2 ball of radius 1/sqrt(lambda). Currently, only supports hinge loss and L2 penalty. 
 
 The module contains a number of concrete `LossFunction` implementations
 that can be plugged into the `SGD` trainer. Bolt provides `LossFunctions`
@@ -292,12 +292,19 @@ cdef double add(double *w, double wscale, Pair *x, int nnz, double c):
 # ----------------------------------------
 
 cdef class SGD:
-    """Plain stochastic gradient descent solver.
+    """Plain stochastic gradient descent solver. The solver supports various :class:`LossFunction` and different penalties (L1, L2, and Elastic-Net). 
 
-    References:
-
-          * SGD implementation by Leon Buttuo.
-          * L1 penalty by Tsuruoka et al. 
+**References**:
+   * SGD implementation inspired by Leon Buttuo's sgd and [Zhang2004]_.
+   * L1 penalty via truncation [Tsuruoka2009]_.
+   * Elastic-net penalty [Zou2005]_.
+          
+**Parameters**:
+   * *loss* - The :class:`LossFunction`.
+   * *reg* -  The regularization parameter lambda.
+   * *epochs* - The number of iterations through the dataset. Default `epochs=5`. 
+   * *norm* - Whether to minimize the L1, L2 norm or the Elastic Net (either 1,2, or 3; default 2).
+   * *alpha* - The elastic net penality parameter (0<=`alpha`<=1). A value of 0 amounts to L2 regularization whereas a value of 1 gives L1 penalty (only if `norm` is 3). Default `alpha=0.85`.
     """
     cdef int epochs
     cdef double reg
@@ -309,7 +316,7 @@ cdef class SGD:
         """
 
         :arg loss: The :class:`LossFunction` (default ModifiedHuber) .
-        :arg reg: The regularization parameter lambda.
+        :arg reg: The regularization parameter lambda (>0).
         :type reg: float.
         :arg epochs: The number of iterations through the dataset.
         :type epochs: int
@@ -454,10 +461,11 @@ cdef void l1penalty(double wscale, double *w, double *q,
 ########################################
         
 cdef class PEGASOS:
-    """Primal estimated sub-gradient solver for svm
-
-    See Shwartz, S. et. al., Pegasos: Primal
-    estimated sub-gradient solver for svm. In ICML '07
+    """Primal estimated sub-gradient solver for svm [Shwartz2007]_.
+    
+**Parameters**:
+   * *reg* -  The regularization parameter lambda (> 0).
+   * *epochs* - The number of iterations through the dataset.
     """
     cdef int epochs
     cdef double reg
