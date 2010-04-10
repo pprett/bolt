@@ -9,7 +9,7 @@ from time import time
 from io import MemoryDataset
 from model import LinearModel
 
-__version__ = "1.2"
+__version__ = "1.3"
 
 loss_functions = {0:Hinge, 1:ModifiedHuber, 2:Log, 5:SquaredError, 6:Huber}
 

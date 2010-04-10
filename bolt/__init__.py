@@ -45,7 +45,7 @@ from io import MemoryDataset,sparsedtype,dense2sparse
 from model import LinearModel, GeneralizedLinearModel
 from eval import errorrate
 
-__version__ = "1.2"
+__version__ = "1.3"
 
 loss_functions = {0:Hinge, 1:ModifiedHuber, 2:Log, 5:SquaredError, 6:Huber}
 
