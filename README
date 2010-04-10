@@ -28,12 +28,11 @@ framework.
 
 Bolt features: 
 
-   * Fast learning based on stochastic gradient descent with adaptive
-     learning rate and some engineering tricks. 
+   * Fast learning based on stochastic gradient descent (plain and PEGASOS). 
 
-   * Different loss functions for classification and regression. 
+   * Different loss functions for classification (hinge, log-loss, modified huber) and regression (OLS, huber). 
 
-   * Different penalties (e.g. L2, L1, elastic-net). 
+   * Different penalties (L2, L1, elastic-net). 
 
    * Simple, yet powerful commandline interface similar to SVM^light.
 
@@ -50,6 +49,7 @@ To install Bolt you need:
 
    * Python 2.5 or 2.6
    * C-compiler (tested with gcc 4.3.3)
+     - Headers for python and cBlas
    * Numpy (tested with 1.2.1)
 
 If you want to modify bolt.pyx you also need cython (>=0.11.2).
@@ -85,18 +85,16 @@ References
 
 
 [Shwartz, S. S., Singer, Y., and Srebro, N., 2007] Pegasos: Primal
-estimated sub-gradient solver for svm. In ICML '07: Proceedings of the
-24th international conference on Machine learning, pages 807-814, New
-York, NY, USA. ACM. 
-
-[Zhang, T., 2004] Solving large scale linear prediction problems using
-stochastic gradient descent algorithms. In ICML '04: Proceedings of
-the twenty-first international conference on Machine learning, pages
-116+, New York, NY, USA. ACM. 
+estimated sub-gradient solver for svm. In Proceedings of ICML '07.
 
 [Tsuruoka, Y., Tsujii, J., and Ananiadou, S., 2009] Stochastic gradient
 descent training for l1-regularized log-linear models with cumulative
-penalty. In Proceedings of the Joint Conference of the 47th Annual
-Meeting of the ACL and the 4th International Joint Conference on
-Natural Language Processing of the AFNLP, pages 477-485, Suntec,
-Singapore. Association for Computational Linguistics.  
+penalty. In Proceedings of the AFNLP/ACL '09.
+
+[Zhang, T., 2004] Solving large scale linear prediction problems using
+stochastic gradient descent algorithms. In Proceedings of ICML '04.
+
+[Zou, H., and Hastie, T., 2005] Regularization and variable selection via 
+the elastic net. Journal of the Royal Statistical Society Series B, 
+67 (2), 301-320.
+

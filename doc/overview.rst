@@ -53,6 +53,7 @@ The :mod:`trainer` Module
 .. automodule:: bolt.trainer.sgd
    :members:
    :show-inheritance:
+   :undoc-members:
    :inherited-members:
 
 The :mod:`io` Module

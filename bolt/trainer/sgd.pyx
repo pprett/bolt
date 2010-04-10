@@ -296,28 +296,40 @@ cdef class SGD:
     cdef double reg
     cdef LossFunction loss
     cdef int norm
+    cdef double alpha
     
-    def __init__(self, loss, reg, epochs = 5, norm = 2):
+    def __init__(self, loss, reg, epochs = 5, norm = 2, alpha = 0.85):
         """
-        Parameters:
+
         :arg loss: The :class:`LossFunction` (default ModifiedHuber) .
         :arg reg: The regularization parameter lambda.
-        :type reg: float
+        :type reg: float.
+        :arg epochs: The number of iterations through the dataset.
+        :type epochs: int
+        :arg norm: Whether to minimize the L1, L2 norm or the Elastic Net.
+        :type norm: 1 or 2 or 3
+        :arg alpha: The elastic net penality parameter. A value of 0 amounts to L2 regularization whereas a value of 1 gives L1 penalty. 
+        :type alpha: float (0 <= alpha <= 1)
         """
         if loss == None:
             raise ValueError, "Loss function must not be None."
         if reg < 0.0:
             raise ValueError, "reg must be larger than 0. "
+        if norm not in [1,2,3]:
+            raise ValueError, "norm must be in {1,2,3}. "
+        if alpha > 1.0 or alpha < 0.0:
+            raise ValueError, "alpha must be in [0,1]. "
         self.loss = loss
         self.reg = reg
         self.epochs = epochs
         self.norm = norm
+        self.alpha = alpha
 
     def train(self, model, dataset, verbose = 0, shuffle = False):
         """Train `model` on the `dataset` using SGD.
 
-        :arg model: The :class:`LinearModel` that is going to be trained. 
-        :arg dataset: The :class:`Dataset`. 
+        :arg model: The :class:`bolt.model.LinearModel` that is going to be trained. 
+        :arg dataset: The :class:`bolt.io.Dataset`. 
         :arg verbose: The verbosity level. If 0 no output to stdout.
         :arg shuffle: Whether or not the training data should be shuffled after each epoch. 
         """
@@ -347,9 +359,15 @@ cdef class SGD:
         cdef np.ndarray[np.float64_t, ndim=1, mode="c"] q = None
         cdef double *qdata = NULL
         cdef double u = 0.0
-        if norm == 1:
+        if norm == 1 or norm == 3:
             q = np.zeros((m,), dtype = np.float64, order = "c" )
             qdata = <double *>q.data
+            
+        cdef double alpha = 0.0
+        if norm == 1:
+            alpha = 1.0
+        elif norm == 3:
+            alpha = self.alpha
 
         # bias term (aka offset or intercept)
         cdef int usebias = 1
@@ -383,14 +401,14 @@ cdef class SGD:
                     if usebias == 1:
                         b += update * 0.01
 
-                if norm == 2:
-                    wscale *= 1 - eta * reg
+                if norm != 1:
+                    wscale *= (1 - (1-alpha) * eta * reg)
                     if wscale < 1e-9:
                         w*=wscale
                         wscale = 1
-                else:
-                    u += reg*eta
-                    l1penalty(wdata, qdata, xdata, xnnz, u)
+                if norm == 1 or norm == 3:
+                    u += (alpha * eta * reg)
+                    l1penalty(wscale, wdata, qdata, xdata, xnnz, u)
                 
                 t += 1
                 count += 1
@@ -407,7 +425,8 @@ cdef class SGD:
         model.w = w * wscale
         model.bias = b
 
-cdef l1penalty(double *w, double *q, Pair *x, int nnz, double u):
+cdef void l1penalty(double wscale, double *w, double *q,
+                    Pair *x, int nnz, double u):
     cdef double z = 0.0
     cdef Pair pair
     cdef int i,j
@@ -415,11 +434,11 @@ cdef l1penalty(double *w, double *q, Pair *x, int nnz, double u):
         pair = x[i]
         j = pair.idx
         z = w[j]
-        if w[j] > 0:
-            w[j] = max(0,w[j] - (u + q[j]))
-        elif w[j] < 0:
-            w[j] = min(0,w[j] + (u - q[j]))
-        q[j] += (w[j] - z)
+        if (wscale * w[j]) > 0:
+            w[j] = max(0,w[j] - ((u + q[j])/wscale) )
+        elif (wscale * w[j]) < 0:
+            w[j] = min(0,w[j] + ((u - q[j])/wscale) )
+        q[j] += (wscale * (w[j] - z))
 
 ########################################
 #
