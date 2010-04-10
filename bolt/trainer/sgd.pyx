@@ -304,7 +304,7 @@ cdef class SGD:
    * *reg* -  The regularization parameter lambda.
    * *epochs* - The number of iterations through the dataset. Default `epochs=5`. 
    * *norm* - Whether to minimize the L1, L2 norm or the Elastic Net (either 1,2, or 3; default 2).
-   * *alpha* - The elastic net penality parameter (0<=`alpha`<=1). A value of 0 amounts to L2 regularization whereas a value of 1 gives L1 penalty (only if `norm` is 3). Default `alpha=0.85`.
+   * *alpha* - The elastic net penality parameter (0<=`alpha`<=1). A value of 1 amounts to L2 regularization whereas a value of 0 gives L1 penalty (requires `norm=3`). Default `alpha=0.85`.
     """
     cdef int epochs
     cdef double reg
@@ -322,7 +322,7 @@ cdef class SGD:
         :type epochs: int
         :arg norm: Whether to minimize the L1, L2 norm or the Elastic Net.
         :type norm: 1 or 2 or 3
-        :arg alpha: The elastic net penality parameter. A value of 0 amounts to L2 regularization whereas a value of 1 gives L1 penalty. 
+        :arg alpha: The elastic net penality parameter. A value of 1 amounts to L2 regularization whereas a value of 0 gives L1 penalty. 
         :type alpha: float (0 <= alpha <= 1)
         """
         if loss == None:
@@ -377,9 +377,9 @@ cdef class SGD:
             q = np.zeros((m,), dtype = np.float64, order = "c" )
             qdata = <double *>q.data
             
-        cdef double alpha = 0.0
+        cdef double alpha = 1.0
         if norm == 1:
-            alpha = 1.0
+            alpha = 0.0
         elif norm == 3:
             alpha = self.alpha
 
@@ -395,7 +395,6 @@ cdef class SGD:
         cdef double typw = sqrt(1.0 / sqrt(reg))
         cdef double eta0 = typw /max(1.0,loss.dloss(-typw,1.0))
         t = 1.0 / (eta0 * reg)
-        
         t1=time()
         for e from 0 <= e < self.epochs:
             if verbose > 0:
@@ -416,12 +415,12 @@ cdef class SGD:
                         b += update * 0.01
 
                 if norm != 1:
-                    wscale *= (1 - (1-alpha) * eta * reg)
+                    wscale *= (1 - alpha * eta * reg)
                     if wscale < 1e-9:
                         w*=wscale
                         wscale = 1
                 if norm == 1 or norm == 3:
-                    u += (alpha * eta * reg)
+                    u += ((1-alpha) * eta * reg)
                     l1penalty(wscale, wdata, qdata, xdata, xnnz, u)
                 
                 t += 1
@@ -436,7 +435,11 @@ cdef class SGD:
         # floating-point under-/overflow check.
         if np.any(np.isinf(w)) or np.any(np.isnan(w))or np.isnan(b) or np.isinf(b):
             raise ValueError, "floating-point under-/overflow occured."
-        model.w = w * wscale
+        if norm == 3:
+            # FIXME rescale naive elastic net coefficient?
+            model.w = w * wscale #* (1.0 + alpha)
+        else:
+            model.w = w * wscale
         model.bias = b
 
 cdef void l1penalty(double wscale, double *w, double *q,
