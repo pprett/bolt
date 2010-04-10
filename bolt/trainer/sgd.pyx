@@ -356,13 +356,12 @@ cdef class SGD:
         if model.biasterm == False:
             usebias = 0
 
-        cdef double b = 0.0,p=0.0,wnorm=0.0,t=0.0,update = 0.0,sumloss = 0.0,eta=0.0
-        cdef int xnnz = 0, count = 0, i=0
+        cdef double b = 0.0,p = 0.0, wnorm = 0.0, t = 0.0, update = 0.0,sumloss = 0.0, eta = 0.0
+        cdef int xnnz = 0, count = 0, i = 0, e = 0
         
         # computing eta0
-        maxw = 1.0 / np.sqrt(reg)
-        typw = np.sqrt(maxw)
-        eta0 = typw /max(1.0,loss.dloss(-typw,1.0))
+        cdef double typw = sqrt(1.0 / sqrt(reg))
+        cdef double eta0 = typw /max(1.0,loss.dloss(-typw,1.0))
         t = 1.0 / (eta0 * reg)
         
         t1=time()
