@@ -136,7 +136,7 @@ def main():
                     print("Testing:")
                     print("--------")
                     t1 = time()
-                    err = eval.error(lm,dtest,loss)
+                    err = eval.errorrate(lm,dtest)#,loss)
 		    print("error: %.4f" % err)
                     print("Total prediction time: %.2f seconds." % (time()-t1))
             

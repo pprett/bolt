@@ -166,14 +166,14 @@ http://github.com/pprett/bolt""" % version
                       action="callback",
                       dest="norm",
                       callback=check_norm,
-                      help="Penalty to use. \n1: L1 norm.\n"+
-                      "2: L2 norm [default]. \n3: Elastic Net.\n",
+                      help="Penalty to use. \n1: L1.\n"+
+                      "2: L2 [default]. \n3: Elastic Net: (1-a)L1 + aL2.\n",
                       type="int",
                       metavar="[1,2,3]",
 		      default = 2)
     parser.add_option("-a","--alpha",
                       dest="alpha",
-                      help="Elastic Net hyperparameter [requires -n 3; default %default]. ",
+                      help="Elastic Net parameter alpha [requires -n 3; default %default]. ",
                       type="float",
                       default=0.85,
                       metavar="float")
