@@ -4,6 +4,7 @@
 # cython: wraparound=False
 # filename: sgd.pyx
 
+
 """
 The :mod:`bolt.trainer.sgd` module is the core of bolt. Its an extension
 module written in cython containing efficient implementations of Stochastic Gradient Descent and PEGASOS.

@@ -82,6 +82,12 @@ class MemoryDataset(Dataset):
 	:type qids: :class:`numpy.ndarray(dtype=numpy.float64)` or `None`
 	"""
         assert len(instances) == len(labels)
+        assert isinstance(instances, np.ndarray)
+        assert all((x.dtype == sparsedtype for x in instances))
+        assert instances.dtype == np.object
+        assert isinstance(labels, np.ndarray)
+        assert labels.dtype == np.float64
+        
         self.dim = dim
         self.n = len(instances)
         self.instances = instances
