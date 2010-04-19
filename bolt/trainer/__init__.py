@@ -10,6 +10,7 @@ __authors__ = [
 ]
 
 import sgd
+import avgperceptron
 
 from time import time
 

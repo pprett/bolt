@@ -35,9 +35,14 @@ class LinearModel(object):
         if m <= 0:
             raise ValueError, "Number of dimensions must be larger than 0."
         self.m = m
+        """The number of features. 
+        """
         self.w = np.zeros((m), dtype=np.float64, order = "c")
+        """A vector of size `m` which parameterizes the model. """
         self.bias = 0.0
+        """The value of the bias term."""
         self.biasterm = biasterm
+        """Whether or not the biasterm is used."""
 
 
     def __call__(self,x):
@@ -78,10 +83,15 @@ class GeneralizedLinearModel(object):
         if k <= 2:
             raise ValueError, "Number of classes must be larger than 2 (if 2 use `LinearModel`.)"
         self.m = m
+        """The number of features."""
         self.k = k
+        """The number of classes."""
         self.W = np.zeros((k,m), dtype=np.float64, order = "c")
+        """A matrix which contains a `m`-dimensional weight vector for each
+        class. """
         self.biasterm = biasterm
         self.b = np.zeros((k,), dtype=np.float64, order = "c")
+        """A vector of bias terms. """
 
 
     def __call__(self,x):

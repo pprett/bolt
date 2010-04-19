@@ -86,14 +86,20 @@ class MemoryDataset(Dataset):
         assert all((x.dtype == sparsedtype for x in instances))
         assert instances.dtype == np.object
         assert isinstance(labels, np.ndarray)
-        assert labels.dtype == np.float64
+        #assert labels.dtype == np.float64
         
         self.dim = dim
+        """The dimensionality of the examples in the dataset. """
         self.n = len(instances)
+        """The number of instances in the dataset. """
         self.instances = instances
+        """The array holding the instances. """
         self.labels = labels
+        """The array holding the labels. """
         self._idx = np.arange(self.n)
+        """The indexing array. """
         self.classes = np.unique1d(labels)
+        """The classes. """
 	self.qids = qids
         
     def __iter__(self):
