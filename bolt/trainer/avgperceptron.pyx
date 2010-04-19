@@ -113,7 +113,7 @@ cdef class AveragedPerceptron:
         cdef Pair *xdata = NULL
         cdef float y = 0
         cdef int yhat = 0
-        cdef int xnnz = 0, t = 0
+        cdef int xnnz = 0, t = 0, nadds = 0
 
         t1=time()
         for e from 0 <= e < self.epochs:
@@ -121,6 +121,7 @@ cdef class AveragedPerceptron:
                 print("-- Epoch %d" % (e+1))
             if shuffle:
                 dataset.shuffle()
+            nadds = 0
             for x,y in dataset:
                 xnnz = x.shape[0]
                 xdata = <Pair *>x.data
@@ -128,9 +129,11 @@ cdef class AveragedPerceptron:
                 if yhat != y:
                     add(wdata, wstride, xdata, xnnz, <int>y, 1)
                     add(wdata, wstride, xdata, xnnz, yhat, -1)
+                    nadds += 1
                 t += 1
             # report epoche information
             if verbose > 0:
+                print("Number of updates: %d. " % nadds)
                 print("Total training time: %.2f seconds." % (time()-t1))
 
                 

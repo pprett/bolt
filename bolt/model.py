@@ -80,7 +80,7 @@ class GeneralizedLinearModel(object):
         """
         if m <= 0:
             raise ValueError, "Number of dimensions must be larger than 0."
-        if k <= 2:
+        if k <= 1:
             raise ValueError, "Number of classes must be larger than 2 (if 2 use `LinearModel`.)"
         self.m = m
         """The number of features."""
