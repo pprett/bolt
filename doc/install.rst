@@ -19,11 +19,11 @@ To check your installed version use::
 
   python -c "import numpy; print numpy.__version__"
 
-To build Bolt you need a c compiler (e.g., gcc) and the header files of `cBlas` and `numpy`. 
+To build Bolt you need a c compiler (e.g., gcc) and the header files of `numpy`. 
 
-On most ubuntu systems the following should suffice::
+On most Ubuntu systems the following should suffice::
 
-  sudo apt-get install python-numpy libblas-dev
+  sudo apt-get install python-numpy
 
 If you want to modify the Cython code in the extension module `bolt.bolt` make sure that the newest release of Cython (>= 0.7) is installed::
 
