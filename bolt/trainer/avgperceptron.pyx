@@ -23,6 +23,17 @@ __authors__ = [
       '"Peter Prettenhofer" <peter.prettenhofer@gmail.com>'
 ]
 
+cdef extern from "math.h":
+    cdef extern double exp(double x)
+    cdef extern double log(double x)
+    cdef extern double sqrt(double x)
+
+#cdef extern from "cblas.h":
+#    double ddot "cblas_ddot"(int N,
+#                             double *X, int incX,
+#                             double *Y, int incY)
+    
+
  # ----------------------------------------
  # C functions for fast sparse-dense vector operations
  # ----------------------------------------
@@ -51,6 +62,13 @@ cdef void add(double *w, int stride, Pair *x, int nnz, int y, double c):
     for i from 0 <= i < nnz:
         pair = x[i]
         w[offset + pair.idx] += (pair.val * c)
+
+cdef void add_vector(double *wbar, double *w, double c, int length):
+    """Adds w*c to wbar
+    """
+    cdef int i
+    for i from 0 <= i < length:
+        wbar[i] += c*w[i]
 
 cdef int argmax(double *w, int wstride, Pair *x, int xnnz, int y, int k):
     cdef Pair pair
@@ -101,9 +119,14 @@ cdef class AveragedPerceptron:
         cdef int m = model.m
         cdef int k = model.k
         cdef int n = dataset.n
+        cdef int length = k*m
 
         cdef np.ndarray[np.float64_t, ndim=2, mode="c"] w = model.W
+        # maintain a averaged w
+        cdef np.ndarray[np.float64_t, ndim=2, mode="c"] wbar = np.zeros((k,m),
+                                                                        dtype = np.float64)
         cdef double *wdata = <double *>w.data
+        cdef double *wbardata = <double *>wbar.data
         cdef int wstride0 = w.strides[0]
         cdef int wstride1 = w.strides[1]
         cdef int wstride = wstride0 / wstride1
@@ -114,7 +137,7 @@ cdef class AveragedPerceptron:
         cdef float y = 0
         cdef int yhat = 0
         cdef int xnnz = 0, t = 0, nadds = 0
-
+        cdef int u = 1
         t1=time()
         for e from 0 <= e < self.epochs:
             if verbose > 0:
@@ -127,19 +150,23 @@ cdef class AveragedPerceptron:
                 xdata = <Pair *>x.data
                 yhat = argmax(wdata, wstride, xdata, xnnz, <int>y, k)
                 if yhat != y:
+                    add_vector(wbardata, wdata, u, length)
+                    u = 0
                     add(wdata, wstride, xdata, xnnz, <int>y, 1)
                     add(wdata, wstride, xdata, xnnz, yhat, -1)
                     nadds += 1
+
+                u += 1
                 t += 1
             # report epoche information
             if verbose > 0:
-                print("Number of updates: %d. " % nadds)
+                print("NADDs: %d; NNZs: %d. " % (nadds, w.nonzero()[0].shape[0]))
                 print("Total training time: %.2f seconds." % (time()-t1))
-
-                
+        
+        add_vector(wbardata, wdata, u, length)
         # floating-point under-/overflow check.
         if np.any(np.isinf(w)) or np.any(np.isnan(w)):
             raise ValueError, "floating-point under-/overflow occured."
         
-        model.W = w
+        model.W = wbar * (1.0 / (n*self.epochs))
         
