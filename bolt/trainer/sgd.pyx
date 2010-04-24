@@ -54,11 +54,6 @@ cdef extern from "math.h":
     cdef extern double exp(double x)
     cdef extern double log(double x)
     cdef extern double sqrt(double x)
-
-cdef extern from "cblas.h":
-    double ddot "cblas_ddot"(int N,
-                             double *X, int incX,
-                             double *Y, int incY)
     
 # ----------------------------------------
 # Extension Types for Loss Functions

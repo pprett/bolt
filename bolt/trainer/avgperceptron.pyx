@@ -23,20 +23,10 @@ __authors__ = [
       '"Peter Prettenhofer" <peter.prettenhofer@gmail.com>'
 ]
 
-cdef extern from "math.h":
-    cdef extern double exp(double x)
-    cdef extern double log(double x)
-    cdef extern double sqrt(double x)
 
-#cdef extern from "cblas.h":
-#    double ddot "cblas_ddot"(int N,
-#                             double *X, int incX,
-#                             double *Y, int incY)
-    
-
- # ----------------------------------------
- # C functions for fast sparse-dense vector operations
- # ----------------------------------------
+# ----------------------------------------
+# C functions for fast sparse-dense vector operations
+# ----------------------------------------
 
 cdef struct Pair:
     np.uint32_t idx
