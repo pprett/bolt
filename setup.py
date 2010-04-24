@@ -26,5 +26,9 @@ setup(
     author_email='peter.prettenhofer@gmail.com',
     packages=['bolt','bolt.trainer', 'bolt.sandbox'],
     scripts = ["sb","sb_cv","svml2npy"],
-    long_description = """Really long text here. Can be ReST""" 
+    long_description = """Bolt features online learning algorithms
+to train (generalized) linear models. Bolt is aimed at
+large-scale, high-dimensional, and sparse machine learning
+problems encountered in natural language processing
+and information retrieval. """ 
 )

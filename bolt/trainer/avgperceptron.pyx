@@ -43,8 +43,11 @@ cdef double dot(double *w, Pair *x, int nnz):
         sum += w[pair.idx] * pair.val
     return sum
 
-cdef void add(double *w, int stride, Pair *x, int nnz, int y, double c):
-    """Scales example x by `c` and adds it to the weight vector w[k,:]. 
+cdef void add(double *w, int stride, Pair *x, int nnz, int y, double c, double *wbar, double u):
+    """Scales example x by `c` and adds it to the weight vector w[k,:].
+    Furthermore, it updates the average weight vector wbar: `u` is the number
+    of iterations the update will remain in the weight vector (i.e., the total
+    number of iterations minus the number of iterations performed. 
     """
     cdef Pair pair
     cdef int i
@@ -52,13 +55,7 @@ cdef void add(double *w, int stride, Pair *x, int nnz, int y, double c):
     for i from 0 <= i < nnz:
         pair = x[i]
         w[offset + pair.idx] += (pair.val * c)
-
-cdef void add_vector(double *wbar, double *w, double c, int length):
-    """Adds w*c to wbar
-    """
-    cdef int i
-    for i from 0 <= i < length:
-        wbar[i] += c*w[i]
+        wbar[offset + pair.idx] += (c*u*pair.val)
 
 cdef int argmax(double *w, int wstride, Pair *x, int xnnz, int y, int k):
     cdef Pair pair
@@ -126,37 +123,36 @@ cdef class AveragedPerceptron:
         cdef Pair *xdata = NULL
         cdef float y = 0
         cdef int yhat = 0
-        cdef int xnnz = 0, t = 0, nadds = 0
-        cdef int u = 1
+        cdef int xnnz = 0, nadds = 0, i = 0
+        cdef int E = self.epochs
+        cdef double u = 0.0
         t1=time()
-        for e from 0 <= e < self.epochs:
+        for e from 0 <= e < E:
             if verbose > 0:
                 print("-- Epoch %d" % (e+1))
             if shuffle:
                 dataset.shuffle()
             nadds = 0
+            i = 0
             for x,y in dataset:
                 xnnz = x.shape[0]
                 xdata = <Pair *>x.data
                 yhat = argmax(wdata, wstride, xdata, xnnz, <int>y, k)
+                u = <double>(E*n - (n*e+i+1))
                 if yhat != y:
-                    add_vector(wbardata, wdata, u, length)
-                    u = 0
-                    add(wdata, wstride, xdata, xnnz, <int>y, 1)
-                    add(wdata, wstride, xdata, xnnz, yhat, -1)
+                    add(wdata, wstride, xdata, xnnz, <int>y, 1, wbardata, u)
+                    add(wdata, wstride, xdata, xnnz, yhat, -1, wbardata, u)
                     nadds += 1
-
-                u += 1
-                t += 1
+                    
+                i += 1
             # report epoche information
             if verbose > 0:
                 print("NADDs: %d; NNZs: %d. " % (nadds, w.nonzero()[0].shape[0]))
                 print("Total training time: %.2f seconds." % (time()-t1))
         
-        add_vector(wbardata, wdata, u, length)
         # floating-point under-/overflow check.
         if np.any(np.isinf(w)) or np.any(np.isnan(w)):
             raise ValueError, "floating-point under-/overflow occured."
         
-        model.W = wbar * (1.0 / (n*self.epochs))
+        model.W = wbar * (1.0 / (n*E))
         
