@@ -1,7 +1,7 @@
 """
 
 """
-
+import sys
 import numpy as np
 import bolt
 
@@ -16,6 +16,8 @@ def main(args):
 
     dtrain = bolt.io.MemoryDataset.load(ftrain, verbose = 0)
     dtest = bolt.io.MemoryDataset.load(ftest, verbose = 0)
+
+    dtrain.shuffle(13)
 
     cats = ['alt.atheism',
  'comp.graphics',
@@ -42,10 +44,14 @@ def main(args):
     k = len(cats)
     
     model = bolt.GeneralizedLinearModel(dtrain.dim,k, biasterm = False)
-    trainer = bolt.SGD(bolt.ModifiedHuber(), reg = 0.00001, epochs = 100)
-    #trainer = bolt.PEGASOS(reg = 0.001, epochs = 20)
-    ova = bolt.OVA(trainer)
-    ova.train(model,dtrain)
+    #trainer = bolt.SGD(bolt.Log(), reg = 0.00001, epochs = 100)
+    #trainer = bolt.PEGASOS(reg = 0.0001, epochs = 50)
+    #ova = bolt.OVA(trainer)
+    #ova.train(model,dtrain)
+    #ap = bolt.trainer.avgperceptron.AveragedPerceptron(epochs = 100)
+    #ap.train(model, dtrain, verbose = 2)
+    trainer = bolt.trainer.maxent.MaxentSGD(0.00001, epochs = 100)
+    trainer.train(model, dtrain, verbose = 2)
 
     ref = [cats[y] for y in dtest.iterlabels()]
     pred = [cats[z] for z in model.predict(dtest.iterinstances())]
@@ -81,6 +87,4 @@ def main(args):
     print "-"*38
     print "%s\t%.4f" % ("Mean".ljust(25), np.mean(f1s))
 
-if __name__ == "__main__":
-    import sys
-    main(sys.argv[1:])
+main(sys.argv[1:])

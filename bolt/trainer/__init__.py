@@ -11,6 +11,7 @@ __authors__ = [
 
 import sgd
 import avgperceptron
+import maxent
 
 from time import time
 

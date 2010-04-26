@@ -18,7 +18,11 @@ setup(
                              extra_link_args=["-O3"],
                              library_dirs=['/usr/lib',],#'/usr/local/lib',],
                              extra_compile_args=["-O3","-g"],),
-
+                   Extension("bolt/trainer/maxent", ["bolt/trainer/maxent.c"],
+                             include_dirs=['/usr/include/',numpy_path],
+                             extra_link_args=["-O3"],
+                             library_dirs=['/usr/lib',],#'/usr/local/lib',],
+                             extra_compile_args=["-O3","-g"],),
                    ],
     version = "1.2",
     description="Bolt Online Learning Toolbox",

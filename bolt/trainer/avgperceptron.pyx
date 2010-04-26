@@ -116,13 +116,13 @@ cdef class AveragedPerceptron:
         cdef double *wbardata = <double *>wbar.data
         cdef int wstride0 = w.strides[0]
         cdef int wstride1 = w.strides[1]
-        cdef int wstride = wstride0 / wstride1
+        cdef int wstride = <int> (wstride0 / wstride1)
 
         # training instance
         cdef np.ndarray x = None
         cdef Pair *xdata = NULL
         cdef float y = 0
-        cdef int yhat = 0
+        cdef int z = 0
         cdef int xnnz = 0, nadds = 0, i = 0
         cdef int E = self.epochs
         cdef double u = 0.0
@@ -137,11 +137,11 @@ cdef class AveragedPerceptron:
             for x,y in dataset:
                 xnnz = x.shape[0]
                 xdata = <Pair *>x.data
-                yhat = argmax(wdata, wstride, xdata, xnnz, <int>y, k)
+                z = argmax(wdata, wstride, xdata, xnnz, <int>y, k)
                 u = <double>(E*n - (n*e+i+1))
-                if yhat != y:
+                if z != y:
                     add(wdata, wstride, xdata, xnnz, <int>y, 1, wbardata, u)
-                    add(wdata, wstride, xdata, xnnz, yhat, -1, wbardata, u)
+                    add(wdata, wstride, xdata, xnnz, z, -1, wbardata, u)
                     nadds += 1
                     
                 i += 1
