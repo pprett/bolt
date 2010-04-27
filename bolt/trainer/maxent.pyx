@@ -57,7 +57,8 @@ cdef double dot_checked(double *w, Pair *x, int nnz, int wdim):
             sum +=w[pair.idx]*pair.val
     return sum
 
-cdef double add(double *w, int stride, double wscale, Pair *x, int nnz, int y, double c):
+cdef double add(double *w, int stride, double wscale, double *bdata,
+                Pair *x, int nnz, int y, double c):
     """Scales example x by constant c and adds it to the weight vector w. 
     """
     cdef Pair pair
@@ -67,10 +68,9 @@ cdef double add(double *w, int stride, double wscale, Pair *x, int nnz, int y, d
     cdef int offset = y * stride
     for i from 0 <= i < nnz:
         pair = x[i]
-        innerprod += (w[offset + pair.idx] * pair.val)
-        xsqnorm += (pair.val*pair.val)
         w[offset + pair.idx] += pair.val * (c / wscale)
-    return (xsqnorm * c * c) + (2.0 * innerprod * wscale * c)
+    bdata[y] += (c * 0.01) # update bias 
+    
 
 cdef double probdist(double *w, int wstride, double wscale, double *b,
                     Pair *x, int xnnz, int k, double *pd):
@@ -82,8 +82,6 @@ cdef double probdist(double *w, int wstride, double wscale, double *b,
          wk = w + (wstride*j)
          pd[j] = exp(dot(wk, x, xnnz) * wscale + b[j])
          sum += pd[j]
-     if sum == 0.0:
-         print "sum is zero!"
      for j from 0 <= j < k:
          pd[j] /= sum
      return sum
@@ -134,7 +132,7 @@ cdef class MaxentSGD:
     def train(self, model, dataset, verbose = 0, shuffle = False):
         """Train `model` on the `dataset` using SGD.
 
-        :arg model: The :class:`bolt.model.LinearModel` that is going to be trained. 
+        :arg model: The :class:`bolt.model.GeneralizedLinearModel` that is going to be trained. 
         :arg dataset: The :class:`bolt.io.Dataset`. 
         :arg verbose: The verbosity level. If 0 no output to stdout.
         :arg shuffle: Whether or not the training data should be shuffled after each epoch. 
@@ -180,8 +178,9 @@ cdef class MaxentSGD:
         cdef int xnnz = 0, i = 0, e = 0, j = 0
         
         cdef double typw = sqrt(1.0 / sqrt(reg))
-        cdef double eta0 = typw
+        cdef double eta0 = typw / 1.0
         t = 1.0 / (eta0 * reg)
+        
         t1=time()
         for e from 0 <= e < self.epochs:
             if verbose > 0:
@@ -193,11 +192,11 @@ cdef class MaxentSGD:
                 xnnz = x.shape[0]
                 xdata = <Pair *>x.data
                 probdist(wdata, wstride, wscale, bdata, xdata, xnnz, k, pd)
-                add(wdata, wstride, wscale, xdata, xnnz, <int>y, eta)
+                add(wdata, wstride, wscale, bdata, xdata, xnnz, <int>y, eta)
                 for j from 0 <= j < k:
-                    add(wdata, wstride, wscale, xdata,
-                        xnnz, j, -1.0*eta*pd[j])
-                wscale *= (1 - eta * reg)
+                    add(wdata, wstride, wscale, bdata,
+                        xdata, xnnz, j, -1.0 * eta * pd[j])
+                wscale *= (1 - eta * (reg))
                 if wscale < 1e-9:
                     w*=wscale
                     wscale = 1.0
