@@ -41,7 +41,7 @@ import eval
 
 from trainer import OVA
 from trainer.sgd import predict,SGD,LossFunction,Classification,Regression,Hinge, ModifiedHuber, Log, SquaredError, Huber, PEGASOS
-from io import MemoryDataset,sparsedtype,dense2sparse
+from io import MemoryDataset, sparsedtype, dense2sparse, fromlist
 from model import LinearModel, GeneralizedLinearModel
 from eval import errorrate
 
