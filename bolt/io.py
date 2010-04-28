@@ -28,6 +28,12 @@ Example:
 
 densedtype = np.float32
 
+def fromlist(l, dtype):
+    length = len(l)
+    arr = np.array((l,), dtype = dtype)
+    arr[:] = l
+    return arr
+
 def dense2sparse(x):
     """Convert `numpy` arrays of `bolt.io.densetype` to sparse arrays of `bolt.io.sparsetype`.
 
@@ -38,7 +44,7 @@ def dense2sparse(x):
     array([(0L, 1.0), (4L, 0.2)], 
       dtype=bolt.io.sparsedtype)
     """
-    return np.array([(nnz, x[nnz]) for nnz in x.nonzero()[0]],dtype = sparsedtype)
+    return fromlist([(nnz, x[nnz]) for nnz in x.nonzero()[0]],sparsedtype)
 
 class Dataset(object):
     """Dataset interface.
@@ -147,7 +153,7 @@ class MemoryDataset(Dataset):
 		splitqids = self.qids[fold]
 	    dsets.append(MemoryDataset(self.dim, self.instances[fold],
 				       self.labels[fold], qids = splitqids))
-	return np.array(dsets,dtype=np.object)
+	return fromlist(dsets, np.object)
 
     @classmethod
     def merge(cls, dsets):
@@ -327,7 +333,7 @@ class RankingDataset(Dataset):
                 x[i] = (x[i][0],x[i][1] - xb[j][1])
                 i += 1
                 j += 1
-        return np.array(sorted(x), dtype = sparsedtype)
+	return fromlist(x, sparsedtype)
 
     def _sample(self):
         q = self.queries[np.random.randint(self.nqueries)]
@@ -424,17 +430,17 @@ def loadDat(filename, qids = False):
             tokens=[(int(t[0]),float(t[1]))
                     for t in (t.split(':')
                               for t in tokens if t != '')]
-	    a = np.array(tokens, dtype = sparsedtype)
+	    a = fromlist(tokens, sparsedtype)
             local_max = 0.0
             if a.shape[0]>0:
                 local_max = a['f0'].max()
             if local_max > global_max:
                 global_max = local_max
             instances.append(a)
-        res = [global_max+1, np.array(instances,dtype=np.object),
+        res = [global_max+1, fromlist(instances, np.object),
                np.array(labels)]
         if qids:
-            res.append(np.array(queries, dtype = np.int32))
+            res.append(fromlist(queries, np.int32))
         return res
     
     finally:
