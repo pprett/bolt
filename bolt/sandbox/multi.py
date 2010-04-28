@@ -43,14 +43,13 @@ def main(args):
     cats = dict(((i,c) for i,c in enumerate(cats)))
     k = len(cats)
     
-    model = bolt.GeneralizedLinearModel(dtrain.dim,k, biasterm = False)
-    #trainer = bolt.SGD(bolt.Log(), reg = 0.00001, epochs = 100)
-    #trainer = bolt.PEGASOS(reg = 0.0001, epochs = 50)
-    #ova = bolt.OVA(trainer)
-    #ova.train(model,dtrain)
-    #ap = bolt.trainer.avgperceptron.AveragedPerceptron(epochs = 100)
-    #ap.train(model, dtrain, verbose = 2)
-    trainer = bolt.trainer.maxent.MaxentSGD(0.00001, epochs = 100)
+    model = bolt.GeneralizedLinearModel(dtrain.dim, k, biasterm = True)
+    sgd = bolt.SGD(bolt.Log(), reg = 0.0000001, epochs = 100)
+    #pegasos = bolt.PEGASOS(reg = 0.0001, epochs = 50)
+    trainer = bolt.OVA(sgd)
+    #trainer = bolt.trainer.avgperceptron.AveragedPerceptron(epochs = 50)
+    
+    #trainer = bolt.trainer.maxent.MaxentSGD(0.0000001, epochs = 50)
     trainer.train(model, dtrain, verbose = 2)
 
     ref = [cats[y] for y in dtest.iterlabels()]
@@ -61,8 +60,8 @@ def main(args):
     print "="*30
     print "Evaluation".center(30)
     print "="*30
-    print "\n"
-    print cm.pp()
+    #print "\n"
+    #print cm.pp()
     
     print "Accuracy: ", nltk.metrics.accuracy(ref, pred)
 

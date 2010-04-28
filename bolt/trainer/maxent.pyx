@@ -57,7 +57,7 @@ cdef double dot_checked(double *w, Pair *x, int nnz, int wdim):
             sum +=w[pair.idx]*pair.val
     return sum
 
-cdef double add(double *w, int stride, double wscale, double *bdata,
+cdef double add(double *w, int stride, double wscale, double *b,
                 Pair *x, int nnz, int y, double c):
     """Scales example x by constant c and adds it to the weight vector w. 
     """
@@ -69,7 +69,7 @@ cdef double add(double *w, int stride, double wscale, double *bdata,
     for i from 0 <= i < nnz:
         pair = x[i]
         w[offset + pair.idx] += pair.val * (c / wscale)
-    bdata[y] += (c * 0.01) # update bias 
+    b[y] += (c * 0.01) # update bias 
     
 
 cdef double probdist(double *w, int wstride, double wscale, double *b,
@@ -137,9 +137,12 @@ cdef class MaxentSGD:
         :arg verbose: The verbosity level. If 0 no output to stdout.
         :arg shuffle: Whether or not the training data should be shuffled after each epoch. 
         """
-        self._train(model, dataset, verbose, shuffle)
+        print("documents: %d" % dataset.n)
+        probeidx = dataset._idx[:10000]
+        probeset = np.array(zip(dataset.instances[probeidx], dataset.labels[probeidx]), dtype = np.object)
+        self._train(model, dataset, probeset, verbose, shuffle)
 
-    cdef void _train(self,model, dataset, verbose, shuffle):
+    cdef void _train(self,model, dataset, probeset, verbose, shuffle):
         
         cdef int m = model.m
         cdef int n = dataset.n
@@ -162,24 +165,10 @@ cdef class MaxentSGD:
         cdef np.ndarray[np.float64_t, ndim=1, mode="c"] PD = np.zeros((k,),
                                                                             dtype = np.float64)
         cdef double *pd = <double *>PD.data
-
-        # training instance
-        cdef np.ndarray x = None
-        cdef Pair *xdata = NULL
-        cdef float y = 0.0
-        cdef int z = -1
-        
-        # bias term (aka offset or intercept)
-        cdef int usebias = 1
-        if model.biasterm == False:
-            usebias = 0
-
-        cdef double wnorm = 0.0, update = 0.0,sumloss = 0.0, eta = 0.0, t = 0.0
-        cdef int xnnz = 0, i = 0, e = 0, j = 0
-        
-        cdef double typw = sqrt(1.0 / sqrt(reg))
-        cdef double eta0 = typw / 1.0
-        t = 1.0 / (eta0 * reg)
+        cdef double wnorm = 0.0, t = 0.0
+        cdef int e = 0
+        cdef double loglikelihood = 0.0
+        cdef double eta = 0.01
         
         t1=time()
         for e from 0 <= e < self.epochs:
@@ -187,24 +176,22 @@ cdef class MaxentSGD:
                 print("-- Epoch %d" % (e+1))
             if shuffle:
                 dataset.shuffle()
-            for x,y in dataset:
-                eta = 1.0 / (reg * t)
-                xnnz = x.shape[0]
-                xdata = <Pair *>x.data
-                probdist(wdata, wstride, wscale, bdata, xdata, xnnz, k, pd)
-                add(wdata, wstride, wscale, bdata, xdata, xnnz, <int>y, eta)
-                for j from 0 <= j < k:
-                    add(wdata, wstride, wscale, bdata,
-                        xdata, xnnz, j, -1.0 * eta * pd[j])
-                wscale *= (1 - eta * (reg))
-                if wscale < 1e-9:
-                    w*=wscale
-                    wscale = 1.0
-                t += 1
+            if e % 10 == 0:
+                print("probing for eta...")
+                eta = probe(probeset, w, wscale, wstride, bdata, k, pd, reg, n)
+            
+            loglikelihood = learnsweep(dataset, wdata, wstride, &wscale, bdata,
+                                       k, pd, &t, reg, eta, n)
+
+            if wscale < 1e-9:
+                print("Scaling w")
+                w*=wscale
+                wscale = 1.0
 
             # report epoche information
             if verbose > 0:
                 print("Wscale: %.6f" % (wscale))
+                print("Log-likelihood: %.6f" % loglikelihood)
                 print("Total training time: %.2f seconds." % (time() - t1))
 
         # floating-point under-/overflow check.
@@ -212,3 +199,49 @@ cdef class MaxentSGD:
             raise ValueError, "floating-point under-/overflow occured."
         model.w = w * wscale
         model.bias = b
+
+cdef double learnsweep(dataset, double *w, int wstride, double *wscale, double *b,
+                       int k, double *pd, double *t, double reg, double eta, int n):
+    cdef np.ndarray x = None
+    cdef Pair *xdata = NULL
+    cdef float y = 0.0
+    cdef int xnnz = 0, j = 0
+    cdef double loglikelihood = 0.0
+    for x,y in dataset:
+        xnnz = x.shape[0]
+        xdata = <Pair *>x.data
+        probdist(w, wstride, wscale[0], b, xdata, xnnz, k, pd)
+        loglikelihood += log(pd[<int>y])
+        add(w, wstride, wscale[0], b, xdata, xnnz, <int>y, eta)
+        for j from 0 <= j < k:
+            add(w, wstride, wscale[0], b,
+                xdata, xnnz, j, -1.0 * eta * pd[j])
+        wscale[0] = wscale[0] * (1 - eta * reg)
+        t[0] += 1
+    return loglikelihood
+
+cdef double probe(dataset, np.ndarray org_w, double org_wscale, int wstride, double *bdata, int k, double *pd, double reg, int n):
+    cdef int i = 0
+    cdef double eta
+    cdef double best_ll = -100000000000.0
+    cdef double cur_ll = 0.0
+    cdef double best_eta = 0.0
+    cdef np.ndarray[np.float64_t, ndim=2, mode="c"] w = None
+    cdef double *wdata = NULL
+    cdef double t = 0.0
+    cdef double tmp = org_wscale
+    cdef double *wscale = &tmp
+    for i from 0 <= i < 8:
+        w = org_w.copy('C')
+        wdata = <double*> w.data
+        wscale[0] = org_wscale
+        eta = pow(10,-i)
+        t = 0.0
+        cur_ll = learnsweep(dataset, wdata, wstride, wscale,
+                            bdata, k, pd, &t, reg, eta, n)
+        print(cur_ll)
+        if cur_ll > best_ll:
+            best_ll = cur_ll
+            best_eta = eta
+    print("Best eta:%.9f ll:%.6f" % (best_eta, best_ll))
+    return best_eta
