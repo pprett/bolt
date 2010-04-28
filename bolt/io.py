@@ -30,7 +30,7 @@ densedtype = np.float32
 
 def fromlist(l, dtype):
     length = len(l)
-    arr = np.empty((l,), dtype = dtype)
+    arr = np.empty((length,), dtype = dtype)
     arr[:] = l
     return arr
 
