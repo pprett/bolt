@@ -69,7 +69,7 @@ cdef double add(double *w, int stride, double wscale, double *b,
     for i from 0 <= i < nnz:
         pair = x[i]
         w[offset + pair.idx] += pair.val * (c / wscale)
-    b[y] += (c * 0.01) # update bias 
+    b[y] += c * 0.01 # update bias 
     
 
 cdef double probdist(double *w, int wstride, double wscale, double *b,
@@ -162,8 +162,7 @@ cdef class MaxentSGD:
         cdef np.ndarray[np.float64_t, ndim=1, mode="c"] b = model.b
         cdef double *bdata = <double *>b.data
 
-        cdef np.ndarray[np.float64_t, ndim=1, mode="c"] PD = np.zeros((k,),
-                                                                            dtype = np.float64)
+        cdef np.ndarray[np.float64_t, ndim=1, mode="c"] PD = np.zeros((k,), dtype = np.float64)
         cdef double *pd = <double *>PD.data
         cdef double wnorm = 0.0, t = 0.0
         cdef int e = 0
@@ -178,7 +177,7 @@ cdef class MaxentSGD:
                 dataset.shuffle()
             if e % 10 == 0:
                 print("probing for eta...")
-                eta = probe(probeset, w, wscale, wstride, bdata, k, pd, reg, n)
+                eta = probe(probeset, w, wscale, wstride, b, k, pd, reg, n)
             
             loglikelihood = learnsweep(dataset, wdata, wstride, &wscale, bdata,
                                        k, pd, &t, reg, eta, n)
@@ -202,6 +201,8 @@ cdef class MaxentSGD:
 
 cdef double learnsweep(dataset, double *w, int wstride, double *wscale, double *b,
                        int k, double *pd, double *t, double reg, double eta, int n):
+    """Perform one learn sweep over the dataset. 
+    """
     cdef np.ndarray x = None
     cdef Pair *xdata = NULL
     cdef float y = 0.0
@@ -220,7 +221,11 @@ cdef double learnsweep(dataset, double *w, int wstride, double *wscale, double *
         t[0] += 1
     return loglikelihood
 
-cdef double probe(dataset, np.ndarray org_w, double org_wscale, int wstride, double *bdata, int k, double *pd, double reg, int n):
+cdef double probe(dataset, np.ndarray org_w, double org_wscale, int wstride, np.ndarray org_b, int k, double *pd, double reg, int n):
+    """Probe for a new eta on the probe dataset.
+    Perform one learning sweep on the probe set for each eta in 10**-i 0 <= i < 8
+    and choose the eta with the highest increase in log-likelihood. 
+    """
     cdef int i = 0
     cdef double eta
     cdef double best_ll = -100000000000.0
@@ -228,18 +233,22 @@ cdef double probe(dataset, np.ndarray org_w, double org_wscale, int wstride, dou
     cdef double best_eta = 0.0
     cdef np.ndarray[np.float64_t, ndim=2, mode="c"] w = None
     cdef double *wdata = NULL
+    cdef np.ndarray[np.float64_t, ndim=1, mode="c"] b = None
+    cdef double *bdata = NULL
     cdef double t = 0.0
     cdef double tmp = org_wscale
     cdef double *wscale = &tmp
-    for i from 0 <= i < 8:
+    for i from -1 <= i < 7:
         w = org_w.copy('C')
         wdata = <double*> w.data
+        b = org_b.copy('C')
+        bdata = <double*> b.data
         wscale[0] = org_wscale
         eta = pow(10,-i)
         t = 0.0
         cur_ll = learnsweep(dataset, wdata, wstride, wscale,
                             bdata, k, pd, &t, reg, eta, n)
-        print(cur_ll)
+        print cur_ll
         if cur_ll > best_ll:
             best_ll = cur_ll
             best_eta = eta
