@@ -122,3 +122,8 @@ class GeneralizedLinearModel(object):
 	c = np.argmax(ps)
         return c
 
+    def probdist(self,x):
+        ps = np.array([np.exp(sgd.predict(x, self.W[i], self.b[i])) for i in range(self.k)])
+        Z = np.sum(ps)
+        return ps / Z
+

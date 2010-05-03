@@ -155,6 +155,25 @@ class MemoryDataset(Dataset):
 				       self.labels[fold], qids = splitqids))
 	return fromlist(dsets, np.object)
 
+    def sample(self, nexamples, seed = None):
+        """Samples `nexamples` examples from the dataset.
+
+        :arg nexamples: The number of examples to sample.
+        :type nexamples: integer
+        :arg seed: The random seed. 
+        :returns: A `MemoryDataset` containing the `nexamples` examples. 
+        """
+        idx = np.arange(self.n)
+        rs = np.random.RandomState()
+        rs.seed(seed)
+        rs.shuffle(idx)
+        idx = idx[:nexamples]
+        sampleqids = None
+        if self.qids != None:
+            sampleqids = self.qids[idx]
+        return MemoryDataset(self.dim, self.instances[idx], self.labels[idx],
+                             qids = sampleqids)
+
     @classmethod
     def merge(cls, dsets):
 	"""Merge a sequence of :class:`Dataset` objects.

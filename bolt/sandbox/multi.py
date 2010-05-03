@@ -44,12 +44,12 @@ def main(args):
     k = len(cats)
     
     model = bolt.GeneralizedLinearModel(dtrain.dim, k, biasterm = True)
-    sgd = bolt.SGD(bolt.Log(), reg = 0.0000001, epochs = 100)
+    sgd = bolt.SGD(bolt.Log(), reg = 0.0000001, epochs = 50)
     #pegasos = bolt.PEGASOS(reg = 0.0001, epochs = 50)
     trainer = bolt.OVA(sgd)
     #trainer = bolt.trainer.avgperceptron.AveragedPerceptron(epochs = 50)
     
-    #trainer = bolt.trainer.maxent.MaxentSGD(0.0000001, epochs = 50)
+    #trainer = bolt.trainer.maxent.MaxentSGD(0.0000001, epochs = 75)
     trainer.train(model, dtrain, verbose = 2)
 
     ref = [cats[y] for y in dtest.iterlabels()]

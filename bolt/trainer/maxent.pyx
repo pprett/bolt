@@ -137,9 +137,7 @@ cdef class MaxentSGD:
         :arg verbose: The verbosity level. If 0 no output to stdout.
         :arg shuffle: Whether or not the training data should be shuffled after each epoch. 
         """
-        print("documents: %d" % dataset.n)
-        probeidx = dataset._idx[:10000]
-        probeset = np.array(zip(dataset.instances[probeidx], dataset.labels[probeidx]), dtype = np.object)
+        probeset = dataset.sample(int(dataset.n / 10), seed = 13)
         self._train(model, dataset, probeset, verbose, shuffle)
 
     cdef void _train(self,model, dataset, probeset, verbose, shuffle):
@@ -248,7 +246,6 @@ cdef double probe(dataset, np.ndarray org_w, double org_wscale, int wstride, np.
         t = 0.0
         cur_ll = learnsweep(dataset, wdata, wstride, wscale,
                             bdata, k, pd, &t, reg, eta, n)
-        print cur_ll
         if cur_ll > best_ll:
             best_ll = cur_ll
             best_eta = eta
