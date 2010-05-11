@@ -2,10 +2,7 @@ Bolt Online Learning Toolbox
 ============================
 
 Bolt features discriminative learning of linear predictors (e.g. SVM or
-logistic regression) using stochastic gradient descent. Bolt is
-aimed at large-scale, high-dimensional and sparse machine-learning problems.
-In particular, problems encountered in information retrieval and
-natural language processing. 
+logistic regression) using stochastic gradient descent. Bolt is aimed at large-scale, high-dimensional and sparse machine-learning problems. In particular, problems encountered in information retrieval and natural language processing. 
 
 Bolt considers linear prediction problems where one wants to learn a
 linear predictor f(x) which minimizes a given error function E(w,b),  
@@ -38,6 +35,14 @@ Bolt features:
 
    * Python bindings, feature vectors encoded as Numpy arrays. 
 
+Furthermore, Bolt provides preliminary support for generalized linear models for multi-class classification. Currently, it supports the following multi-class learning algorithms: 
+
+   * One-versus-All strategy for binary classifiers.
+ 
+   * Multinomial Logistic Regression (aka MaxEnt) via SGD.
+
+   * Averaged Perceptron [Freund, Y. and Schapire, R. E., 1998].
+
 The toolkit is written in Python [1], the critical sections are
 C-extensions written in Cython [2]. It makes heavy use of Numpy [3], a
 numeric computing library for Python. 
@@ -56,6 +61,10 @@ If you want to modify bolt.pyx you also need cython (>=0.11.2).
 Installation
 ------------
 
+To clone the repository run, 
+
+   git clone git://github.com/pprett/bolt.git
+
 To build bolt simply run,
 
    python setup.py build
@@ -64,14 +73,10 @@ To install bolt on your system, use
 
    python setup.py install
 
-TODOS
------
+Documentation
+-------------
 
-* Proper learning rate for regression.
-
-* Progress handler to monitor learning progress (e.g. learning curves). 
-
-
+For detailed documentation see http://pprett.github.com/bolt/.
 
 References
 ----------
@@ -82,6 +87,8 @@ References
 
 [3] http://numpy.scipy.org/
 
+[Freund, Y. and Schapire, R. E., 1998] Large margin classification 
+using the perceptron algorithm. In Machine Learning, 37, 277-296.
 
 [Shwartz, S. S., Singer, Y., and Srebro, N., 2007] Pegasos: Primal
 estimated sub-gradient solver for svm. In Proceedings of ICML '07.
