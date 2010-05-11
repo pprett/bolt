@@ -28,7 +28,11 @@ extensions = ['sphinx.ext.pngmath',
 	      'sphinx.ext.autodoc',
 	      'sphinx.ext.autosummary',
 	      'sphinx.ext.todo',
+	      'sphinxtogithub',
 	      ]
+
+# Rename _dir to dir
+sphinx_to_github = True
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['.templates']
