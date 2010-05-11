@@ -1,0 +1,921 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>API Overview &mdash;  Bolt v1.3 documentation</title>
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '#',
+        VERSION:     '1.3',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title=" Bolt v1.3 documentation" href="index.html" />
+    <link rel="next" title="Using Bolt" href="using.html" />
+    <link rel="prev" title="Install" href="install.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="modindex.html" title="Global Module Index"
+             accesskey="M">modules</a> |</li>
+        <li class="right" >
+          <a href="using.html" title="Using Bolt"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="install.html" title="Install"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html"> Bolt v1.3 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="api-overview">
+<span id="overview"></span><h1><a class="toc-backref" href="#id5">API Overview</a><a class="headerlink" href="#api-overview" title="Permalink to this headline">¶</a></h1>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Release:</th><td class="field-body">1.3</td>
+</tr>
+<tr class="field"><th class="field-name">Date:</th><td class="field-body">May 11, 2010</td>
+</tr>
+</tbody>
+</table>
+<p>This section gives an overview of Bolt&#8217;s API. Bolt itself is designed around a number of
+simple data structures for representing models and input examples.
+The functionality of Bolt is structured in a number of core modules. Each module provides an abstraction of common functionality. For example there exist modules to represent models, train models, load data sets, or evaluate models.</p>
+<div class="contents topic" id="contents">
+<p class="topic-title first">Contents</p>
+<ul class="simple">
+<li><a class="reference internal" href="#api-overview" id="id5">API Overview</a><ul>
+<li><a class="reference internal" href="#data-structures" id="id6">Data Structures</a></li>
+<li><a class="reference internal" href="#module-bolt.model" id="id7">The <tt class="xref docutils literal"><span class="pre">bolt.model</span></tt> Module</a></li>
+<li><a class="reference internal" href="#module-bolt.trainer" id="id8">The <tt class="xref docutils literal"><span class="pre">bolt.trainer</span></tt> Module</a><ul>
+<li><a class="reference internal" href="#module-bolt.trainer.sgd" id="id9">The <tt class="xref docutils literal"><span class="pre">bolt.trainer.sgd</span></tt> Module</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-bolt.io" id="id10">The <tt class="xref docutils literal"><span class="pre">bolt.io</span></tt> Module</a></li>
+<li><a class="reference internal" href="#module-bolt.eval" id="id11">The <tt class="xref docutils literal"><span class="pre">bolt.eval</span></tt> Module</a></li>
+<li><a class="reference internal" href="#references" id="id12">References</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="section" id="data-structures">
+<h2><a class="toc-backref" href="#id6">Data Structures</a><a class="headerlink" href="#data-structures" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>Bolt itself is constructed around a number of primitive data structures:</dt>
+<dd><ul class="first last">
+<li><dl class="first docutils">
+<dt><strong>Dense vectors</strong></dt>
+<dd><p class="first last">implemented via numpy arrays (<cite>numpy.array</cite>).</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><strong>Sparse vectors</strong></dt>
+<dd><p class="first last">implemented via numpy record arrays (<cite>numpy.recarray</cite>).</p>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+<p>Each <tt class="xref docutils literal"><span class="pre">bolt.model.Model</span></tt> is parametrized by a weight vector which is represented as a 1D <cite>numpy.array</cite>, allowing efficient random access.</p>
+<p>An instance (aka a feature vector), on the other hand, is represented as a s sparse vector via a numpy record array. The data type of the record array is data type <cite>bolt.sparsedtype</cite> which is a tuple (uint32,float64).
+The advantage of record arrays is that they are mapped directly to C struct arrays.</p>
+</div>
+<div class="section" id="module-bolt.model">
+<h2><a class="toc-backref" href="#id7">The <tt class="xref docutils literal"><span class="pre">bolt.model</span></tt> Module</a><a class="headerlink" href="#module-bolt.model" title="Permalink to this headline">¶</a></h2>
+<p>The <tt class="xref docutils literal"><span class="pre">bolt.model</span></tt> module contains classes which represent
+parametric models supported by Bolt.</p>
+<p>Currently, the following models are supported:</p>
+<blockquote>
+<a title="bolt.model.LinearModel" class="reference internal" href="#bolt.model.LinearModel"><tt class="xref docutils literal"><span class="pre">bolt.model.LinearModel</span></tt></a>: a linear model for binary classification and regression.
+<a title="bolt.model.GeneralizedLinearModel" class="reference internal" href="#bolt.model.GeneralizedLinearModel"><tt class="xref docutils literal"><span class="pre">bolt.model.GeneralizedLinearModel</span></tt></a>: a linear model for multi-class classification.</blockquote>
+<dl class="class">
+<dt id="bolt.model.GeneralizedLinearModel">
+<em class="property">class </em><tt class="descclassname">bolt.model.</tt><tt class="descname">GeneralizedLinearModel</tt><big>(</big><em>m</em>, <em>k</em>, <em>biasterm=False</em><big>)</big><a class="headerlink" href="#bolt.model.GeneralizedLinearModel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref docutils literal"><span class="pre">object</span></tt></p>
+<p>A generalized linear model of the form z = max_y w * f(x,y) + b_y.</p>
+<p>Create a generalized linear model for
+classification problems with <cite>k</cite> classes.</p>
+<p>Parameters:
+m: The dimensionality of the input data (i.e., the number of features).
+k: The number of classes.</p>
+<dl class="method">
+<dt id="bolt.model.GeneralizedLinearModel.predict">
+<tt class="descname">predict</tt><big>(</big><em>instances</em><big>)</big><a class="headerlink" href="#bolt.model.GeneralizedLinearModel.predict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Predicts class of each instances in
+<cite>instances</cite>.</p>
+<p>Parameters:
+examples: a sequence of instances</p>
+<p>Return:
+A generator over the predictions.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="bolt.model.GeneralizedLinearModel.probdist">
+<tt class="descname">probdist</tt><big>(</big><em>x</em><big>)</big><a class="headerlink" href="#bolt.model.GeneralizedLinearModel.probdist" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="bolt.model.LinearModel">
+<em class="property">class </em><tt class="descclassname">bolt.model.</tt><tt class="descname">LinearModel</tt><big>(</big><em>m</em>, <em>biasterm=False</em><big>)</big><a class="headerlink" href="#bolt.model.LinearModel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref docutils literal"><span class="pre">object</span></tt></p>
+<p>A linear model of the form <img class="math" src="_images/math/9a66447c0268fbd1255e24a98496beb1c2287961.png" alt="y = w^T x + b"/>.</p>
+<p>Create a linear model with an
+m-dimensional vector <cite>w = [0,..,0]</cite> and <cite>b = 0</cite>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><em>m</em> (positive integer) &#8211; The dimensionality of the classification problem (i.e. the number of features).</li>
+<li><em>biasterm</em> (True or False) &#8211; Whether or not a bias term (aka offset or intercept) is incorporated.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="bolt.model.LinearModel.predict">
+<tt class="descname">predict</tt><big>(</big><em>examples</em><big>)</big><a class="headerlink" href="#bolt.model.LinearModel.predict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Evaluates <img class="math" src="_images/math/9a66447c0268fbd1255e24a98496beb1c2287961.png" alt="y = w^T x + b"/> for each
+example x in examples.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameter:</th><td class="field-body"><em>examples</em> &#8211; a sequence of examples.</td>
+</tr>
+<tr class="field"><th class="field-name">Returns:</th><td class="field-body">a generator over the predictions.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-bolt.trainer">
+<h2><a class="toc-backref" href="#id8">The <tt class="xref docutils literal"><span class="pre">bolt.trainer</span></tt> Module</a><a class="headerlink" href="#module-bolt.trainer" title="Permalink to this headline">¶</a></h2>
+<p>The <tt class="xref docutils literal"><span class="pre">trainer</span></tt> package contains concrete
+<cite>Trainer</cite> classes which are used
+to train a <cite>Model</cite> on a <cite>Dataset</cite>.</p>
+<dl class="class">
+<dt id="bolt.trainer.OVA">
+<em class="property">class </em><tt class="descclassname">bolt.trainer.</tt><tt class="descname">OVA</tt><big>(</big><em>trainer</em><big>)</big><a class="headerlink" href="#bolt.trainer.OVA" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref docutils literal"><span class="pre">object</span></tt></p>
+<p>A One-versus-All trainer for multi-class models.</p>
+<p>It trains one binary classifier for each class <cite>c</cite>
+that predicts the class or all-other classes.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameter:</th><td class="field-body"><em>trainer</em> &#8211; A concrete <cite>Trainer</cite> implementation which is used to train <cite>k</cite> <cite>LinearModel</cite> classifiers that try to predict one class versus all others.</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="bolt.trainer.OVA.train">
+<tt class="descname">train</tt><big>(</big><em>glm</em>, <em>dataset</em>, <em>verbose=1</em>, <em>shuffle=False</em><big>)</big><a class="headerlink" href="#bolt.trainer.OVA.train" title="Permalink to this definition">¶</a></dt>
+<dd><p>Train the <cite>glm</cite> using <cite>k</cite> binary <cite>LinearModel</cite> classifiers by
+applying the One-versus-All multi-class strategy.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><em>glm</em> &#8211; A <a title="bolt.model.GeneralizedLinearModel" class="reference internal" href="#bolt.model.GeneralizedLinearModel"><tt class="xref docutils literal"><span class="pre">bolt.model.GeneralizedLinearModel</span></tt></a>.</li>
+<li><em>dataset</em> &#8211; A <cite>Dataset</cite>.</li>
+<li><em>verbose</em> (int) &#8211; Verbose output.</li>
+<li><em>shuffle</em> (bool) &#8211; Whether to shuffle the training data; argument is passed to <cite>OVA.trainer</cite>.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="bolt.trainer.OVA.trainer">
+<tt class="descname">trainer</tt><a class="headerlink" href="#bolt.trainer.OVA.trainer" title="Permalink to this definition">¶</a></dt>
+<dd>The concrete trainer for the binary classifiers.</dd></dl>
+
+</dd></dl>
+
+<div class="section" id="module-bolt.trainer.sgd">
+<h3><a class="toc-backref" href="#id9">The <tt class="xref docutils literal"><span class="pre">bolt.trainer.sgd</span></tt> Module</a><a class="headerlink" href="#module-bolt.trainer.sgd" title="Permalink to this headline">¶</a></h3>
+<p>The <tt class="xref docutils literal"><span class="pre">bolt.trainer.sgd</span></tt> module is the core of bolt. Its an extension
+module written in cython containing efficient implementations of Stochastic Gradient Descent and PEGASOS.</p>
+<p>The module contains two <cite>Trainer</cite> classes:</p>
+<blockquote>
+<ul class="simple">
+<li><a title="bolt.trainer.sgd.SGD" class="reference internal" href="#bolt.trainer.sgd.SGD"><tt class="xref docutils literal"><span class="pre">SGD</span></tt></a>: A plain stochastic gradient descent implementation, supporting various <a title="bolt.trainer.sgd.LossFunction" class="reference internal" href="#bolt.trainer.sgd.LossFunction"><tt class="xref docutils literal"><span class="pre">LossFunction</span></tt></a> and different penalties, including L1, L2, and Elastic-net penalty.</li>
+<li><a title="bolt.trainer.sgd.PEGASOS" class="reference internal" href="#bolt.trainer.sgd.PEGASOS"><tt class="xref docutils literal"><span class="pre">PEGASOS</span></tt></a>: Similar to SGD, however, after each update it projects the current weight vector onto the L2 ball of radius 1/sqrt(lambda). Currently, only supports hinge loss and L2 penalty.</li>
+</ul>
+</blockquote>
+<p>The module contains a number of concrete <cite>LossFunction</cite> implementations
+that can be plugged into the <cite>SGD</cite> trainer. Bolt provides <cite>LossFunctions</cite>
+for <cite>Classification</cite> and <cite>Regression</cite>.</p>
+<p>The following <a title="bolt.trainer.sgd.Classification" class="reference internal" href="#bolt.trainer.sgd.Classification"><tt class="xref docutils literal"><span class="pre">Classification</span></tt></a> loss functions are supported:</p>
+<blockquote>
+<ul class="simple">
+<li><a title="bolt.trainer.sgd.ModifiedHuber" class="reference internal" href="#bolt.trainer.sgd.ModifiedHuber"><tt class="xref docutils literal"><span class="pre">ModifiedHuber</span></tt></a>: A quadratical smoothed version of the hinge loss.</li>
+<li><a title="bolt.trainer.sgd.Hinge" class="reference internal" href="#bolt.trainer.sgd.Hinge"><tt class="xref docutils literal"><span class="pre">Hinge</span></tt></a>: The loss function employed by the Support Vector Machine classifier.</li>
+<li><a title="bolt.trainer.sgd.Log" class="reference internal" href="#bolt.trainer.sgd.Log"><tt class="xref docutils literal"><span class="pre">Log</span></tt></a>: The loss function of Logistic Regression.</li>
+</ul>
+</blockquote>
+<p>The following <a title="bolt.trainer.sgd.Regression" class="reference internal" href="#bolt.trainer.sgd.Regression"><tt class="xref docutils literal"><span class="pre">Regression</span></tt></a> loss functions are supported:</p>
+<blockquote>
+<ul class="simple">
+<li><a title="bolt.trainer.sgd.SquaredError" class="reference internal" href="#bolt.trainer.sgd.SquaredError"><tt class="xref docutils literal"><span class="pre">SquaredError</span></tt></a>: Standard squared error loss function.</li>
+<li><a title="bolt.trainer.sgd.Huber" class="reference internal" href="#bolt.trainer.sgd.Huber"><tt class="xref docutils literal"><span class="pre">Huber</span></tt></a>: Huber robust regression loss.</li>
+</ul>
+</blockquote>
+<p>The module also contains a number of utility function:</p>
+<blockquote>
+<ul class="simple">
+<li><a title="bolt.trainer.sgd.predict" class="reference internal" href="#bolt.trainer.sgd.predict"><tt class="xref docutils literal"><span class="pre">predict()</span></tt></a>: computes the dot product between a sparse and a dense feature vector.</li>
+</ul>
+</blockquote>
+<dl class="class">
+<dt id="bolt.trainer.sgd.Classification">
+<em class="property">class </em><tt class="descclassname">bolt.trainer.sgd.</tt><tt class="descname">Classification</tt><a class="headerlink" href="#bolt.trainer.sgd.Classification" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a title="bolt.trainer.sgd.LossFunction" class="reference internal" href="#bolt.trainer.sgd.LossFunction"><tt class="xref docutils literal"><span class="pre">bolt.trainer.sgd.LossFunction</span></tt></a></p>
+<p>Base class for loss functions for classification.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="bolt.trainer.sgd.Hinge">
+<em class="property">class </em><tt class="descclassname">bolt.trainer.sgd.</tt><tt class="descname">Hinge</tt><a class="headerlink" href="#bolt.trainer.sgd.Hinge" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a title="bolt.trainer.sgd.Classification" class="reference internal" href="#bolt.trainer.sgd.Classification"><tt class="xref docutils literal"><span class="pre">bolt.trainer.sgd.Classification</span></tt></a></p>
+<p>SVM classification loss for binary
+classification tasks with y in {-1,1}.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="bolt.trainer.sgd.Huber">
+<em class="property">class </em><tt class="descclassname">bolt.trainer.sgd.</tt><tt class="descname">Huber</tt><a class="headerlink" href="#bolt.trainer.sgd.Huber" title="Permalink to this definition">¶</a></dt>
+<dd>Bases: <a title="bolt.trainer.sgd.Regression" class="reference internal" href="#bolt.trainer.sgd.Regression"><tt class="xref docutils literal"><span class="pre">bolt.trainer.sgd.Regression</span></tt></a></dd></dl>
+
+<dl class="class">
+<dt id="bolt.trainer.sgd.Log">
+<em class="property">class </em><tt class="descclassname">bolt.trainer.sgd.</tt><tt class="descname">Log</tt><a class="headerlink" href="#bolt.trainer.sgd.Log" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a title="bolt.trainer.sgd.Classification" class="reference internal" href="#bolt.trainer.sgd.Classification"><tt class="xref docutils literal"><span class="pre">bolt.trainer.sgd.Classification</span></tt></a></p>
+<p>Logistic regression loss for binary classification
+tasks with y in {-1,1}.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="bolt.trainer.sgd.LossFunction">
+<em class="property">class </em><tt class="descclassname">bolt.trainer.sgd.</tt><tt class="descname">LossFunction</tt><a class="headerlink" href="#bolt.trainer.sgd.LossFunction" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref docutils literal"><span class="pre">object</span></tt></p>
+<p>Base class for convex loss functions</p>
+<dl class="attribute">
+<dt id="bolt.trainer.sgd.LossFunction.dloss">
+<tt class="descname">dloss</tt><a class="headerlink" href="#bolt.trainer.sgd.LossFunction.dloss" title="Permalink to this definition">¶</a></dt>
+<dd><p>Evaluate the derivative of the loss function.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><em>p</em> (double) &#8211; The prediction.</li>
+<li><em>y</em> (double) &#8211; The true value.</li>
+</ul>
+</td>
+</tr>
+<tr class="field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">double</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="bolt.trainer.sgd.LossFunction.loss">
+<tt class="descname">loss</tt><a class="headerlink" href="#bolt.trainer.sgd.LossFunction.loss" title="Permalink to this definition">¶</a></dt>
+<dd><p>Evaluate the loss function.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><em>p</em> (double) &#8211; The prediction.</li>
+<li><em>y</em> (double) &#8211; The true value.</li>
+</ul>
+</td>
+</tr>
+<tr class="field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">double</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="bolt.trainer.sgd.ModifiedHuber">
+<em class="property">class </em><tt class="descclassname">bolt.trainer.sgd.</tt><tt class="descname">ModifiedHuber</tt><a class="headerlink" href="#bolt.trainer.sgd.ModifiedHuber" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a title="bolt.trainer.sgd.Classification" class="reference internal" href="#bolt.trainer.sgd.Classification"><tt class="xref docutils literal"><span class="pre">bolt.trainer.sgd.Classification</span></tt></a></p>
+<p>Modified Huber loss function for binary
+classification tasks with y in {-1,1}.
+Its equivalent to quadratically smoothed SVM
+with gamma = 2.</p>
+<p>See T. Zhang &#8216;Solving
+Large Scale Linear Prediction Problems Using
+Stochastic Gradient Descent&#8217;, ICML&#8216;04.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="bolt.trainer.sgd.PEGASOS">
+<em class="property">class </em><tt class="descclassname">bolt.trainer.sgd.</tt><tt class="descname">PEGASOS</tt><a class="headerlink" href="#bolt.trainer.sgd.PEGASOS" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref docutils literal"><span class="pre">object</span></tt></p>
+<p>Primal estimated sub-gradient solver for svm <a class="reference internal" href="#shwartz2007">[Shwartz2007]</a>.</p>
+<dl class="docutils">
+<dt><strong>Parameters</strong>:</dt>
+<dd><ul class="first last simple">
+<li><em>reg</em> -  The regularization parameter lambda (&gt; 0).</li>
+<li><em>epochs</em> - The number of iterations through the dataset.</li>
+</ul>
+</dd>
+</dl>
+<dl class="attribute">
+<dt id="bolt.trainer.sgd.PEGASOS.train">
+<tt class="descname">train</tt><a class="headerlink" href="#bolt.trainer.sgd.PEGASOS.train" title="Permalink to this definition">¶</a></dt>
+<dd><p>Train <cite>model</cite> on the <cite>dataset</cite> using PEGASOS.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><em>model</em> &#8211; The <tt class="xref docutils literal"><span class="pre">LinearModel</span></tt> that is going to be trained.</li>
+<li><em>dataset</em> &#8211; The <tt class="xref docutils literal"><span class="pre">Dataset</span></tt>.</li>
+<li><em>verbose</em> &#8211; The verbosity level. If 0 no output to stdout.</li>
+<li><em>shuffle</em> &#8211; Whether or not the training data should be shuffled after each epoch.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="bolt.trainer.sgd.Regression">
+<em class="property">class </em><tt class="descclassname">bolt.trainer.sgd.</tt><tt class="descname">Regression</tt><a class="headerlink" href="#bolt.trainer.sgd.Regression" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a title="bolt.trainer.sgd.LossFunction" class="reference internal" href="#bolt.trainer.sgd.LossFunction"><tt class="xref docutils literal"><span class="pre">bolt.trainer.sgd.LossFunction</span></tt></a></p>
+<p>Base class for loss functions for regression.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="bolt.trainer.sgd.SGD">
+<em class="property">class </em><tt class="descclassname">bolt.trainer.sgd.</tt><tt class="descname">SGD</tt><a class="headerlink" href="#bolt.trainer.sgd.SGD" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref docutils literal"><span class="pre">object</span></tt></p>
+<p>Plain stochastic gradient descent solver. The solver supports various <a title="bolt.trainer.sgd.LossFunction" class="reference internal" href="#bolt.trainer.sgd.LossFunction"><tt class="xref docutils literal"><span class="pre">LossFunction</span></tt></a> and different penalties (L1, L2, and Elastic-Net).</p>
+<dl class="docutils">
+<dt><strong>References</strong>:</dt>
+<dd><ul class="first last simple">
+<li>SGD implementation inspired by Leon Buttuo&#8217;s sgd and <a class="reference internal" href="#zhang2004">[Zhang2004]</a>.</li>
+<li>L1 penalty via truncation <a class="reference internal" href="#tsuruoka2009">[Tsuruoka2009]</a>.</li>
+<li>Elastic-net penalty <a class="reference internal" href="#zou2005">[Zou2005]</a>.</li>
+</ul>
+</dd>
+<dt><strong>Parameters</strong>:</dt>
+<dd><ul class="first last simple">
+<li><em>loss</em> - The <a title="bolt.trainer.sgd.LossFunction" class="reference internal" href="#bolt.trainer.sgd.LossFunction"><tt class="xref docutils literal"><span class="pre">LossFunction</span></tt></a>.</li>
+<li><em>reg</em> -  The regularization parameter lambda.</li>
+<li><em>epochs</em> - The number of iterations through the dataset. Default <cite>epochs=5</cite>.</li>
+<li><em>norm</em> - Whether to minimize the L1, L2 norm or the Elastic Net (either 1,2, or 3; default 2).</li>
+<li><em>alpha</em> - The elastic net penality parameter (0&lt;=`alpha`&lt;=1). A value of 1 amounts to L2 regularization whereas a value of 0 gives L1 penalty (requires <cite>norm=3</cite>). Default <cite>alpha=0.85</cite>.</li>
+</ul>
+</dd>
+</dl>
+<dl class="attribute">
+<dt id="bolt.trainer.sgd.SGD.train">
+<tt class="descname">train</tt><a class="headerlink" href="#bolt.trainer.sgd.SGD.train" title="Permalink to this definition">¶</a></dt>
+<dd><p>Train <cite>model</cite> on the <cite>dataset</cite> using SGD.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><em>model</em> &#8211; The <a title="bolt.model.LinearModel" class="reference internal" href="#bolt.model.LinearModel"><tt class="xref docutils literal"><span class="pre">bolt.model.LinearModel</span></tt></a> that is going to be trained.</li>
+<li><em>dataset</em> &#8211; The <a title="bolt.io.Dataset" class="reference internal" href="#bolt.io.Dataset"><tt class="xref docutils literal"><span class="pre">bolt.io.Dataset</span></tt></a>.</li>
+<li><em>verbose</em> &#8211; The verbosity level. If 0 no output to stdout.</li>
+<li><em>shuffle</em> &#8211; Whether or not the training data should be shuffled after each epoch.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="bolt.trainer.sgd.SquaredError">
+<em class="property">class </em><tt class="descclassname">bolt.trainer.sgd.</tt><tt class="descname">SquaredError</tt><a class="headerlink" href="#bolt.trainer.sgd.SquaredError" title="Permalink to this definition">¶</a></dt>
+<dd>Bases: <a title="bolt.trainer.sgd.Regression" class="reference internal" href="#bolt.trainer.sgd.Regression"><tt class="xref docutils literal"><span class="pre">bolt.trainer.sgd.Regression</span></tt></a></dd></dl>
+
+<dl class="function">
+<dt id="bolt.trainer.sgd.predict">
+<tt class="descclassname">bolt.trainer.sgd.</tt><tt class="descname">predict</tt><big>(</big><big>)</big><a class="headerlink" href="#bolt.trainer.sgd.predict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes x*w + b efficiently.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><em>x</em> (np.ndarray(dtype=bolt.sparsedtype)) &#8211; the instance represented as a sparse vector.</li>
+<li><em>w</em> (np.ndarray(dtype=bolt.densedtype)) &#8211; the weight vector represented as a dense vector.</li>
+<li><em>b</em> (float) &#8211; the bias term (aka offset or intercept).</li>
+</ul>
+</td>
+</tr>
+<tr class="field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">A double representing <cite>x*w + b</cite>.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="module-bolt.io">
+<h2><a class="toc-backref" href="#id10">The <tt class="xref docutils literal"><span class="pre">bolt.io</span></tt> Module</a><a class="headerlink" href="#module-bolt.io" title="Permalink to this headline">¶</a></h2>
+<p>The <tt class="xref docutils literal"><span class="pre">bolt.io</span></tt> module provides <a title="bolt.io.Dataset" class="reference internal" href="#bolt.io.Dataset"><tt class="xref docutils literal"><span class="pre">Dataset</span></tt></a> specifications and routines for convenient input/output.</p>
+<p>The module provides the following classes:</p>
+<blockquote>
+<a title="bolt.io.MemoryDataset" class="reference internal" href="#bolt.io.MemoryDataset"><tt class="xref docutils literal"><span class="pre">bolt.io.MemoryDataset</span></tt></a> : an in-memory dataset.</blockquote>
+<dl class="class">
+<dt id="bolt.io.BinaryDataset">
+<em class="property">class </em><tt class="descclassname">bolt.io.</tt><tt class="descname">BinaryDataset</tt><big>(</big><em>dataset</em>, <em>c</em><big>)</big><a class="headerlink" href="#bolt.io.BinaryDataset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a title="bolt.io.Dataset" class="reference internal" href="#bolt.io.Dataset"><tt class="xref docutils literal"><span class="pre">bolt.io.Dataset</span></tt></a></p>
+<p>A <cite>Dataset</cite> wrapper which binarizes the class labels.</p>
+<p>Most methods are deligated to the wrapped <cite>Dataset</cite>. Only <tt class="xref docutils literal"><span class="pre">BinaryDataset.__iter__()</span></tt> and  <tt class="xref docutils literal"><span class="pre">BinaryDataset.labels()</span></tt> are wrapped.</p>
+<p>Creates a binary class wrapper for <cite>dataset</cite>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><em>dataset</em> &#8211; The <cite>Dataset</cite> to wrap.</li>
+<li><em>c</em> &#8211; The positive class. All other classes are treated as negative.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="class">
+<dt id="bolt.io.Dataset">
+<em class="property">class </em><tt class="descclassname">bolt.io.</tt><tt class="descname">Dataset</tt><a class="headerlink" href="#bolt.io.Dataset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref docutils literal"><span class="pre">object</span></tt></p>
+<p>Dataset interface.</p>
+<dl class="method">
+<dt id="bolt.io.Dataset.iterinstances">
+<tt class="descname">iterinstances</tt><big>(</big><big>)</big><a class="headerlink" href="#bolt.io.Dataset.iterinstances" title="Permalink to this definition">¶</a></dt>
+<dd>Iterate over instances.</dd></dl>
+
+<dl class="method">
+<dt id="bolt.io.Dataset.iterlabels">
+<tt class="descname">iterlabels</tt><big>(</big><big>)</big><a class="headerlink" href="#bolt.io.Dataset.iterlabels" title="Permalink to this definition">¶</a></dt>
+<dd>Iterate over labels.</dd></dl>
+
+<dl class="method">
+<dt id="bolt.io.Dataset.shuffle">
+<tt class="descname">shuffle</tt><big>(</big><em>seed=None</em><big>)</big><a class="headerlink" href="#bolt.io.Dataset.shuffle" title="Permalink to this definition">¶</a></dt>
+<dd>Permutates the order of the <cite>Dataset</cite></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="bolt.io.MemoryDataset">
+<em class="property">class </em><tt class="descclassname">bolt.io.</tt><tt class="descname">MemoryDataset</tt><big>(</big><em>dim</em>, <em>instances</em>, <em>labels</em>, <em>qids=None</em><big>)</big><a class="headerlink" href="#bolt.io.MemoryDataset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a title="bolt.io.Dataset" class="reference internal" href="#bolt.io.Dataset"><tt class="xref docutils literal"><span class="pre">bolt.io.Dataset</span></tt></a></p>
+<p>An in-memory dataset.
+The instances and labels are stored as two parallel arrays.
+Access to the parallel arrays is via an indexing array which
+allows convenient shuffeling.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><em>dim</em> (integer) &#8211; The dimensionality of the data; the number of features.</li>
+<li><em>instances</em> (<tt class="xref docutils literal"><span class="pre">numpy.ndarray(dtype=numpy.object)</span></tt>) &#8211; An array of instances.</li>
+<li><em>labels</em> (<tt class="xref docutils literal"><span class="pre">numpy.ndarray(dtype=numpy.float64)</span></tt>) &#8211; An array of encoded labels associated with the <cite>instances</cite>.</li>
+<li><em>qids</em> (<tt class="xref docutils literal"><span class="pre">numpy.ndarray(dtype=numpy.float64)</span></tt> or <cite>None</cite>) &#8211; An optional array of datatype int32 which holds the query ids of the associated example.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="bolt.io.MemoryDataset.iterinstances">
+<tt class="descname">iterinstances</tt><big>(</big><big>)</big><a class="headerlink" href="#bolt.io.MemoryDataset.iterinstances" title="Permalink to this definition">¶</a></dt>
+<dd>Iterate over instances.</dd></dl>
+
+<dl class="method">
+<dt id="bolt.io.MemoryDataset.iterlabels">
+<tt class="descname">iterlabels</tt><big>(</big><big>)</big><a class="headerlink" href="#bolt.io.MemoryDataset.iterlabels" title="Permalink to this definition">¶</a></dt>
+<dd>Iterate over labels.</dd></dl>
+
+<dl class="method">
+<dt id="bolt.io.MemoryDataset.iterqids">
+<tt class="descname">iterqids</tt><big>(</big><big>)</big><a class="headerlink" href="#bolt.io.MemoryDataset.iterqids" title="Permalink to this definition">¶</a></dt>
+<dd>Iterate over query ids.</dd></dl>
+
+<dl class="classmethod">
+<dt id="bolt.io.MemoryDataset.load">
+<em class="property">classmethod </em><tt class="descname">load</tt><big>(</big><em>fname</em>, <em>verbose=1</em>, <em>qids=False</em><big>)</big><a class="headerlink" href="#bolt.io.MemoryDataset.load" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loads the dataset from <cite>fname</cite>.</p>
+<dl class="docutils">
+<dt>Currently, two formats are supported:</dt>
+<dd><ol class="first last loweralpha simple">
+<li>numpy binary format</li>
+<li>SVM^light format</li>
+</ol>
+</dd>
+</dl>
+<p>For binary format the extension of <cite>fname</cite> has to be
+<cite>.npy</cite>, otherwise SVM^light format is assumed.
+For gzipped files thefilename must end with <cite>.gz</cite>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><em>fname</em> &#8211; The file name of the seralized <a title="bolt.io.Dataset" class="reference internal" href="#bolt.io.Dataset"><tt class="xref docutils literal"><span class="pre">Dataset</span></tt></a></li>
+<li><em>verbose</em> (integer) &#8211; Verbose output</li>
+<li><em>qids</em> (True or False) &#8211; Whether to load qids or not</li>
+</ul>
+</td>
+</tr>
+<tr class="field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">The <a title="bolt.io.MemoryDataset" class="reference internal" href="#bolt.io.MemoryDataset"><tt class="xref docutils literal"><span class="pre">MemoryDataset</span></tt></a></p>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Examples:</p>
+<blockquote>
+<p>SVM^light format:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">ds</span> <span class="o">=</span> <span class="n">bolt</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">MemoryDataset</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s">&#39;train.txt&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Gzipped SVM^light format:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">ds</span> <span class="o">=</span> <span class="n">bolt</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">MemoryDataset</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s">&#39;train.txt.gz&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Binary format:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">ds</span> <span class="o">=</span> <span class="n">bolt</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">MemoryDataset</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s">&#39;train.npy&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</blockquote>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="bolt.io.MemoryDataset.merge">
+<em class="property">classmethod </em><tt class="descname">merge</tt><big>(</big><em>dsets</em><big>)</big><a class="headerlink" href="#bolt.io.MemoryDataset.merge" title="Permalink to this definition">¶</a></dt>
+<dd><p>Merge a sequence of <a title="bolt.io.Dataset" class="reference internal" href="#bolt.io.Dataset"><tt class="xref docutils literal"><span class="pre">Dataset</span></tt></a> objects.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameter:</th><td class="field-body"><em>dsets</em> &#8211; A list of <a title="bolt.io.MemoryDataset" class="reference internal" href="#bolt.io.MemoryDataset"><tt class="xref docutils literal"><span class="pre">MemoryDataset</span></tt></a></td>
+</tr>
+<tr class="field"><th class="field-name">Returns:</th><td class="field-body">A <a title="bolt.io.MemoryDataset" class="reference internal" href="#bolt.io.MemoryDataset"><tt class="xref docutils literal"><span class="pre">MemoryDataset</span></tt></a> containing the merged examples.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="bolt.io.MemoryDataset.sample">
+<tt class="descname">sample</tt><big>(</big><em>nexamples</em>, <em>seed=None</em><big>)</big><a class="headerlink" href="#bolt.io.MemoryDataset.sample" title="Permalink to this definition">¶</a></dt>
+<dd><p>Samples <cite>nexamples</cite> examples from the dataset.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><em>nexamples</em> (integer) &#8211; The number of examples to sample.</li>
+<li><em>seed</em> &#8211; The random seed.</li>
+</ul>
+</td>
+</tr>
+<tr class="field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">A <cite>MemoryDataset</cite> containing the <cite>nexamples</cite> examples.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="bolt.io.MemoryDataset.shuffle">
+<tt class="descname">shuffle</tt><big>(</big><em>seed=None</em><big>)</big><a class="headerlink" href="#bolt.io.MemoryDataset.shuffle" title="Permalink to this definition">¶</a></dt>
+<dd>Shuffles the index array using <cite>numpy.random.shuffle</cite>.
+A <cite>seed</cite> for the pseudo random number generator can be provided.</dd></dl>
+
+<dl class="method">
+<dt id="bolt.io.MemoryDataset.split">
+<tt class="descname">split</tt><big>(</big><em>nfolds</em><big>)</big><a class="headerlink" href="#bolt.io.MemoryDataset.split" title="Permalink to this definition">¶</a></dt>
+<dd><p>Split the <cite>Dataset</cite> into <cite>nfolds</cite> new <cite>Dataset</cite> objects.
+The split is done according to the index array. If <cite>MemoryDataset.n % nfolds</cite> is not 0 the remaining examples are discarded.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameter:</th><td class="field-body"><em>nfolds</em> (integer) &#8211; The number of folds</td>
+</tr>
+<tr class="field"><th class="field-name">Returns:</th><td class="field-body">An array of <cite>nfolds</cite> MemoryDataset objects; one for each fold</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="bolt.io.MemoryDataset.store">
+<tt class="descname">store</tt><big>(</big><em>fname</em><big>)</big><a class="headerlink" href="#bolt.io.MemoryDataset.store" title="Permalink to this definition">¶</a></dt>
+<dd><p>Store <cite>Dataset</cite> in binary form.
+Uses <cite>numpy.save</cite> for serialization.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameter:</th><td class="field-body"><em>fname</em> &#8211; The filename</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="bolt.io.dense2sparse">
+<tt class="descclassname">bolt.io.</tt><tt class="descname">dense2sparse</tt><big>(</big><em>x</em><big>)</big><a class="headerlink" href="#bolt.io.dense2sparse" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert <cite>numpy</cite> arrays of <cite>bolt.io.densetype</cite> to sparse arrays of <cite>bolt.io.sparsetype</cite>.</p>
+<p>Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mf">0.2</span><span class="p">],</span> <span class="n">dtype</span> <span class="o">=</span> <span class="n">bolt</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">densedtype</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">bolt</span><span class="o">.</span><span class="n">dense2sparse</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+<span class="go">array([(0L, 1.0), (4L, 0.2)], </span>
+<span class="go">  dtype=bolt.io.sparsedtype)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="bolt.io.loadDat">
+<tt class="descclassname">bolt.io.</tt><tt class="descname">loadDat</tt><big>(</big><em>filename</em>, <em>qids=False</em><big>)</big><a class="headerlink" href="#bolt.io.loadDat" title="Permalink to this definition">¶</a></dt>
+<dd>Load data from svm^light formatted file.</dd></dl>
+
+<dl class="function">
+<dt id="bolt.io.loadNpz">
+<tt class="descclassname">bolt.io.</tt><tt class="descname">loadNpz</tt><big>(</big><em>filename</em>, <em>qids=False</em><big>)</big><a class="headerlink" href="#bolt.io.loadNpz" title="Permalink to this definition">¶</a></dt>
+<dd>Load data from numpy binary format.</dd></dl>
+
+<dl class="data">
+<dt id="bolt.io.sparsedtype">
+<tt class="descclassname">bolt.io.</tt><tt class="descname">sparsedtype</tt><a class="headerlink" href="#bolt.io.sparsedtype" title="Permalink to this definition">¶</a></dt>
+<dd><p>The data type of sparse vectors.</p>
+<p>Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">),(</span><span class="mi">4</span><span class="p">,</span><span class="mf">0.2</span><span class="p">)],</span> <span class="n">dtype</span> <span class="o">=</span> <span class="n">sparsedtype</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</div>
+<div class="section" id="module-bolt.eval">
+<h2><a class="toc-backref" href="#id11">The <tt class="xref docutils literal"><span class="pre">bolt.eval</span></tt> Module</a><a class="headerlink" href="#module-bolt.eval" title="Permalink to this headline">¶</a></h2>
+<p>The <tt class="xref docutils literal"><span class="pre">eval</span></tt> module contains various routines for model evaluation.</p>
+<p>The following evaluation metrics are currently supported:</p>
+<blockquote>
+<p><a title="bolt.eval.errorrate" class="reference internal" href="#bolt.eval.errorrate"><tt class="xref docutils literal"><span class="pre">errorrate()</span></tt></a>: the error rate of the binary classifier.</p>
+<p><a title="bolt.eval.rmse" class="reference internal" href="#bolt.eval.rmse"><tt class="xref docutils literal"><span class="pre">rmse()</span></tt></a>: the root mean squared error of a regressor.</p>
+<p><a title="bolt.eval.cost" class="reference internal" href="#bolt.eval.cost"><tt class="xref docutils literal"><span class="pre">cost()</span></tt></a>: the cost of a model w.r.t. a given loss function.</p>
+</blockquote>
+<dl class="function">
+<dt id="bolt.eval.cost">
+<tt class="descclassname">bolt.eval.</tt><tt class="descname">cost</tt><big>(</big><em>model</em>, <em>ds</em>, <em>loss</em><big>)</big><a class="headerlink" href="#bolt.eval.cost" title="Permalink to this definition">¶</a></dt>
+<dd><p>The cost of the loss function.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><em>model</em> &#8211; A <a title="bolt.model.LinearModel" class="reference internal" href="#bolt.model.LinearModel"><tt class="xref docutils literal"><span class="pre">bolt.model.LinearModel</span></tt></a>.</li>
+<li><em>ds</em> &#8211; A <a title="bolt.io.Dataset" class="reference internal" href="#bolt.io.Dataset"><tt class="xref docutils literal"><span class="pre">bolt.io.Dataset</span></tt></a>.</li>
+</ul>
+</td>
+</tr>
+<tr class="field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><cite>sum([loss.(model(x),y) for x,y in ds])</cite></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="bolt.eval.error">
+<tt class="descclassname">bolt.eval.</tt><tt class="descname">error</tt><big>(</big><em>model</em>, <em>ds</em>, <em>loss</em><big>)</big><a class="headerlink" href="#bolt.eval.error" title="Permalink to this definition">¶</a></dt>
+<dd><p>Report the error of the model on the
+test examples. If the loss function of the model
+is <a title="bolt.trainer.sgd.Classification" class="reference internal" href="#bolt.trainer.sgd.Classification"><tt class="xref docutils literal"><span class="pre">bolt.trainer.sgd.Classification</span></tt></a> then <a title="bolt.eval.errorrate" class="reference internal" href="#bolt.eval.errorrate"><tt class="xref docutils literal"><span class="pre">errorrate()</span></tt></a> is computes,
+else <a title="bolt.eval.rmse" class="reference internal" href="#bolt.eval.rmse"><tt class="xref docutils literal"><span class="pre">rmse()</span></tt></a> is computed if loss function inherits from <a title="bolt.trainer.sgd.Regression" class="reference internal" href="#bolt.trainer.sgd.Regression"><tt class="xref docutils literal"><span class="pre">bolt.trainer.sgd.Regression</span></tt></a>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><em>model</em> &#8211; A <a title="bolt.model.LinearModel" class="reference internal" href="#bolt.model.LinearModel"><tt class="xref docutils literal"><span class="pre">bolt.model.LinearModel</span></tt></a>.</li>
+<li><em>ds</em> &#8211; A <a title="bolt.io.Dataset" class="reference internal" href="#bolt.io.Dataset"><tt class="xref docutils literal"><span class="pre">bolt.io.Dataset</span></tt></a>.</li>
+<li><em>loss</em> &#8211; A <a title="bolt.trainer.sgd.LossFunction" class="reference internal" href="#bolt.trainer.sgd.LossFunction"><tt class="xref docutils literal"><span class="pre">bolt.trainer.sgd.LossFunction</span></tt></a>.</li>
+</ul>
+</td>
+</tr>
+<tr class="field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">Either <a title="bolt.eval.errorrate" class="reference internal" href="#bolt.eval.errorrate"><tt class="xref docutils literal"><span class="pre">errorrate()</span></tt></a> or <a title="bolt.eval.rmse" class="reference internal" href="#bolt.eval.rmse"><tt class="xref docutils literal"><span class="pre">rmse()</span></tt></a>; depending on the <cite>loss</cite> function.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="bolt.eval.errorrate">
+<tt class="descclassname">bolt.eval.</tt><tt class="descname">errorrate</tt><big>(</big><em>model</em>, <em>ds</em><big>)</big><a class="headerlink" href="#bolt.eval.errorrate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the misclassification rate of the model.
+Assumes that labels are coded as 1 or -1.</p>
+<p>zero/one loss: if p*y &gt; 0 then 0 else 1</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><em>model</em> &#8211; A <a title="bolt.model.LinearModel" class="reference internal" href="#bolt.model.LinearModel"><tt class="xref docutils literal"><span class="pre">bolt.model.LinearModel</span></tt></a>.</li>
+<li><em>ds</em> &#8211; A <a title="bolt.io.Dataset" class="reference internal" href="#bolt.io.Dataset"><tt class="xref docutils literal"><span class="pre">bolt.io.Dataset</span></tt></a>.</li>
+</ul>
+</td>
+</tr>
+<tr class="field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><cite>(100.0 / n) * sum( p*y &gt; 0 ? 0 : 1 for p,y in ds)</cite>.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="bolt.eval.rmse">
+<tt class="descclassname">bolt.eval.</tt><tt class="descname">rmse</tt><big>(</big><em>model</em>, <em>ds</em><big>)</big><a class="headerlink" href="#bolt.eval.rmse" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the root mean squared error of the model.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><em>model</em> &#8211; A <a title="bolt.model.LinearModel" class="reference internal" href="#bolt.model.LinearModel"><tt class="xref docutils literal"><span class="pre">bolt.model.LinearModel</span></tt></a>.</li>
+<li><em>ds</em> &#8211; A <a title="bolt.io.Dataset" class="reference internal" href="#bolt.io.Dataset"><tt class="xref docutils literal"><span class="pre">bolt.io.Dataset</span></tt></a>.</li>
+</ul>
+</td>
+</tr>
+<tr class="field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><cite>sum([(model(x)-y)**2.0 for x,y in ds])</cite>.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="references">
+<h2><a class="toc-backref" href="#id12">References</a><a class="headerlink" href="#references" title="Permalink to this headline">¶</a></h2>
+<table class="docutils citation" frame="void" id="shwartz2007" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id1">[Shwartz2007]</a></td><td>Shwartz, S. S., Singer, Y., and Srebro, N., <em>Pegasos: Primal estimated sub-gradient solver for svm</em>. In Proceedings of ICML &#8216;07.</td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="tsuruoka2009" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id3">[Tsuruoka2009]</a></td><td>Tsuruoka, Y., Tsujii, J., and Ananiadou, S., <em>Stochastic gradient descent training for l1-regularized log-linear models with cumulative penalty</em>. In Proceedings of the AFNLP/ACL &#8216;09.</td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="zhang2004" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id2">[Zhang2004]</a></td><td>Zhang, T., <em>Solving large scale linear prediction problems using stochastic gradient descent algorithms</em>. In Proceedings of ICML &#8216;04.</td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="zou2005" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id4">[Zou2005]</a></td><td>Zou, H., and Hastie, T., <em>Regularization and variable selection via the elastic net</em>. Journal of the Royal Statistical Society Series B, 67 (2), 301-320.</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/bolt.jpg" alt="Logo"/>
+            </a></p>
+            <h3><a href="index.html">Table Of Contents</a></h3>
+            <ul>
+<li><a class="reference external" href="#">API Overview</a><ul>
+<li><a class="reference external" href="#data-structures">Data Structures</a></li>
+<li><a class="reference external" href="#module-bolt.model">The <tt class="docutils literal"><span class="pre">bolt.model</span></tt> Module</a></li>
+<li><a class="reference external" href="#module-bolt.trainer">The <tt class="docutils literal"><span class="pre">bolt.trainer</span></tt> Module</a><ul>
+<li><a class="reference external" href="#module-bolt.trainer.sgd">The <tt class="docutils literal"><span class="pre">bolt.trainer.sgd</span></tt> Module</a></li>
+</ul>
+</li>
+<li><a class="reference external" href="#module-bolt.io">The <tt class="docutils literal"><span class="pre">bolt.io</span></tt> Module</a></li>
+<li><a class="reference external" href="#module-bolt.eval">The <tt class="docutils literal"><span class="pre">bolt.eval</span></tt> Module</a></li>
+<li><a class="reference external" href="#references">References</a></li>
+</ul>
+</li>
+</ul>
+
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="install.html"
+                                  title="previous chapter">Install</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="using.html"
+                                  title="next chapter">Using Bolt</a></p>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="_sources/overview.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="modindex.html" title="Global Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="using.html" title="Using Bolt"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="install.html" title="Install"
+             >previous</a> |</li>
+        <li><a href="index.html"> Bolt v1.3 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+      &copy; Copyright 2010, Peter Prettenhofer .
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.5.
+    </div>
+  </body>
+</html>

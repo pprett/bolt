@@ -1,0 +1,187 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Install &mdash;  Bolt v1.3 documentation</title>
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '#',
+        VERSION:     '1.3',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title=" Bolt v1.3 documentation" href="index.html" />
+    <link rel="next" title="API Overview" href="overview.html" />
+    <link rel="prev" title="Bolt Online Learning Toolbox" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="modindex.html" title="Global Module Index"
+             accesskey="M">modules</a> |</li>
+        <li class="right" >
+          <a href="overview.html" title="API Overview"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Bolt Online Learning Toolbox"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html"> Bolt v1.3 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="install">
+<span id="id1"></span><h1><a class="toc-backref" href="#id2">Install</a><a class="headerlink" href="#install" title="Permalink to this headline">¶</a></h1>
+<p>Describes how to install Bolt on your machine.</p>
+<div class="contents topic" id="contents">
+<p class="topic-title first">Contents</p>
+<ul class="simple">
+<li><a class="reference internal" href="#install" id="id2">Install</a><ul>
+<li><a class="reference internal" href="#requirements" id="id3">Requirements</a></li>
+<li><a class="reference internal" href="#stable-release" id="id4">Stable release</a></li>
+<li><a class="reference internal" href="#latest-development-version" id="id5">Latest development version</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="section" id="requirements">
+<h2><a class="toc-backref" href="#id3">Requirements</a><a class="headerlink" href="#requirements" title="Permalink to this headline">¶</a></h2>
+<p>Bolt depends on the following python packages:</p>
+<blockquote>
+<ul class="simple">
+<li>numpy (tested with version 1.1 - 1.3)</li>
+</ul>
+</blockquote>
+<p>To check your installed version use:</p>
+<div class="highlight-python"><pre>python -c "import numpy; print numpy.__version__"</pre>
+</div>
+<p>To build Bolt you need a c compiler (e.g., gcc) and the header files of <cite>numpy</cite>.</p>
+<p>On most Ubuntu systems the following should suffice:</p>
+<div class="highlight-python"><pre>sudo apt-get install python-numpy</pre>
+</div>
+<p>If you want to modify the Cython code in the extension module <cite>bolt.bolt</cite> make sure that the newest release of Cython (&gt;= 0.7) is installed:</p>
+<div class="highlight-python"><pre>sudo easy_install cython</pre>
+</div>
+</div>
+<div class="section" id="stable-release">
+<h2><a class="toc-backref" href="#id4">Stable release</a><a class="headerlink" href="#stable-release" title="Permalink to this headline">¶</a></h2>
+<p>Download the latest release from github:</p>
+<div class="highlight-python"><pre>wget http://github.com/pprett/bolt/tarball/v1.2 -O bolt_v1.2.tar.gz</pre>
+</div>
+<p>Untar the archive:</p>
+<div class="highlight-python"><pre>tar xzvf bolt_v1.2.tar.gz
+mv pprett* bolt</pre>
+</div>
+<p>Build bolt:</p>
+<div class="highlight-python"><pre>cd bolt
+python setup.py build</pre>
+</div>
+<p>Install bolt sytem wide:</p>
+<div class="highlight-python"><pre>sudo python setup.py install</pre>
+</div>
+<p>If the build process fails due to undefined references make sure that the include paths in <cite>setupy.py</cite> are properly defined.</p>
+<p>If you need assistance feel free to contact the author at <a class="reference external" href="mailto:peter&#46;prettenhofer&#37;&#52;&#48;gmail&#46;com">peter<span>&#46;</span>prettenhofer<span>&#64;</span>gmail<span>&#46;</span>com</a>.</p>
+</div>
+<div class="section" id="latest-development-version">
+<h2><a class="toc-backref" href="#id5">Latest development version</a><a class="headerlink" href="#latest-development-version" title="Permalink to this headline">¶</a></h2>
+<p>To fetch the latest development version from the repository type:</p>
+<div class="highlight-python"><pre>git checkout git://github.com/pprett/bolt.git</pre>
+</div>
+<p>To build the project use:</p>
+<div class="highlight-python"><pre>python setup.py build</pre>
+</div>
+<p>To install bolt system wide use:</p>
+<div class="highlight-python"><pre>sudo python setup.py install</pre>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/bolt.jpg" alt="Logo"/>
+            </a></p>
+            <h3><a href="index.html">Table Of Contents</a></h3>
+            <ul>
+<li><a class="reference external" href="#">Install</a><ul>
+<li><a class="reference external" href="#requirements">Requirements</a></li>
+<li><a class="reference external" href="#stable-release">Stable release</a></li>
+<li><a class="reference external" href="#latest-development-version">Latest development version</a></li>
+</ul>
+</li>
+</ul>
+
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="index.html"
+                                  title="previous chapter">Bolt Online Learning Toolbox</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="overview.html"
+                                  title="next chapter">API Overview</a></p>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="_sources/install.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="modindex.html" title="Global Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="overview.html" title="API Overview"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Bolt Online Learning Toolbox"
+             >previous</a> |</li>
+        <li><a href="index.html"> Bolt v1.3 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+      &copy; Copyright 2010, Peter Prettenhofer .
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.5.
+    </div>
+  </body>
+</html>
