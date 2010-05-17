@@ -291,7 +291,7 @@ class BinaryDataset(Dataset):
         return self._dataset.iterinstances()
 
     def iterlabels(self):
-        return (self.mask(y) for y in self.iterlabels)
+        return (self.mask(y) for y in self.iterlabels())
 
     def shuffle(self, seed = None):
         self._dataset.shuffle(seed)
