@@ -8,6 +8,7 @@ Bolt Online Learning Toolbox
 
 :Release: |version|
 :Date: |today|
+:Author: peter.prettenhofer@gmail.com
 
 Bolt features discriminative learning of linear predictors (e.g. SVM or
 logistic regression) using stochastic gradient descent. Bolt is
