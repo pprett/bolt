@@ -3,12 +3,6 @@
 # cython: boundscheck=False
 # cython: wraparound=False
 # filename: avgperceptron.pyx
-
-"""
-The :mod:`bolt.trainer.avgperceptron` module contains an implementation of the
-averaged perceptron algorithm for multi-class classification. 
-
-"""
 from __future__ import division
 
 import numpy as np
@@ -44,11 +38,6 @@ cdef double dot(double *w, Pair *x, int nnz):
     return sum
 
 cdef void add(double *w, int stride, Pair *x, int nnz, int y, double c, double *wbar, double u):
-    """Scales example x by `c` and adds it to the weight vector w[k,:].
-    Furthermore, it updates the average weight vector wbar: `u` is the number
-    of iterations the update will remain in the weight vector (i.e., the total
-    number of iterations minus the number of iterations performed. 
-    """
     cdef Pair pair
     cdef int i
     cdef int offset = (y*stride)
@@ -76,11 +65,11 @@ cdef class AveragedPerceptron:
     """Averaged Perceptron learning algorithm. 
 
 **References**:
-   * [Yoav1999]_.
-   * [Collins2002]_.
+   * [Freund1998]_.
           
 **Parameters**:
-   * *epochs* - The number of iterations through the dataset. Default `epochs=5`. 
+   * *epochs* - The number of iterations through the dataset. Default `epochs=5`.
+
     """
     cdef int epochs
     
@@ -155,4 +144,3 @@ cdef class AveragedPerceptron:
             raise ValueError, "floating-point under-/overflow occured."
         
         model.W = wbar * (1.0 / (n*E))
-        
