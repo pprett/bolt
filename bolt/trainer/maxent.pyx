@@ -91,7 +91,7 @@ cdef double probdist(double *w, int wstride, double wscale, double *b,
 # Extension type for Stochastic Gradient Descent
 # ----------------------------------------
 
-cdef class MaxentSGD:
+cdef class MaxentSGD(object):
     """Stochastic gradient descent solver for maxent (aka multinomial logistic regression). The solver supports various penalties (L1, L2, and Elastic-Net). 
 
 **References**:

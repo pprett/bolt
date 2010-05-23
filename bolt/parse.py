@@ -72,7 +72,7 @@ def check_loss(option, opt_str, value, parser):
     setattr(parser.values, option.dest, value)
 
 def check_clstype(option, opt_str, value, parser):
-    if value.lower() not in ["sgd","pegasos"]:
+    if value.lower() not in ["sgd","pegasos", "maxent", "ova", "avgperc"]:
         raise OptionValueError("%d is not a valid classifier type." % value)
     setattr(parser.values, option.dest, value.lower())
 
@@ -127,6 +127,18 @@ http://github.com/pprett/bolt""" % version
                       default=1,
                       metavar="[0,1,2]",
                       type="int")
+
+    parser.add_option("-c","--clstype",
+                      action="callback",
+                      callback=check_clstype,
+                      help="Classifier type. \nsgd: Stochastic Gradient Descent [default].\n"+
+                      "pegasos: Primal Estimated sub-GrAdient SOlver for SVM. \n"+
+                      "ova: One-vs-All strategy for SGD classifiers. \n" +
+                      "maxent: Maximum Entropy (via SGD). \n"+
+                      "avgperc: Averaged Perceptron. \n",
+                      type="string",
+                      dest="clstype",
+                      default="sgd")
    
     parser.add_option("-l","--loss",
                       action="callback",
@@ -140,15 +152,6 @@ http://github.com/pprett/bolt""" % version
                       metavar="[0..]",
                       default=1)
 
-    parser.add_option("-c","--clstype",
-                      action="callback",
-                      callback=check_clstype,
-                      help="Classifier type. \nsgd: Stochastic Gradient Descent [default].\n"+
-                      "pegasos: Primal Estimated sub-GrAdient SOlver for SVM. \n",
-                      type="string",
-                      dest="clstype",
-                      default="sgd")
-    
     parser.add_option("-r","--reg",
                       dest="regularizer",
                       help="Regularization term lambda [default %default]. ",
@@ -204,7 +207,7 @@ def parseSB(version):
                       metavar="FILE")
     parser.add_option("-t",
                       dest="test_file",
-                      help="Evaluate the model on a seperate test file. ", 
+                      help="Evaluate the model on a separate test file. ", 
                       metavar="FILE")
     parser.add_option("-m", "--model",
                       dest="model_file",

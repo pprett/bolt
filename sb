@@ -6,6 +6,6 @@
 ##
 ##So, you don't need anything special - no fancy path tricks.
 
-import bolt
+import bolt.cli
 
-bolt.main()
+bolt.cli.main()

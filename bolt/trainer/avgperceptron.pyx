@@ -61,7 +61,7 @@ cdef int argmax(double *w, int wstride, Pair *x, int xnnz, int y, int k):
             max_score = p
     return max_j
 
-cdef class AveragedPerceptron:
+cdef class AveragedPerceptron(object):
     """Averaged Perceptron learning algorithm. 
 
 **References**:

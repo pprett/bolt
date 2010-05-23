@@ -16,7 +16,12 @@ __authors__ = [
 import numpy as np
 
 from io import sparsedtype, densedtype, dense2sparse
-from trainer import sgd
+
+try:
+    from trainer.sgd import predict
+except ImportError:
+    def predict(x, w, b):
+        return np.dot(x, w) + b
 
 class LinearModel(object):
     """A linear model of the form :math:`y = w^T x + b`. 
@@ -45,29 +50,37 @@ class LinearModel(object):
         """Whether or not the biasterm is used."""
 
 
-    def __call__(self,x):
+    def __call__(self, x, confidence = False):
         """Predicts the target value for the given example. 
 
-	:arg x: An instance in dense or sparse representation. 
-        :returns: A float :math:`y = w^T x + b`.
+	:arg x: An instance in dense or sparse representation.
+        :arg confidence: whether to output confidence scores.
+        :returns: The class assignment :math:`sign(w^T x + b)`
+        and optionally a confidence score.
 	
         """
         if x.dtype == densedtype:
             x = dense2sparse(x)
-        return sgd.predict(x, self.w, self.bias)
+        p = predict(x, self.w, self.bias)
+        if confidence:
+            return np.sign(p), 1.0/(1.0+np.exp(-p))
+        else:
+            return np.sign(p)
 
-    def predict(self,examples):
-        """Evaluates :math:`y = w^T x + b` for each
-        example x in examples. 
+    def predict(self,examples, confidence = False):
+        """Evaluates :math:`y = sign(w^T x + b)` for each
+        example x in examples.
+        See :meth:LinearModel.__call__ .
 
         :arg examples: a sequence of examples.
+        :arg confidence: whether to output confidence scores.
         :returns: a generator over the predictions.
         """
         for x in examples:
-            yield self.__call__(x)
+            yield self.__call__(x, confidence)
 
 class GeneralizedLinearModel(object):
-    """A generalized linear model of the form z = max_y w * f(x,y) + b_y.
+    """A generalized linear model of the form :math:`z = argmax_y w^T f(x,y) + b_y`.
     """
 
     def __init__(self, m, k, biasterm = False):
@@ -94,36 +107,42 @@ class GeneralizedLinearModel(object):
         """A vector of bias terms. """
 
 
-    def __call__(self,x):
-        """Predicts the class for the instance `x`. 
+    def __call__(self,x, confidence = False):
+        """Predicts the class for the instance `x`.
+        Evaluates :math:`z = argmax_y w^T f(x,y) + b_y`.
+
+        :arg confidence: whether to output confidence scores.
         
-        Return:
-        -------
-        The class idx. 
         """
-        return self._predict(x)
+        return self._predict(x, confidence)
             
 
-    def predict(self,instances):
+    def predict(self, instances, confidence = False):
         """Predicts class of each instances in
         `instances`.
+        See :meth:`GeneralizedLinearModel.__call__`.
 
         Parameters:
-        examples: a sequence of instances
+        :arg confidence: whether to output confidence scores.
+        :arg examples: a sequence of instances
 
-        Return:
-        A generator over the predictions.
+        :return: a generator over the predictions.
         """
         for x in instances:
-            yield self.__call__(x)
+            yield self.__call__(x, confidence)
 
-    def _predict(self,x):
-        ps = np.array([sgd.predict(x, self.W[i], self.b[i]) for i in range(self.k)])
+    def _predict(self, x, confidence = False):
+        ps = np.array([predict(x, self.W[i], self.b[i]) for i in range(self.k)])
 	c = np.argmax(ps)
-        return c
+        if confidence:
+            return c,ps[c]
+        else:
+            return c
 
     def probdist(self,x):
-        ps = np.array([np.exp(sgd.predict(x, self.W[i], self.b[i])) for i in range(self.k)])
+        """The probability distribution of class assignment.
+        """
+        ps = np.array([np.exp(predict(x, self.W[i], self.b[i])) for i in range(self.k)])
         Z = np.sum(ps)
         return ps / Z
 
