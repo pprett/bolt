@@ -466,7 +466,7 @@ def loadDat(filename, qids = False):
         f.close()
         
 def svmlToNpy():
-    if len(sys.argv < 3) or "--help" in sys.argv:
+    if len(sys.argv) < 3 or "--help" in sys.argv:
 	print """Usage: %s in-file out-file
 
 	Converts the svm^light encoded in-file into the binary encoded out-file.
@@ -477,6 +477,6 @@ def svmlToNpy():
 	qids = True
     else:
 	qids = False
-    ds = Dataset.load(in_filename, qids = qids)
+    ds = MemoryDataset.load(in_filename, qids = qids)
     ds.store(out_filename)
     
