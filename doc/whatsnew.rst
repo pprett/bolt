@@ -3,6 +3,16 @@
 What's new
 ==========
 
+Version 1.4
+-----------
+
+  * Averaged Perceptron
+      Multi-class classification using the averaged perceptron by Freund and Schapire. 
+  * Maximum Entropy
+      Multinomial logistic regression classifier using SGD. Supports probabilistic output. 
+  * Windows compatibility
+      Tested on Windows 7 using Enthought Python Distribution.
+
 Version 1.3
 -----------
 
