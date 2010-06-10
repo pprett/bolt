@@ -6,16 +6,16 @@ import numpy
 numpy_path = os.path.join(numpy.__path__[0], 'core', 'include')
 # use additional compiler flags: "-ffast-math" "-g"
 
-# FIXME proper win/unix lib/includes.
 from distutils.sysconfig import get_python_inc
 incdir = os.path.join(get_python_inc(plat_specific=1))
+
+# FIXME proper win/unix lib/includes.
 #unix_include_path = "/usr/include"
 #win_include_path = "C:\Python26\include"
 #include_path = win_include_path
-
-win_lib_path = "C:\Python26\PCbuild"
-unix_lib_path = "/usr/lib"
-lib_path = win_lib_path
+#win_lib_path = "C:\Python26\PCbuild"
+#unix_lib_path = "/usr/lib"
+#lib_path = win_lib_path
 
 setup(
     name = "bolt",
@@ -24,19 +24,19 @@ setup(
                    Extension("bolt.trainer.sgd", ["bolt/trainer/sgd.c"],
                              include_dirs=[incdir,numpy_path],
                              extra_link_args=["-O3"],
-                             library_dirs=[lib_path,],
+                             #library_dirs=[lib_path,],
                              extra_compile_args=["-O3","-g"]
                              ),
                    Extension("bolt.trainer.avgperceptron", ["bolt/trainer/avgperceptron.c"],
                              include_dirs=[incdir,numpy_path],
                              extra_link_args=["-O3"],
-                             library_dirs=[lib_path,],
+                             #library_dirs=[lib_path,],
                              extra_compile_args=["-O3","-g"]
                              ),
                    Extension("bolt.trainer.maxent", ["bolt/trainer/maxent.c"],
                              include_dirs=[incdir,numpy_path],
                              extra_link_args=["-O3"],
-                             library_dirs=[lib_path,],
+                             #library_dirs=[lib_path,],
                              extra_compile_args=["-O3","-g"]
                              ),
                    ],

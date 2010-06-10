@@ -410,7 +410,7 @@ class RankingDataset(Dataset):
 def loadNpz(filename, qids = False):
     """Load data from numpy binary format.
     """
-    f = open(filename,'r')
+    f = open(filename,'rb')
     try:
         instances = np.load(f)
         labels = np.load(f)

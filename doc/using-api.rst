@@ -1,22 +1,12 @@
-.. _using:
+.. _using-api:
 
-Using Bolt
-==========
+Using Bolt (API)
+================
 
 :Release: |version|
 :Date: |today|
 
-Use Bolt via the CLI
---------------------
-
-This subsection shows how to use Bolt via its command-line interface. 
-
-TODO
-
-Use Bolt via the API
---------------------
-
-This subsection shows how to use Bolt via its Python API. We will discuss the use of Bolt for a) binary and for b) multi-class classification. 
+This section shows how to use Bolt via its Python API. We will discuss the use of Bolt for a) binary and for b) multi-class classification. 
 
 Binary classification
 ^^^^^^^^^^^^^^^^^^^^^
@@ -63,7 +53,13 @@ To inspect the model parameters, simply access the models attributes ::
 Multi-class classification
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Bolt supports multi-class classification via **generalized linear models** (GLM). Currently, the only multi-class trainer is :class:`bolt.trainer.OVA` which trains `k` binary classifiers, where `k` is the number of different classes. At test time it predicts the class with the highest confidence. 
+Bolt supports multi-class classification via **generalized linear models** (GLM). Currently, there exists the following multi-class trainers: 
+
+  *  :class:`bolt.trainer.OVA`
+  *  :class:`bolt.trainer.avgperceptron.AveragedPerceptron`
+  *  :class:`bolt.trainer.maxent.MaxentSGD`
+
+In the following example we will use the :class:`bolt.trainer.OVA` trainer which trains `k` binary classifiers, where `k` is the number of different classes. At test time it predicts the class with the highest confidence. 
 
 First, lets get some data (e.g., the 20-newsgroups dataset): ::
 

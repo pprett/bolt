@@ -32,8 +32,6 @@ def errorrate(model,ds):
     for p,y in izip(model.predict(ds.iterinstances()),ds.iterlabels()):
         if isinstance(p, float):
             p = int(np.sign(p))
-        else:
-            p = int(p)
         if p != y:
             err += 1
         n += 1
