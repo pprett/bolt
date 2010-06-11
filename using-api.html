@@ -1,0 +1,208 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Using Bolt (API) &mdash;  Bolt v1.4 documentation</title>
+    <link rel="stylesheet" href="static/default.css" type="text/css" />
+    <link rel="stylesheet" href="static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '#',
+        VERSION:     '1.4',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="static/jquery.js"></script>
+    <script type="text/javascript" src="static/doctools.js"></script>
+    <link rel="top" title=" Bolt v1.4 documentation" href="index.html" />
+    <link rel="next" title="What’s new" href="whatsnew.html" />
+    <link rel="prev" title="Using Bolt (CLI)" href="using-cli.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="modindex.html" title="Global Module Index"
+             accesskey="M">modules</a> |</li>
+        <li class="right" >
+          <a href="whatsnew.html" title="What’s new"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="using-cli.html" title="Using Bolt (CLI)"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html"> Bolt v1.4 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="using-bolt-api">
+<span id="using-api"></span><h1>Using Bolt (API)<a class="headerlink" href="#using-bolt-api" title="Permalink to this headline">¶</a></h1>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Release:</th><td class="field-body">1.4</td>
+</tr>
+<tr class="field"><th class="field-name">Date:</th><td class="field-body">June 11, 2010</td>
+</tr>
+</tbody>
+</table>
+<p>This section shows how to use Bolt via its Python API. We will discuss the use of Bolt for a) binary and for b) multi-class classification.</p>
+<div class="section" id="binary-classification">
+<h2>Binary classification<a class="headerlink" href="#binary-classification" title="Permalink to this headline">¶</a></h2>
+<p>To use Bolt for binary classification we first need some data. Bolt is aimed primarily at high-dimensional and sparse machine learning problems. Thus, instances are represented as sparse vectors. Bolt uses numpy record arrays to represent sparse vectors. The following example shows an instance <cite>x</cite> with features <cite>0</cite> and <cite>4</cite> set to <cite>1</cite> and <cite>0.2</cite>, respectively. All other features are assumed to be zero.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">),(</span><span class="mi">4</span><span class="p">,</span><span class="mf">0.2</span><span class="p">)],</span> <span class="n">dtype</span> <span class="o">=</span> <span class="n">bolt</span><span class="o">.</span><span class="n">sparsedtype</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>For binary classification, Bolt assumes that the class labels, either positive or negative, are coded as <cite>y = 1</cite> or <cite>y = -1</cite>.</p>
+<p>Lets create some synthetic dataset to show how to use Bolt for binary classification...</p>
+<p>For convenience, Bolt offers routines to load datasets in binary or svm^light format via the <a title="" class="reference external" href="overview.html#module-bolt.io"><tt class="xref docutils literal"><span class="pre">bolt.io</span></tt></a> module.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">dtrain</span> <span class="o">=</span> <span class="n">bolt</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">MemoryDataset</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s">&quot;train.dat.gz&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Now we&#8217;ve to crate a linear model</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">lm</span> <span class="o">=</span> <span class="n">bolt</span><span class="o">.</span><span class="n">LinearModel</span><span class="p">(</span><span class="n">dtrain</span><span class="o">.</span><span class="n">dim</span><span class="p">,</span> <span class="n">biasterm</span> <span class="o">=</span> <span class="bp">False</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The first parameter is mandatory and indicates the number of features in the training data. The second parameter specifies whether or not a biasterm should be included. That is, if <cite>biasterm = True</cite> the model computes <cite>y = w*x + b</cite> else <cite>y = w*x</cite>. Thus, <cite>biasterm = False</cite> forces the hyperplane to go through the origin. In general, this limitation does not harm the classificaton performance but makes the numerical operations more stable.</p>
+<p>To train the model we first have to instantiate a model trainer - in this example we will use <a title="bolt.trainer.sgd.SGD" class="reference external" href="overview.html#bolt.trainer.sgd.SGD"><tt class="xref docutils literal"><span class="pre">bolt.trainer.sgd.SGD</span></tt></a></p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">sgd</span> <span class="o">=</span> <span class="n">bolt</span><span class="o">.</span><span class="n">SGD</span><span class="p">(</span><span class="n">bolt</span><span class="o">.</span><span class="n">ModifiedHuber</span><span class="p">(),</span> <span class="n">reg</span> <span class="o">=</span> <span class="mf">0.0001</span><span class="p">,</span> <span class="n">epochs</span> <span class="o">=</span> <span class="mi">20</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The trainer receives a number of parameters, see <a title="bolt.trainer.sgd.SGD" class="reference external" href="overview.html#bolt.trainer.sgd.SGD"><tt class="xref docutils literal"><span class="pre">bolt.trainer.sgd.SGD</span></tt></a> for more information on the parameterization of stochastic gradient descent. Currently, only two trainers for binary classification are provided, <a title="bolt.trainer.sgd.SGD" class="reference external" href="overview.html#bolt.trainer.sgd.SGD"><tt class="xref docutils literal"><span class="pre">bolt.trainer.sgd.SGD</span></tt></a> and <a title="bolt.trainer.sgd.PEGASOS" class="reference external" href="overview.html#bolt.trainer.sgd.PEGASOS"><tt class="xref docutils literal"><span class="pre">bolt.trainer.sgd.PEGASOS</span></tt></a>.</p>
+<p>To train the model on <cite>dtrain</cite> you can simply use the <a title="bolt.trainer.sgd.SGD.train" class="reference external" href="overview.html#bolt.trainer.sgd.SGD.train"><tt class="xref docutils literal"><span class="pre">bolt.trainer.sgd.SGD.train()</span></tt></a> method:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">sgd</span><span class="o">.</span><span class="n">train</span><span class="p">(</span><span class="n">lm</span><span class="p">,</span> <span class="n">dtrain</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Now the model <cite>lm</cite> is trained; You can evaluate the model on some test data via the <a title="" class="reference external" href="overview.html#module-bolt.eval"><tt class="xref docutils literal"><span class="pre">bolt.eval</span></tt></a> module.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">dtest</span> <span class="o">=</span> <span class="n">bolt</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">MemoryDataset</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s">&quot;test.dat.gz&quot;</span><span class="p">)</span>
+<span class="n">bolt</span><span class="o">.</span><span class="n">eval</span><span class="o">.</span><span class="n">errorrate</span><span class="p">(</span><span class="n">lm</span><span class="p">,</span><span class="n">dtest</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>To inspect the model parameters, simply access the models attributes</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">print</span> <span class="n">lm</span><span class="o">.</span><span class="n">w</span> <span class="c"># gives the weight vector</span>
+<span class="k">print</span> <span class="n">lm</span><span class="o">.</span><span class="n">b</span> <span class="c"># gives the bias term</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="multi-class-classification">
+<h2>Multi-class classification<a class="headerlink" href="#multi-class-classification" title="Permalink to this headline">¶</a></h2>
+<p>Bolt supports multi-class classification via <strong>generalized linear models</strong> (GLM). Currently, there exists the following multi-class trainers:</p>
+<blockquote>
+<ul class="simple">
+<li><a title="bolt.trainer.OVA" class="reference external" href="overview.html#bolt.trainer.OVA"><tt class="xref docutils literal"><span class="pre">bolt.trainer.OVA</span></tt></a></li>
+<li><a title="bolt.trainer.avgperceptron.AveragedPerceptron" class="reference external" href="overview.html#bolt.trainer.avgperceptron.AveragedPerceptron"><tt class="xref docutils literal"><span class="pre">bolt.trainer.avgperceptron.AveragedPerceptron</span></tt></a></li>
+<li><a title="bolt.trainer.maxent.MaxentSGD" class="reference external" href="overview.html#bolt.trainer.maxent.MaxentSGD"><tt class="xref docutils literal"><span class="pre">bolt.trainer.maxent.MaxentSGD</span></tt></a></li>
+</ul>
+</blockquote>
+<p>In the following example we will use the <a title="bolt.trainer.OVA" class="reference external" href="overview.html#bolt.trainer.OVA"><tt class="xref docutils literal"><span class="pre">bolt.trainer.OVA</span></tt></a> trainer which trains <cite>k</cite> binary classifiers, where <cite>k</cite> is the number of different classes. At test time it predicts the class with the highest confidence.</p>
+<p>First, lets get some data (e.g., the 20-newsgroups dataset):</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">bolt</span>
+<span class="n">dtrain</span> <span class="o">=</span> <span class="n">bolt</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">MemoryDataset</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">ftrain</span><span class="p">,</span> <span class="n">verbose</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span>
+<span class="n">dtest</span> <span class="o">=</span> <span class="n">bolt</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">MemoryDataset</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">ftest</span><span class="p">,</span> <span class="n">verbose</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Next, we create a <a title="bolt.model.GeneralizedLinearModel" class="reference external" href="overview.html#bolt.model.GeneralizedLinearModel"><tt class="xref docutils literal"><span class="pre">bolt.model.GeneralizedLinearModel</span></tt></a></p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">glm</span> <span class="o">=</span> <span class="n">bolt</span><span class="o">.</span><span class="n">GeneralizedLinearModel</span><span class="p">(</span><span class="n">dtrain</span><span class="o">.</span><span class="n">dim</span><span class="p">,</span><span class="n">k</span><span class="p">,</span> <span class="n">biasterm</span> <span class="o">=</span> <span class="bp">False</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The GLM receives two parameters: the dimensionality of the input data and the number of classes <cite>k</cite>. The third parameters indicates that a class specific bias term is used.</p>
+<p>In order to train the <cite>glm</cite> with the <a title="bolt.trainer.OVA" class="reference external" href="overview.html#bolt.trainer.OVA"><tt class="xref docutils literal"><span class="pre">bolt.trainer.OVA</span></tt></a> trainer we need instantiate the base trainer which is used by <a title="bolt.trainer.OVA" class="reference external" href="overview.html#bolt.trainer.OVA"><tt class="xref docutils literal"><span class="pre">bolt.trainer.OVA</span></tt></a> to train the binary classifiers. In the following example, we will use a <a title="bolt.trainer.sgd.SGD" class="reference external" href="overview.html#bolt.trainer.sgd.SGD"><tt class="xref docutils literal"><span class="pre">bolt.trainer.sgd.SGD</span></tt></a> trainer.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">sgd</span> <span class="o">=</span> <span class="n">bolt</span><span class="o">.</span><span class="n">SGD</span><span class="p">(</span><span class="n">bolt</span><span class="o">.</span><span class="n">ModifiedHuber</span><span class="p">(),</span> <span class="n">reg</span> <span class="o">=</span> <span class="mf">0.0001</span><span class="p">,</span> <span class="n">epochs</span> <span class="o">=</span> <span class="mi">20</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Now, we can create a <a title="bolt.trainer.OVA" class="reference external" href="overview.html#bolt.trainer.OVA"><tt class="xref docutils literal"><span class="pre">bolt.trainer.OVA</span></tt></a> trainer and train the <cite>glm</cite> on the training data:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">ova</span> <span class="o">=</span> <span class="n">bolt</span><span class="o">.</span><span class="n">OVA</span><span class="p">(</span><span class="n">sgd</span><span class="p">)</span>
+<span class="n">ova</span><span class="o">.</span><span class="n">train</span><span class="p">(</span><span class="n">glm</span><span class="p">,</span><span class="n">dtrain</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>To get the predictions on the test data use <a title="bolt.model.GeneralizedLinearModel.predict" class="reference external" href="overview.html#bolt.model.GeneralizedLinearModel.predict"><tt class="xref docutils literal"><span class="pre">bolt.model.GeneralizedLinearModel.predict()</span></tt></a> which gives you the index of the predicted class in <cite>dtrain.classes</cite>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">pred</span> <span class="o">=</span> <span class="p">[</span><span class="n">drain</span><span class="o">.</span><span class="n">classes</span><span class="p">[</span><span class="n">z</span><span class="p">]</span> <span class="k">for</span> <span class="n">z</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">dtest</span><span class="o">.</span><span class="n">iterinstances</span><span class="p">())]</span>
+</pre></div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="static/bolt.jpg" alt="Logo"/>
+            </a></p>
+            <h3><a href="index.html">Table Of Contents</a></h3>
+            <ul>
+<li><a class="reference external" href="#">Using Bolt (API)</a><ul>
+<li><a class="reference external" href="#binary-classification">Binary classification</a></li>
+<li><a class="reference external" href="#multi-class-classification">Multi-class classification</a></li>
+</ul>
+</li>
+</ul>
+
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="using-cli.html"
+                                  title="previous chapter">Using Bolt (CLI)</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="whatsnew.html"
+                                  title="next chapter">What&#8217;s new</a></p>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="sources/using-api.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="modindex.html" title="Global Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="whatsnew.html" title="What’s new"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="using-cli.html" title="Using Bolt (CLI)"
+             >previous</a> |</li>
+        <li><a href="index.html"> Bolt v1.4 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+      &copy; Copyright 2010, Peter Prettenhofer .
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.5.
+    </div>
+  </body>
+</html>

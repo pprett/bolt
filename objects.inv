@@ -1,13 +1,13 @@
 # Sphinx inventory version 1
 # Project:  Bolt
-# Version: 1.3
+# Version: 1.4
 bolt.trainer mod overview.html
 bolt.trainer.avgperceptron mod overview.html
 bolt.eval mod overview.html
 bolt.io mod overview.html
-bolt.trainer.sgd mod overview.html
-bolt.model mod overview.html
 bolt.trainer.maxent mod overview.html
+bolt.model mod overview.html
+bolt.trainer.sgd mod overview.html
 bolt.eval.error function overview.html
 bolt.trainer.sgd.Classification class overview.html
 bolt.model.GeneralizedLinearModel.predict method overview.html
@@ -47,8 +47,8 @@ bolt.io.MemoryDataset.merge classmethod overview.html
 bolt.eval.cost function overview.html
 bolt.trainer.maxent.MaxentSGD class overview.html
 bolt.trainer.sgd.ModifiedHuber class overview.html
-bolt.trainer.sgd.Regression class overview.html
 bolt.io.MemoryDataset.store method overview.html
+bolt.trainer.sgd.Regression class overview.html
 bolt.io.MemoryDataset.iterqids method overview.html
 bolt.model.LinearModel class overview.html
 bolt.io.loadNpz function overview.html

@@ -5,13 +5,13 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>API Overview &mdash;  Bolt v1.3 documentation</title>
+    <title>API Overview &mdash;  Bolt v1.4 documentation</title>
     <link rel="stylesheet" href="static/default.css" type="text/css" />
     <link rel="stylesheet" href="static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '#',
-        VERSION:     '1.3',
+        VERSION:     '1.4',
         COLLAPSE_MODINDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -19,8 +19,8 @@
     </script>
     <script type="text/javascript" src="static/jquery.js"></script>
     <script type="text/javascript" src="static/doctools.js"></script>
-    <link rel="top" title=" Bolt v1.3 documentation" href="index.html" />
-    <link rel="next" title="Using Bolt" href="using.html" />
+    <link rel="top" title=" Bolt v1.4 documentation" href="index.html" />
+    <link rel="next" title="Using Bolt (CLI)" href="using-cli.html" />
     <link rel="prev" title="Install" href="install.html" /> 
   </head>
   <body>
@@ -34,12 +34,12 @@
           <a href="modindex.html" title="Global Module Index"
              accesskey="M">modules</a> |</li>
         <li class="right" >
-          <a href="using.html" title="Using Bolt"
+          <a href="using-cli.html" title="Using Bolt (CLI)"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="install.html" title="Install"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html"> Bolt v1.3 documentation</a> &raquo;</li> 
+        <li><a href="index.html"> Bolt v1.4 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -54,9 +54,9 @@
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field"><th class="field-name">Release:</th><td class="field-body">1.3</td>
+<tr class="field"><th class="field-name">Release:</th><td class="field-body">1.4</td>
 </tr>
-<tr class="field"><th class="field-name">Date:</th><td class="field-body">May 17, 2010</td>
+<tr class="field"><th class="field-name">Date:</th><td class="field-body">June 11, 2010</td>
 </tr>
 </tbody>
 </table>
@@ -118,7 +118,7 @@ parametric models supported by Bolt.</p>
 <dt id="bolt.model.GeneralizedLinearModel">
 <em class="property">class </em><tt class="descclassname">bolt.model.</tt><tt class="descname">GeneralizedLinearModel</tt><big>(</big><em>m</em>, <em>k</em>, <em>biasterm=False</em><big>)</big><a class="headerlink" href="#bolt.model.GeneralizedLinearModel" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <tt class="xref docutils literal"><span class="pre">object</span></tt></p>
-<p>A generalized linear model of the form z = max_y w * f(x,y) + b_y.</p>
+<p>A generalized linear model of the form <img class="math" src="images/math/da2c54ee7ca1caec1c35db17043b7e32ba28e22d.png" alt="z = argmax_y w^T f(x,y) + b_y"/>.</p>
 <p>Create a generalized linear model for
 classification problems with <cite>k</cite> classes.</p>
 <p>Parameters:
@@ -126,19 +126,27 @@ m: The dimensionality of the input data (i.e., the number of features).
 k: The number of classes.</p>
 <dl class="method">
 <dt id="bolt.model.GeneralizedLinearModel.predict">
-<tt class="descname">predict</tt><big>(</big><em>instances</em><big>)</big><a class="headerlink" href="#bolt.model.GeneralizedLinearModel.predict" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">predict</tt><big>(</big><em>instances</em>, <em>confidence=False</em><big>)</big><a class="headerlink" href="#bolt.model.GeneralizedLinearModel.predict" title="Permalink to this definition">¶</a></dt>
 <dd><p>Predicts class of each instances in
-<cite>instances</cite>.</p>
+<cite>instances</cite>.
+See <tt class="xref docutils literal"><span class="pre">GeneralizedLinearModel.__call__()</span></tt>.</p>
 <p>Parameters:
-examples: a sequence of instances</p>
-<p>Return:
-A generator over the predictions.</p>
+:arg confidence: whether to output confidence scores.
+:arg examples: a sequence of instances</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Returns:</th><td class="field-body">a generator over the predictions.</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
 <dt id="bolt.model.GeneralizedLinearModel.probdist">
 <tt class="descname">probdist</tt><big>(</big><em>x</em><big>)</big><a class="headerlink" href="#bolt.model.GeneralizedLinearModel.probdist" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd>The probability distribution of class assignment.</dd></dl>
 
 </dd></dl>
 
@@ -163,16 +171,22 @@ m-dimensional vector <cite>w = [0,..,0]</cite> and <cite>b = 0</cite>.</p>
 </table>
 <dl class="method">
 <dt id="bolt.model.LinearModel.predict">
-<tt class="descname">predict</tt><big>(</big><em>examples</em><big>)</big><a class="headerlink" href="#bolt.model.LinearModel.predict" title="Permalink to this definition">¶</a></dt>
-<dd><p>Evaluates <img class="math" src="images/math/9a66447c0268fbd1255e24a98496beb1c2287961.png" alt="y = w^T x + b"/> for each
-example x in examples.</p>
+<tt class="descname">predict</tt><big>(</big><em>examples</em>, <em>confidence=False</em><big>)</big><a class="headerlink" href="#bolt.model.LinearModel.predict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Evaluates <img class="math" src="images/math/5c1f0e6a27c01a4f6696940230c7703abf3d9907.png" alt="y = sign(w^T x + b)"/> for each
+example x in examples.
+See :meth:LinearModel.__call__ .</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field"><th class="field-name">Parameter:</th><td class="field-body"><em>examples</em> &#8211; a sequence of examples.</td>
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><em>examples</em> &#8211; a sequence of examples.</li>
+<li><em>confidence</em> &#8211; whether to output confidence scores.</li>
+</ul>
+</td>
 </tr>
-<tr class="field"><th class="field-name">Returns:</th><td class="field-body">a generator over the predictions.</td>
+<tr class="field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">a generator over the predictions.</p>
+</td>
 </tr>
 </tbody>
 </table>
@@ -970,8 +984,8 @@ Assumes that labels are coded as 1 or -1.</p>
             <p class="topless"><a href="install.html"
                                   title="previous chapter">Install</a></p>
             <h4>Next topic</h4>
-            <p class="topless"><a href="using.html"
-                                  title="next chapter">Using Bolt</a></p>
+            <p class="topless"><a href="using-cli.html"
+                                  title="next chapter">Using Bolt (CLI)</a></p>
             <h3>This Page</h3>
             <ul class="this-page-menu">
               <li><a href="sources/overview.txt"
@@ -1004,12 +1018,12 @@ Assumes that labels are coded as 1 or -1.</p>
           <a href="modindex.html" title="Global Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="using.html" title="Using Bolt"
+          <a href="using-cli.html" title="Using Bolt (CLI)"
              >next</a> |</li>
         <li class="right" >
           <a href="install.html" title="Install"
              >previous</a> |</li>
-        <li><a href="index.html"> Bolt v1.3 documentation</a> &raquo;</li> 
+        <li><a href="index.html"> Bolt v1.4 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">

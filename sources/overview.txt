@@ -55,6 +55,23 @@ The :mod:`bolt.trainer.sgd` Module
    :show-inheritance:
    :inherited-members:
 
+The :mod:`bolt.trainer.avgperceptron` Module
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. automodule:: bolt.trainer.avgperceptron
+   :members:
+   :show-inheritance:
+   :inherited-members:
+
+The :mod:`bolt.trainer.maxent` Module
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. automodule:: bolt.trainer.maxent
+   :members:
+   :show-inheritance:
+   :inherited-members:
+
+
 The :mod:`bolt.io` Module
 -------------------------
 
@@ -79,3 +96,5 @@ References
 .. [Zhang2004] Zhang, T., *Solving large scale linear prediction problems using stochastic gradient descent algorithms*. In Proceedings of ICML '04.
 
 .. [Zou2005] Zou, H., and Hastie, T., *Regularization and variable selection via the elastic net*. Journal of the Royal Statistical Society Series B, 67 (2), 301-320.
+
+.. [Freund1998] Freund, Y., and Schapire, R. E., *Large margin classification using the perceptron algorithm*. In Machine Learning, 37, 277-296.

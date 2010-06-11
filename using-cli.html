@@ -1,0 +1,309 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Using Bolt (CLI) &mdash;  Bolt v1.4 documentation</title>
+    <link rel="stylesheet" href="static/default.css" type="text/css" />
+    <link rel="stylesheet" href="static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '#',
+        VERSION:     '1.4',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="static/jquery.js"></script>
+    <script type="text/javascript" src="static/doctools.js"></script>
+    <link rel="top" title=" Bolt v1.4 documentation" href="index.html" />
+    <link rel="next" title="Using Bolt (API)" href="using-api.html" />
+    <link rel="prev" title="API Overview" href="overview.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="modindex.html" title="Global Module Index"
+             accesskey="M">modules</a> |</li>
+        <li class="right" >
+          <a href="using-api.html" title="Using Bolt (API)"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="overview.html" title="API Overview"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html"> Bolt v1.4 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="using-bolt-cli">
+<span id="using-cli"></span><h1>Using Bolt (CLI)<a class="headerlink" href="#using-bolt-cli" title="Permalink to this headline">¶</a></h1>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Release:</th><td class="field-body">1.4</td>
+</tr>
+<tr class="field"><th class="field-name">Date:</th><td class="field-body">June 11, 2010</td>
+</tr>
+</tbody>
+</table>
+<p>This section shows how to use Bolt via its command line interface. First, we will introduce the CLI. Then, we will discuss the how to use Bolt via its CLI for a) binary and for b) multi-class classification.</p>
+<div class="section" id="command-line-interface">
+<h2>Command Line Interface<a class="headerlink" href="#command-line-interface" title="Permalink to this headline">¶</a></h2>
+<p>Bolt provides a number of scripts which allow trainig, testing, and model selection from the command line.</p>
+<p>Currently, the follwoing scripts are shipped with bolt:</p>
+<blockquote>
+<dl class="docutils">
+<dt><em>sb</em></dt>
+<dd>The main script of Bolt for training and testing.</dd>
+<dt><em>sb_cv</em></dt>
+<dd>A script for model selection using cross-validation.</dd>
+<dt><em>svml2npy</em></dt>
+<dd>A utility script to convert data files from textual (svm^light) to binary format.</dd>
+</dl>
+</blockquote>
+<p>For detailed information on the scripts see below or execute the script with the flag <cite>&#8211;help</cite>.</p>
+<div class="section" id="sb">
+<h3>sb<a class="headerlink" href="#sb" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-python"><pre>Usage: sb [options] example_file
+
+Bolt Online Learning Toolbox V1.4: Discriminative learning of linear models
+using stochastic gradient descent.
+
+Copyright: Peter Prettenhofer &lt;peter.prettenhofer@gmail.com&gt;
+
+This software is available for non-commercial use only. It must not
+be modified and distributed without prior permission of the author.
+The author is not responsible for implications from the use of this
+software.
+
+http://github.com/pprett/bolt
+
+Options:
+  --version             show program's version number and exit
+  -h, --help            show this help message and exit
+  -v [0,1,2], --verbose=[0,1,2]    verbose output
+  -c CLSTYPE, --clstype=CLSTYPE  Classifier type.
+                        sgd: Stochastic Gradient Descent [default].
+                        pegasos: Primal Estimated sub-GrAdient SOlver for SVM.
+                        ova: One-vs-All strategy for SGD classifiers.
+                        maxent: Maximum Entropy (via SGD).
+                        avgperc: Averaged Perceptron.
+  -l [0..], --loss=[0..]
+                        Loss function to use.
+                        0: Hinge loss.
+                        1: Modified huber loss [default].
+                        2: Log loss.
+                        5: Squared loss.
+                        6: Huber loss.
+  -r float, --reg=float
+                        Regularization term lambda [default 0.0001].
+  -e float, --epsilon=float
+                        Size of the regression tube.
+  -n [1,2,3], --norm=[1,2,3]
+                        Penalty to use.
+                        1: L1.
+                        2: L2 [default].
+                        3: Elastic Net: (1-a)L1 + aL2.
+  -a float, --alpha=float
+                        Elastic Net parameter alpha [requires -n 3; default
+                        0.85].
+  -E int, --epochs=int  Number of epochs to perform [default 5].
+  --shuffle             Shuffle the training data after each epoche.
+  -b, --bias            Use a biased hyperplane (w^t x + b) [default False].
+  -p FILE, --predictions=FILE
+                        Write predicitons to FILE. If FILE is '-' write to
+                        stdout [either -t or --test-only are required].
+  -t FILE               Evaluate the model on a separate test file.
+  -m FILE, --model=FILE
+                        If --test-only: Apply seralized model in FILE to
+                        example_file.
+                        else: store trained model in FILE.
+  --test-only           Apply serialized model in option -m to example_file
+                        [requires -m].
+  --train-error         Compute training error [False].
+
+More details in:
+
+[Zhang, T., 2004] Solving large scale linear prediction problems using
+stochastic gradient descent algorithms. In ICML '04.
+
+[Shwartz, S. S., Singer, Y., and Srebro, N., 2007] Pegasos: Primal
+estimated sub-gradient solver for svm. In ICML '07.
+
+[Tsuruoka, Y., Tsujii, J., and Ananiadou, S., 2009] Stochastic gradient
+descent training for l1-regularized log-linear models with cumulative
+penalty. In ACL '09.</pre>
+</div>
+</div>
+<div class="section" id="sb-cv">
+<h3>sb_cv<a class="headerlink" href="#sb-cv" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-python"><pre>Usage: sb_cv [options] example_file
+
+Bolt Online Learning Toolbox V1.4: Discriminative learning of linear models
+using stochastic gradient descent.
+
+Copyright: Peter Prettenhofer &lt;peter.prettenhofer@gmail.com&gt;
+
+This software is available for non-commercial use only. It must not
+be modified and distributed without prior permission of the author.
+The author is not responsible for implications from the use of this
+software.
+
+http://github.com/pprett/bolt
+
+Options:
+  --version             show program's version number and exit
+  -h, --help            show this help message and exit
+  -v [0,1,2], --verbose=[0,1,2]
+                        verbose output
+  -c CLSTYPE, --clstype=CLSTYPE
+                        Classifier type.
+                        sgd: Stochastic Gradient Descent [default].
+                        pegasos: Primal Estimated sub-GrAdient SOlver for SVM.
+                        ova: One-vs-All strategy for SGD classifiers.
+                        maxent: Maximum Entropy (via SGD).
+                        avgperc: Averaged Perceptron.
+  -l [0..], --loss=[0..]
+                        Loss function to use.
+                        0: Hinge loss.
+                        1: Modified huber loss [default].
+                        2: Log loss.
+                        5: Squared loss.
+                        6: Huber loss.
+  -r float, --reg=float
+                        Regularization term lambda [default 0.0001].
+  -e float, --epsilon=float
+                        Size of the regression tube.
+  -n [1,2,3], --norm=[1,2,3]
+                        Penalty to use.
+                        1: L1.
+                        2: L2 [default].
+                        3: Elastic Net: (1-a)L1 + aL2.
+  -a float, --alpha=float
+                        Elastic Net parameter alpha [requires -n 3; default
+                        0.85].
+  -E int, --epochs=int  Number of epochs to perform [default 5].
+  --shuffle             Shuffle the training data after each epoche.
+  -b, --bias            Use a biased hyperplane (w^t x + b) [default False].
+  -f int, --folds=int   number of folds [default 10].
+  -s int, --seed=int    seed for CV shuffle [default none].
+
+More details in:
+
+[Zhang, T., 2004] Solving large scale linear prediction problems using
+stochastic gradient descent algorithms. In ICML '04.
+
+[Shwartz, S. S., Singer, Y., and Srebro, N., 2007] Pegasos: Primal
+estimated sub-gradient solver for svm. In ICML '07.
+
+[Tsuruoka, Y., Tsujii, J., and Ananiadou, S., 2009] Stochastic gradient
+descent training for l1-regularized log-linear models with cumulative
+penalty. In ACL '09.</pre>
+</div>
+</div>
+<div class="section" id="svml2npy">
+<h3>svml2npy<a class="headerlink" href="#svml2npy" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-python"><pre>Usage: svml2npy in-file out-file
+
+     Converts the svm^light encoded in-file into the binary encoded out-file.</pre>
+</div>
+</div>
+</div>
+<div class="section" id="binary-classification">
+<h2>Binary classification<a class="headerlink" href="#binary-classification" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="multi-class-classification">
+<h2>Multi-class classification<a class="headerlink" href="#multi-class-classification" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="static/bolt.jpg" alt="Logo"/>
+            </a></p>
+            <h3><a href="index.html">Table Of Contents</a></h3>
+            <ul>
+<li><a class="reference external" href="#">Using Bolt (CLI)</a><ul>
+<li><a class="reference external" href="#command-line-interface">Command Line Interface</a><ul>
+<li><a class="reference external" href="#sb">sb</a></li>
+<li><a class="reference external" href="#sb-cv">sb_cv</a></li>
+<li><a class="reference external" href="#svml2npy">svml2npy</a></li>
+</ul>
+</li>
+<li><a class="reference external" href="#binary-classification">Binary classification</a></li>
+<li><a class="reference external" href="#multi-class-classification">Multi-class classification</a></li>
+</ul>
+</li>
+</ul>
+
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="overview.html"
+                                  title="previous chapter">API Overview</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="using-api.html"
+                                  title="next chapter">Using Bolt (API)</a></p>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="sources/using-cli.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="modindex.html" title="Global Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="using-api.html" title="Using Bolt (API)"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="overview.html" title="API Overview"
+             >previous</a> |</li>
+        <li><a href="index.html"> Bolt v1.4 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+      &copy; Copyright 2010, Peter Prettenhofer .
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.5.
+    </div>
+  </body>
+</html>

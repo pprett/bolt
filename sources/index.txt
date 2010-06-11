@@ -14,17 +14,40 @@ Bolt features discriminative learning of linear predictors (e.g. SVM or
 logistic regression) using stochastic gradient descent. Bolt is
 aimed at large-scale, high-dimensional and sparse machine-learning problems.
 In particular, problems encountered in information retrieval and
-natural language processing. 
+natural language processing.
 
 **Contents**:
 
 .. toctree::
    :maxdepth: 1
 
-   install.rst
-   overview.rst
-   using.rst
-   whatsnew.rst
+   install.rst              
+   overview.rst                
+   using-cli.rst
+   using-api.rst
+   whatsnew.rst 
+
+Features
+========
+
+Currently, Bolt provides the following models for binary and multi-class classification. 
+
++-------------------------+----------------+--------------+-----------+
+|Model                    |Loss            |Penalty       |Multi-class|
++=========================+================+==============+===========+
+|*SGD*                    | - Hinge        | - L2         |OVA        |
+|                         | - Mod. Huber   | - L1         |           |
+|                         | - Log          | - ElasticNet |           |
+|                         |                |              |           |
++-------------------------+----------------+--------------+-----------+
+|*PEGASOS*                | - Hinge        | - L2         |OVA        |
++-------------------------+----------------+--------------+-----------+
+|*AvgPerceptron*          | - Zero-One     | - (Averaging)|True       |
++-------------------------+----------------+--------------+-----------+
+|*MaxentSGD*              | - Cross-Entropy| - L2         |True       |
+|                         |                |              |           |
++-------------------------+----------------+--------------+-----------+
+
 
 Indices and tables
 ==================
