@@ -14,7 +14,10 @@ Where, x is the example to be predicted, w is a vector of parameters
 term and w*x represents the inner (dot) product of w and x. The error
 function takes the following form, 
 
-   E(w,b) = 'loss + penalty'
+   Error = loss + penalty
+   .. role:: raw-math(raw)
+       :format: latex html
+       E(\mathbf{w},b) = \sum_{i=1}^n L(y_i,f(x_i)) + \lambda R(\mathbf{w})
 
 Where, 'penalty' is a term which penalizes model complexity (usually
 the l2-norm of the weight vector w) and 'loss' is a
