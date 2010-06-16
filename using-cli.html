@@ -56,7 +56,7 @@
 <tbody valign="top">
 <tr class="field"><th class="field-name">Release:</th><td class="field-body">1.4</td>
 </tr>
-<tr class="field"><th class="field-name">Date:</th><td class="field-body">June 11, 2010</td>
+<tr class="field"><th class="field-name">Date:</th><td class="field-body">June 16, 2010</td>
 </tr>
 </tbody>
 </table>
@@ -148,6 +148,43 @@ estimated sub-gradient solver for svm. In ICML '07.
 descent training for l1-regularized log-linear models with cumulative
 penalty. In ACL '09.</pre>
 </div>
+<div class="section" id="examples">
+<h4>Examples:<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h4>
+<p>Train binary classifier with SGD and modified huber loss on <cite>train.npy</cite> and test on <cite>test.npy</cite>:</p>
+<div class="highlight-python"><pre>$ sb train.npy -t test.npy
+loading data ...  [done]
+---------
+Training:
+---------
+-- Epoch 1
+Norm: 28.39, NNZs: 41333, Bias: 0.000000, T: 781265, Avg. loss: 0.191140
+Total training time: 0.65 seconds.
+[...]
+-- Epoch 5
+Norm: 28.19, NNZs: 41520, Bias: 0.000000, T: 3906325, Avg. loss: 0.182684
+Total training time: 3.07 seconds.
+loading data ...  [done]
+--------
+Testing:
+--------
+error: 5.5812
+Total prediction time: 0.25 seconds.</pre>
+</div>
+<p>Train binary classifier with SGD and modified huber loss on <cite>train.npy</cite> and save it to <cite>model.pkl</cite>:</p>
+<div class="highlight-python"><pre>$ sb train.npy -m model.pkl
+loading data ...  [done]
+---------
+Training:
+---------
+-- Epoch 1
+Norm: 28.39, NNZs: 41333, Bias: 0.000000, T: 781265, Avg. loss: 0.191140
+Total training time: 0.76 seconds.
+[...]
+-- Epoch 5
+Norm: 28.19, NNZs: 41520, Bias: 0.000000, T: 3906325, Avg. loss: 0.182684
+Total training time: 3.54 seconds.</pre>
+</div>
+</div>
 </div>
 <div class="section" id="sb-cv">
 <h3>sb_cv<a class="headerlink" href="#sb-cv" title="Permalink to this headline">¶</a></h3>
@@ -214,6 +251,20 @@ estimated sub-gradient solver for svm. In ICML '07.
 descent training for l1-regularized log-linear models with cumulative
 penalty. In ACL '09.</pre>
 </div>
+<div class="section" id="id1">
+<h4>Examples:<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h4>
+<p>Perform 5-fold CV on <cite>train.npy</cite> using Logistic Regression and <img class="math" src="images/math/18fdd887b64d5b5c7fe765a7e708d86156537dbe.png" alt="\lambda=0.00001"/>:</p>
+<div class="highlight-python"><pre>$ sb_cv train.npy -f 5 -l 2 -r 0.00001
+loading data ...  [done]
+Fold  Error
+1      5.41
+2      5.40
+3      5.39
+4      5.49
+5      5.36
+avg    5.41 (0.04)</pre>
+</div>
+</div>
 </div>
 <div class="section" id="svml2npy">
 <h3>svml2npy<a class="headerlink" href="#svml2npy" title="Permalink to this headline">¶</a></h3>
@@ -222,12 +273,6 @@ penalty. In ACL '09.</pre>
      Converts the svm^light encoded in-file into the binary encoded out-file.</pre>
 </div>
 </div>
-</div>
-<div class="section" id="binary-classification">
-<h2>Binary classification<a class="headerlink" href="#binary-classification" title="Permalink to this headline">¶</a></h2>
-</div>
-<div class="section" id="multi-class-classification">
-<h2>Multi-class classification<a class="headerlink" href="#multi-class-classification" title="Permalink to this headline">¶</a></h2>
 </div>
 </div>
 
@@ -244,13 +289,17 @@ penalty. In ACL '09.</pre>
             <ul>
 <li><a class="reference external" href="#">Using Bolt (CLI)</a><ul>
 <li><a class="reference external" href="#command-line-interface">Command Line Interface</a><ul>
-<li><a class="reference external" href="#sb">sb</a></li>
-<li><a class="reference external" href="#sb-cv">sb_cv</a></li>
+<li><a class="reference external" href="#sb">sb</a><ul>
+<li><a class="reference external" href="#examples">Examples:</a></li>
+</ul>
+</li>
+<li><a class="reference external" href="#sb-cv">sb_cv</a><ul>
+<li><a class="reference external" href="#id1">Examples:</a></li>
+</ul>
+</li>
 <li><a class="reference external" href="#svml2npy">svml2npy</a></li>
 </ul>
 </li>
-<li><a class="reference external" href="#binary-classification">Binary classification</a></li>
-<li><a class="reference external" href="#multi-class-classification">Multi-class classification</a></li>
 </ul>
 </li>
 </ul>

@@ -15,7 +15,6 @@ bolt.trainer.sgd.SquaredError class overview.html
 bolt.io.BinaryDataset class overview.html
 bolt.trainer.sgd.Huber class overview.html
 bolt.model.LinearModel.predict method overview.html
-bolt.io.Dataset.iterlabels method overview.html
 bolt.model.GeneralizedLinearModel class overview.html
 bolt.io.MemoryDataset.load classmethod overview.html
 bolt.trainer.sgd.LossFunction.dloss attribute overview.html
@@ -31,8 +30,6 @@ bolt.io.MemoryDataset.sample method overview.html
 bolt.trainer.sgd.LossFunction class overview.html
 bolt.trainer.OVA.train method overview.html
 bolt.io.MemoryDataset.iterlabels method overview.html
-bolt.io.Dataset.iterinstances method overview.html
-bolt.io.Dataset.shuffle method overview.html
 bolt.trainer.OVA class overview.html
 bolt.trainer.sgd.Log class overview.html
 bolt.io.MemoryDataset.split method overview.html
@@ -47,8 +44,8 @@ bolt.io.MemoryDataset.merge classmethod overview.html
 bolt.eval.cost function overview.html
 bolt.trainer.maxent.MaxentSGD class overview.html
 bolt.trainer.sgd.ModifiedHuber class overview.html
-bolt.io.MemoryDataset.store method overview.html
 bolt.trainer.sgd.Regression class overview.html
+bolt.io.MemoryDataset.store method overview.html
 bolt.io.MemoryDataset.iterqids method overview.html
 bolt.model.LinearModel class overview.html
 bolt.io.loadNpz function overview.html

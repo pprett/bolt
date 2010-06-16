@@ -52,17 +52,12 @@
 <tbody valign="top">
 <tr class="field"><th class="field-name">Release:</th><td class="field-body">1.4</td>
 </tr>
-<tr class="field"><th class="field-name">Date:</th><td class="field-body">June 11, 2010</td>
+<tr class="field"><th class="field-name">Date:</th><td class="field-body">June 16, 2010</td>
 </tr>
 <tr class="field"><th class="field-name">Author:</th><td class="field-body"><a class="reference external" href="mailto:peter&#46;prettenhofer&#37;&#52;&#48;gmail&#46;com">peter<span>&#46;</span>prettenhofer<span>&#64;</span>gmail<span>&#46;</span>com</a></td>
 </tr>
 </tbody>
 </table>
-<p>Bolt features discriminative learning of linear predictors (e.g. SVM or
-logistic regression) using stochastic gradient descent. Bolt is
-aimed at large-scale, high-dimensional and sparse machine-learning problems.
-In particular, problems encountered in information retrieval and
-natural language processing.</p>
 <p><strong>Contents</strong>:</p>
 <ul>
 <li class="toctree-l1"><a class="reference external" href="install.html">Install</a></li>
@@ -71,75 +66,56 @@ natural language processing.</p>
 <li class="toctree-l1"><a class="reference external" href="using-api.html">Using Bolt (API)</a></li>
 <li class="toctree-l1"><a class="reference external" href="whatsnew.html">What&#8217;s new</a></li>
 </ul>
-</div>
-<div class="section" id="features">
-<h1>Features<a class="headerlink" href="#features" title="Permalink to this headline">¶</a></h1>
-<p>Currently, Bolt provides the following models for binary and multi-class classification.</p>
-<table border="1" class="docutils">
-<colgroup>
-<col width="38%" />
-<col width="24%" />
-<col width="21%" />
-<col width="17%" />
-</colgroup>
-<thead valign="bottom">
-<tr><th class="head">Model</th>
-<th class="head">Loss</th>
-<th class="head">Penalty</th>
-<th class="head">Multi-class</th>
-</tr>
-</thead>
-<tbody valign="top">
-<tr><td><em>SGD</em></td>
-<td><ul class="first last simple">
-<li>Hinge</li>
-<li>Mod. Huber</li>
-<li>Log</li>
+<p><strong>Introduction</strong></p>
+<p>Bolt features discriminative learning of linear predictors (e.g. <a class="reference external" href="http://en.wikipedia.org/wiki/Support_vector_machine">SVM</a> or
+<a class="reference external" href="http://en.wikipedia.org/wiki/Logistic_regression">Logistic Regression</a>) using fast online learning algorithms. Bolt is
+aimed at large-scale, high-dimensional and sparse machine-learning problems.
+In particular, problems encountered in information retrieval and
+natural language processing.</p>
+<p>Bolt considers linear models (<a title="bolt.model.LinearModel" class="reference external" href="overview.html#bolt.model.LinearModel"><tt class="xref docutils literal"><span class="pre">bolt.model.LinearModel</span></tt></a>) for binary classification,</p>
+<div class="math">
+<p><img src="images/math/af7b55f48387d8a209e0d194c928e8e0e3daf339.png" alt="f(\mathbf{x}) = \operatorname{sign}(\mathbf{w}^T \mathbf{x} + b) ," /></p>
+</div><p>and generalized linear models (<a title="bolt.model.GeneralizedLinearModel" class="reference external" href="overview.html#bolt.model.GeneralizedLinearModel"><tt class="xref docutils literal"><span class="pre">bolt.model.GeneralizedLinearModel</span></tt></a>) for multi-class classification,</p>
+<div class="math">
+<p><img src="images/math/ad26aa157e478a81803175bbf1d2e487de1c7ae3.png" alt="f(\mathbf{x}) = \operatorname*{arg\,max}_y \mathbf{w}^T \Phi(\mathbf{x},y) + b_y ." /></p>
+</div><p>Where <img class="math" src="images/math/fe8742a5c8740bebb644bf5f3fdcadae1a4ecf0c.png" alt="\mathbf{w}"/> and <img class="math" src="images/math/8136a7ef6a03334a7246df9097e5bcc31ba33fd2.png" alt="b"/> are the model parameters that are learned from training data.
+In Bolt the model parameters are learned by minimizing the regularized training error given by,</p>
+<div class="math">
+<p><img src="images/math/59349aa34531811db750087bb6c137dbc0e8dbca.png" alt="E(\mathbf{w},b) = \sum_{i=1}^n L(y_i,f(\mathbf{x}_i)) + \lambda R(\mathbf{w}) ," /></p>
+</div><p>where <img class="math" src="images/math/859ccf4cd60c7bc6b8fa1afc9a42dc811a826d6f.png" alt="L"/> is a loss function that measures model fit and <img class="math" src="images/math/eff43e84f8a3bcf7b6965f0a3248bc4d3a9d0cd4.png" alt="R"/> is a regularization term that measures model complexity.</p>
+<p>Bolt supports the following trainers for binary classification:</p>
+<blockquote>
+<ul>
+<li><dl class="first docutils">
+<dt>Stochastic Gradient Descent (<a title="bolt.trainer.sgd.SGD" class="reference external" href="overview.html#bolt.trainer.sgd.SGD"><tt class="xref docutils literal"><span class="pre">bolt.trainer.sgd.SGD</span></tt></a>)</dt>
+<dd><ul class="first last simple">
+<li>Supports various loss functions <img class="math" src="images/math/859ccf4cd60c7bc6b8fa1afc9a42dc811a826d6f.png" alt="L"/> : Hinge, Modified Huber, Log.</li>
+<li>Supports various regularization terms <img class="math" src="images/math/eff43e84f8a3bcf7b6965f0a3248bc4d3a9d0cd4.png" alt="R"/> : L2, L1, and Elastic Net.</li>
 </ul>
-</td>
-<td><ul class="first last simple">
-<li>L2</li>
-<li>L1</li>
-<li>ElasticNet</li>
+</dd>
+</dl>
+</li>
+<li><p class="first">PEGASOS (<a title="bolt.trainer.sgd.PEGASOS" class="reference external" href="overview.html#bolt.trainer.sgd.PEGASOS"><tt class="xref docutils literal"><span class="pre">bolt.trainer.sgd.PEGASOS</span></tt></a>)</p>
+</li>
 </ul>
-</td>
-<td>OVA</td>
-</tr>
-<tr><td><em>PEGASOS</em></td>
-<td><ul class="first last simple">
-<li>Hinge</li>
+</blockquote>
+<p>For multi-class classification:</p>
+<blockquote>
+<ul>
+<li><p class="first">Averaged Perceptron (<a title="bolt.trainer.avgperceptron.AveragedPerceptron" class="reference external" href="overview.html#bolt.trainer.avgperceptron.AveragedPerceptron"><tt class="xref docutils literal"><span class="pre">bolt.trainer.avgperceptron.AveragedPerceptron</span></tt></a>)</p>
+</li>
+<li><dl class="first docutils">
+<dt>Maximum Entropy (<a title="bolt.trainer.maxent.MaxentSGD" class="reference external" href="overview.html#bolt.trainer.maxent.MaxentSGD"><tt class="xref docutils literal"><span class="pre">bolt.trainer.maxent.MaxentSGD</span></tt></a>)</dt>
+<dd><ul class="first last simple">
+<li>aka Multinomial Logistic Regression</li>
+<li>Trained via SGD.</li>
 </ul>
-</td>
-<td><ul class="first last simple">
-<li>L2</li>
+</dd>
+</dl>
+</li>
 </ul>
-</td>
-<td>OVA</td>
-</tr>
-<tr><td><em>AvgPerceptron</em></td>
-<td><ul class="first last simple">
-<li>Zero-One</li>
-</ul>
-</td>
-<td><ul class="first last simple">
-<li>(Averaging)</li>
-</ul>
-</td>
-<td>True</td>
-</tr>
-<tr><td><em>MaxentSGD</em></td>
-<td><ul class="first last simple">
-<li>Cross-Entropy</li>
-</ul>
-</td>
-<td><ul class="first last simple">
-<li>L2</li>
-</ul>
-</td>
-<td>True</td>
-</tr>
-</tbody>
-</table>
+</blockquote>
+<p>Furthermore, a one-versus-all (<a title="bolt.trainer.OVA" class="reference external" href="overview.html#bolt.trainer.OVA"><tt class="xref docutils literal"><span class="pre">bolt.trainer.OVA</span></tt></a>) strategy to combine multiple binary classifiers for multi-class classification is supported.</p>
 </div>
 <div class="section" id="indices-and-tables">
 <h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
@@ -164,7 +140,6 @@ natural language processing.</p>
 <li><a class="reference external" href="#">Bolt Online Learning Toolbox</a><ul>
 </ul>
 </li>
-<li><a class="reference external" href="#features">Features</a></li>
 <li><a class="reference external" href="#indices-and-tables">Indices and tables</a></li>
 </ul>
 

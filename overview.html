@@ -56,7 +56,7 @@
 <tbody valign="top">
 <tr class="field"><th class="field-name">Release:</th><td class="field-body">1.4</td>
 </tr>
-<tr class="field"><th class="field-name">Date:</th><td class="field-body">June 11, 2010</td>
+<tr class="field"><th class="field-name">Date:</th><td class="field-body">June 16, 2010</td>
 </tr>
 </tbody>
 </table>
@@ -118,12 +118,21 @@ parametric models supported by Bolt.</p>
 <dt id="bolt.model.GeneralizedLinearModel">
 <em class="property">class </em><tt class="descclassname">bolt.model.</tt><tt class="descname">GeneralizedLinearModel</tt><big>(</big><em>m</em>, <em>k</em>, <em>biasterm=False</em><big>)</big><a class="headerlink" href="#bolt.model.GeneralizedLinearModel" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <tt class="xref docutils literal"><span class="pre">object</span></tt></p>
-<p>A generalized linear model of the form <img class="math" src="images/math/da2c54ee7ca1caec1c35db17043b7e32ba28e22d.png" alt="z = argmax_y w^T f(x,y) + b_y"/>.</p>
+<p>A generalized linear model of the form <img class="math" src="images/math/308cd0dccacfa7ba2214a8eea94b4fcf9a17480e.png" alt="z = \operatorname*{arg\,max}_y \mathbf{w}^T \Phi(\mathbf{x},y) + b_y"/>.</p>
 <p>Create a generalized linear model for
 classification problems with <cite>k</cite> classes.</p>
-<p>Parameters:
-m: The dimensionality of the input data (i.e., the number of features).
-k: The number of classes.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><em>m</em> &#8211; The dimensionality of the input data (i.e., the number of features).</li>
+<li><em>k</em> &#8211; The number of classes.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
 <dl class="method">
 <dt id="bolt.model.GeneralizedLinearModel.predict">
 <tt class="descname">predict</tt><big>(</big><em>instances</em>, <em>confidence=False</em><big>)</big><a class="headerlink" href="#bolt.model.GeneralizedLinearModel.predict" title="Permalink to this definition">¶</a></dt>
@@ -154,9 +163,9 @@ See <tt class="xref docutils literal"><span class="pre">GeneralizedLinearModel._
 <dt id="bolt.model.LinearModel">
 <em class="property">class </em><tt class="descclassname">bolt.model.</tt><tt class="descname">LinearModel</tt><big>(</big><em>m</em>, <em>biasterm=False</em><big>)</big><a class="headerlink" href="#bolt.model.LinearModel" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <tt class="xref docutils literal"><span class="pre">object</span></tt></p>
-<p>A linear model of the form <img class="math" src="images/math/9a66447c0268fbd1255e24a98496beb1c2287961.png" alt="y = w^T x + b"/>.</p>
+<p>A linear model of the form <img class="math" src="images/math/4f4850318304d4ac67cfbc106828573fd3a566e0.png" alt="z = \operatorname{sign}(\mathbf{w}^T \mathbf{x} + b)"/>.</p>
 <p>Create a linear model with an
-m-dimensional vector <cite>w = [0,..,0]</cite> and <cite>b = 0</cite>.</p>
+m-dimensional vector <img class="math" src="images/math/c0237d375eb92ca382919845b88173860c17714d.png" alt="w = [0,..,0]"/> and <cite>b = 0</cite>.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -172,7 +181,7 @@ m-dimensional vector <cite>w = [0,..,0]</cite> and <cite>b = 0</cite>.</p>
 <dl class="method">
 <dt id="bolt.model.LinearModel.predict">
 <tt class="descname">predict</tt><big>(</big><em>examples</em>, <em>confidence=False</em><big>)</big><a class="headerlink" href="#bolt.model.LinearModel.predict" title="Permalink to this definition">¶</a></dt>
-<dd><p>Evaluates <img class="math" src="images/math/5c1f0e6a27c01a4f6696940230c7703abf3d9907.png" alt="y = sign(w^T x + b)"/> for each
+<dd><p>Evaluates <img class="math" src="images/math/f2d8c267d0fee94d6f037c7e85fa839e1345d50e.png" alt="y = sign(w^T \mathbf{x} + b)"/> for each
 example x in examples.
 See :meth:LinearModel.__call__ .</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -605,21 +614,6 @@ Stochastic Gradient Descent&#8217;, ICML&#8216;04.</p>
 <em class="property">class </em><tt class="descclassname">bolt.io.</tt><tt class="descname">Dataset</tt><a class="headerlink" href="#bolt.io.Dataset" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <tt class="xref docutils literal"><span class="pre">object</span></tt></p>
 <p>Dataset interface.</p>
-<dl class="method">
-<dt id="bolt.io.Dataset.iterinstances">
-<tt class="descname">iterinstances</tt><big>(</big><big>)</big><a class="headerlink" href="#bolt.io.Dataset.iterinstances" title="Permalink to this definition">¶</a></dt>
-<dd>Iterate over instances.</dd></dl>
-
-<dl class="method">
-<dt id="bolt.io.Dataset.iterlabels">
-<tt class="descname">iterlabels</tt><big>(</big><big>)</big><a class="headerlink" href="#bolt.io.Dataset.iterlabels" title="Permalink to this definition">¶</a></dt>
-<dd>Iterate over labels.</dd></dl>
-
-<dl class="method">
-<dt id="bolt.io.Dataset.shuffle">
-<tt class="descname">shuffle</tt><big>(</big><em>seed=None</em><big>)</big><a class="headerlink" href="#bolt.io.Dataset.shuffle" title="Permalink to this definition">¶</a></dt>
-<dd>Permutates the order of the <cite>Dataset</cite></dd></dl>
-
 </dd></dl>
 
 <dl class="class">
@@ -692,7 +686,8 @@ For gzipped files thefilename must end with <cite>.gz</cite>.</p>
 </table>
 <p>Examples:</p>
 <blockquote>
-<p>SVM^light format:</p>
+<blockquote>
+SVM^light format:</blockquote>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">ds</span> <span class="o">=</span> <span class="n">bolt</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">MemoryDataset</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s">&#39;train.txt&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -700,7 +695,8 @@ For gzipped files thefilename must end with <cite>.gz</cite>.</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">ds</span> <span class="o">=</span> <span class="n">bolt</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">MemoryDataset</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s">&#39;train.txt.gz&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Binary format:</p>
+<blockquote>
+Binary format:</blockquote>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">ds</span> <span class="o">=</span> <span class="n">bolt</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">MemoryDataset</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s">&#39;train.npy&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
