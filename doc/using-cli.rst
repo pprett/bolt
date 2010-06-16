@@ -101,6 +101,50 @@ sb
     descent training for l1-regularized log-linear models with cumulative
     penalty. In ACL '09.  
 
+Examples:
+?????????
+
+Train binary classifier with SGD and modified huber loss on `train.npy` and test on `test.npy`: 
+
+::
+
+    $ sb train.npy -t test.npy 
+    loading data ...  [done]
+    ---------
+    Training:
+    ---------
+    -- Epoch 1
+    Norm: 28.39, NNZs: 41333, Bias: 0.000000, T: 781265, Avg. loss: 0.191140
+    Total training time: 0.65 seconds.
+    [...]
+    -- Epoch 5
+    Norm: 28.19, NNZs: 41520, Bias: 0.000000, T: 3906325, Avg. loss: 0.182684
+    Total training time: 3.07 seconds.
+    loading data ...  [done]
+    --------
+    Testing:
+    --------
+    error: 5.5812
+    Total prediction time: 0.25 seconds.
+
+Train binary classifier with SGD and modified huber loss on `train.npy` and save it to `model.pkl`: 
+
+::
+
+    $ sb train.npy -m model.pkl 
+    loading data ...  [done]
+    ---------
+    Training:
+    ---------
+    -- Epoch 1
+    Norm: 28.39, NNZs: 41333, Bias: 0.000000, T: 781265, Avg. loss: 0.191140
+    Total training time: 0.76 seconds.
+    [...]
+    -- Epoch 5
+    Norm: 28.19, NNZs: 41520, Bias: 0.000000, T: 3906325, Avg. loss: 0.182684
+    Total training time: 3.54 seconds.
+
+
 sb_cv
 ^^^^^
 
@@ -167,7 +211,25 @@ sb_cv
 
     [Tsuruoka, Y., Tsujii, J., and Ananiadou, S., 2009] Stochastic gradient
     descent training for l1-regularized log-linear models with cumulative
-    penalty. In ACL '09.  
+    penalty. In ACL '09. 
+
+Examples:
+?????????
+
+Perform 5-fold CV on `train.npy` using Logistic Regression and :math:`\lambda=0.00001`: 
+
+::
+
+   $ sb_cv train.npy -f 5 -l 2 -r 0.00001
+   loading data ...  [done]
+   Fold  Error
+   1      5.41
+   2      5.40
+   3      5.39
+   4      5.49
+   5      5.36
+   avg    5.41 (0.04)
+
 
 
 svml2npy
@@ -177,15 +239,4 @@ svml2npy
    Usage: svml2npy in-file out-file
 
         Converts the svm^light encoded in-file into the binary encoded out-file.
-
-
-
-Binary classification
----------------------
-
-
-
-
-Multi-class classification
---------------------------
 

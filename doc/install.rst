@@ -21,24 +21,25 @@ To check your installed version use::
 
 To build Bolt you need a c compiler (e.g., gcc) and the header files of `numpy`. 
 
-On most Ubuntu systems the following should suffice::
+On Ubuntu systems the following should suffice::
 
   sudo apt-get install python-numpy
 
-If you want to modify the Cython code in the extension module `bolt.bolt` make sure that the newest release of Cython (>= 0.7) is installed::
-
-  sudo easy_install cython
+The installation has been tested on Windows 7 using the `Enthought Python Distribution <http://www.enthought.com/products/epd.php>`_.
+If you get undefined symbol errors, make sure that the lib_dir path in `setup.py` is properly set (for EPD 6.2 use `C:\\Python26\\PCbuild`).
+ 
+If you want to modify the Cython code in the extension module `bolt.bolt` make sure that the newest release of `Cython <http://www.cython.org/>`_ (>= 0.7) is installed. 
   
 Stable release
 --------------
 
 Download the latest release from github::
 
-  wget http://github.com/pprett/bolt/tarball/v1.2 -O bolt_v1.2.tar.gz
+  wget http://github.com/pprett/bolt/tarball/v1.4 -O bolt_v1.4.tar.gz
 
 Untar the archive::
 
-  tar xzvf bolt_v1.2.tar.gz
+  tar xzvf bolt_v1.4.tar.gz
   mv pprett* bolt
 
 Build bolt::

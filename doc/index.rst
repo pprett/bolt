@@ -10,12 +10,6 @@ Bolt Online Learning Toolbox
 :Date: |today|
 :Author: peter.prettenhofer@gmail.com
 
-Bolt features discriminative learning of linear predictors (e.g. SVM or
-logistic regression) using stochastic gradient descent. Bolt is
-aimed at large-scale, high-dimensional and sparse machine-learning problems.
-In particular, problems encountered in information retrieval and
-natural language processing.
-
 **Contents**:
 
 .. toctree::
@@ -27,27 +21,51 @@ natural language processing.
    using-api.rst
    whatsnew.rst 
 
-Features
-========
+**Introduction**
 
-Currently, Bolt provides the following models for binary and multi-class classification. 
+Bolt features discriminative learning of linear predictors (e.g. `SVM <http://en.wikipedia.org/wiki/Support_vector_machine>`_ or
+`Logistic Regression <http://en.wikipedia.org/wiki/Logistic_regression>`_) using fast online learning algorithms. Bolt is
+aimed at large-scale, high-dimensional and sparse machine-learning problems.
+In particular, problems encountered in information retrieval and
+natural language processing.
 
-+---------------+----------------+--------------+-----------+
-|Model          |Loss            |Penalty       |Multi-class|
-+===============+================+==============+===========+
-|*SGD*          | - Hinge        | - L2         |OVA        |
-|               | - Mod. Huber   | - L1         |           |
-|               | - Log          | - ElasticNet |           |
-|               |                |              |           |
-+---------------+----------------+--------------+-----------+
-|*PEGASOS*      | - Hinge        | - L2         |OVA        |
-+---------------+----------------+--------------+-----------+
-|*AvgPerceptron*| - Zero-One     | - (Averaging)|True       |
-+---------------+----------------+--------------+-----------+
-|*MaxentSGD*    | - Cross-Entropy| - L2         |True       |
-|               |                |              |           |
-+---------------+----------------+--------------+-----------+
+Bolt considers linear models (:class:`bolt.model.LinearModel`) for binary classification, 
 
+.. math::
+
+   f(\mathbf{x}) = \operatorname{sign}(\mathbf{w}^T \mathbf{x} + b) , 
+
+and generalized linear models (:class:`bolt.model.GeneralizedLinearModel`) for multi-class classification, 
+
+.. math::
+
+   f(\mathbf{x}) = \operatorname*{arg\,max}_y \mathbf{w}^T \Phi(\mathbf{x},y) + b_y .
+
+Where :math:`\mathbf{w}` and :math:`b` are the model parameters that are learned from training data. 
+In Bolt the model parameters are learned by minimizing the regularized training error given by, 
+
+.. math::
+    
+    E(\mathbf{w},b) = \sum_{i=1}^n L(y_i,f(\mathbf{x}_i)) + \lambda R(\mathbf{w}) , 
+
+where :math:`L` is a loss function that measures model fit and :math:`R` is a regularization term that measures model complexity. 
+
+Bolt supports the following trainers for binary classification: 
+
+   * Stochastic Gradient Descent (:class:`bolt.trainer.sgd.SGD`)
+        * Supports various loss functions :math:`L` : Hinge, Modified Huber, Log. 
+        * Supports various regularization terms :math:`R` : L2, L1, and Elastic Net. 
+
+   * PEGASOS (:class:`bolt.trainer.sgd.PEGASOS`)
+
+For multi-class classification: 
+
+   * Averaged Perceptron (:class:`bolt.trainer.avgperceptron.AveragedPerceptron`)
+   * Maximum Entropy (:class:`bolt.trainer.maxent.MaxentSGD`)
+        * aka Multinomial Logistic Regression
+        * Trained via SGD. 
+
+Furthermore, a one-versus-all (:class:`bolt.trainer.OVA`) strategy to combine multiple binary classifiers for multi-class classification is supported. 
 
 Indices and tables
 ==================

@@ -1,30 +1,11 @@
 Bolt Online Learning Toolbox
 ============================
 
-Bolt features discriminative learning of linear predictors (e.g. SVM or
-logistic regression) using stochastic gradient descent. Bolt is aimed at large-scale, high-dimensional and sparse machine-learning problems. In particular, problems encountered in information retrieval and natural language processing. 
-
-Bolt considers linear prediction problems where one wants to learn a
-linear predictor f(x) which minimizes a given error function E(w,b),  
-
-   f(x) = w*x + b
-
-Where, x is the example to be predicted, w is a vector of parameters
-(aka the weight vector) which specifiy the predictor, b is the bias
-term and w*x represents the inner (dot) product of w and x. The error
-function takes the following form, 
-
-   Error = loss + penalty
-   .. role:: raw-math(raw)
-       :format: latex html
-       E(\mathbf{w},b) = \sum_{i=1}^n L(y_i,f(x_i)) + \lambda R(\mathbf{w})
-
-Where, 'penalty' is a term which penalizes model complexity (usually
-the l2-norm of the weight vector w) and 'loss' is a
-convex loss function such as hinge loss or squared error. Popular
-linear models such as ridge regression, logistic regression or
-(linear) support vector machines can be expressed in the above
-framework.
+Bolt features discriminative learning of linear predictors (e.g. `SVM <http://en.wikipedia.org/wiki/Support_vector_machine>`_ or
+`Logistic Regression <http://en.wikipedia.org/wiki/Logistic_regression>`_) using fast online learning algorithms. Bolt is
+aimed at large-scale, high-dimensional and sparse machine-learning problems.
+In particular, problems encountered in information retrieval and
+natural language processing.
 
 Bolt features: 
 
@@ -59,7 +40,7 @@ To install Bolt you need:
    * C-compiler (tested with gcc 4.3.3)
    * Numpy (tested with 1.2.1)
 
-If you want to modify bolt.pyx you also need cython (>=0.11.2).
+If you want to modify *.pyx files you also need cython (>=0.11.2).
 
 Installation
 ------------
@@ -88,7 +69,7 @@ References
 
 [2] http://www.cython.org
 
-[3] http://numpy.scipy.org/
+[3] http://numpy.scipy.org
 
 [Freund, Y. and Schapire, R. E., 1998] Large margin classification 
 using the perceptron algorithm. In Machine Learning, 37, 277-296.

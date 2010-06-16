@@ -24,12 +24,12 @@ except ImportError:
         return np.dot(x, w) + b
 
 class LinearModel(object):
-    """A linear model of the form :math:`y = w^T x + b`. 
+    """A linear model of the form :math:`z = \operatorname{sign}(\mathbf{w}^T \mathbf{x} + b)`. 
     """
     
     def __init__(self, m, biasterm = False):
         """Create a linear model with an
-        m-dimensional vector `w = [0,..,0]` and `b = 0`.
+        m-dimensional vector :math:`w = [0,..,0]` and `b = 0`.
 
         :arg m: The dimensionality of the classification problem (i.e. the number of features).
 	:type m: positive integer
@@ -55,8 +55,8 @@ class LinearModel(object):
 
 	:arg x: An instance in dense or sparse representation.
         :arg confidence: whether to output confidence scores.
-        :returns: The class assignment :math:`sign(w^T x + b)`
-        and optionally a confidence score.
+        :returns: The class assignment  :math:`\operatorname{sign}(\mathbf{w}^T \mathbf{x} + b)`.
+        and optionally a confidence score :math:`\frac{1}{1+\exp{\mathbf{w}^T \mathbf{x} + b}}`.
 	
         """
         if x.dtype == densedtype:
@@ -68,7 +68,7 @@ class LinearModel(object):
             return np.sign(p)
 
     def predict(self,examples, confidence = False):
-        """Evaluates :math:`y = sign(w^T x + b)` for each
+        """Evaluates :math:`y = sign(w^T \mathbf{x} + b)` for each
         example x in examples.
         See :meth:LinearModel.__call__ .
 
@@ -80,16 +80,15 @@ class LinearModel(object):
             yield self.__call__(x, confidence)
 
 class GeneralizedLinearModel(object):
-    """A generalized linear model of the form :math:`z = argmax_y w^T f(x,y) + b_y`.
+    """A generalized linear model of the form :math:`z = \operatorname*{arg\,max}_y \mathbf{w}^T \Phi(\mathbf{x},y) + b_y`.
     """
 
     def __init__(self, m, k, biasterm = False):
         """Create a generalized linear model for
 	classification problems with `k` classes. 
 
-        Parameters:
-        m: The dimensionality of the input data (i.e., the number of features).
-        k: The number of classes.
+        :arg m: The dimensionality of the input data (i.e., the number of features).
+        :arg k: The number of classes.
         """
         if m <= 0:
             raise ValueError, "Number of dimensions must be larger than 0."

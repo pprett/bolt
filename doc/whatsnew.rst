@@ -6,9 +6,9 @@ What's new
 Version 1.4
 -----------
 
-  * Averaged Perceptron
+  * Averaged Perceptron (:class:`bolt.trainer.avgperceptron.AveragedPerceptron`)
       Multi-class classification using the averaged perceptron by Freund and Schapire. 
-  * Maximum Entropy
+  * Maximum Entropy (:class:`bolt.trainer.maxent.MaxentSGD`)
       Multinomial logistic regression classifier using SGD. Supports probabilistic output. 
   * Windows compatibility
       Tested on Windows 7 using Enthought Python Distribution.
@@ -18,11 +18,11 @@ Version 1.3
 
   * Elastic-net penalty
       Sparse regularization of correlated predictors. 
-  * PEGASOS
+  * PEGASOS (:class:`bolt.trainer.sgd.PEGASOS`)
       New SVM solver based on projected (sub-)gradients. 
-  * Generalized Linear Models
+  * Generalized Linear Models (:class:`bolt.model.GeneralizedLinearModel`)
       Generalization of linear models to multi-class classification.
-  * OVA
+  * OVA (:class:`bolt.trainer.OVA`)
       A one-versus-all approach to multi-class classification. 
   * Profiling of Cython code
       Substantial performance improvement through profiling of Cython code. 
