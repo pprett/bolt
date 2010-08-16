@@ -335,6 +335,9 @@ cdef class SGD:
         self.norm = norm
         self.alpha = alpha
 
+    def __reduce__(self):
+        return SGD,(self.loss,self.reg, self.epochs, self.norm, self.alpha)
+
     def train(self, model, dataset, verbose = 0, shuffle = False):
         """Train `model` on the `dataset` using SGD.
 
@@ -474,6 +477,9 @@ cdef class PEGASOS:
             raise ValueError, "`reg` must be larger than 0. "
         self.epochs = epochs
         self.reg = reg
+
+    def __reduce__(self):
+        return PEGASOS,(self.reg, self.epochs)
 
     def train(self, model, dataset, verbose = 0, shuffle = False):
         """Train `model` on the `dataset` using PEGASOS.

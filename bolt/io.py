@@ -273,7 +273,7 @@ class BinaryDataset(Dataset):
         :arg c: The positive class. All other classes are treated as negative.
         """
         self._dataset = dataset
-        self.mask = lambda y: 1 if y == c else -1
+        self.c = c
         self.n = dataset.n
         self.dim = dataset.dim
         self.classes = np.array([1,-1],dtype=np.float32)
@@ -289,6 +289,9 @@ class BinaryDataset(Dataset):
 
     def shuffle(self, seed = None):
         self._dataset.shuffle(seed)
+
+    def mask(self, y):
+	return 1 if y == self.c else -1
 
 class RankingDataset(Dataset):
     

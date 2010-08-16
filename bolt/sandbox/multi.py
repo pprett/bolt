@@ -50,8 +50,8 @@ def main(args):
     #trainer = bolt.trainer.avgperceptron.AveragedPerceptron(epochs = 50)
     
     #trainer = bolt.trainer.maxent.MaxentSGD(0.0000001, epochs = 75)
-    trainer.train(model, dtrain, verbose = 2)
-
+    trainer.train(model, dtrain, verbose = 2, ncpus = 4)
+    
     ref = [cats[y] for y in dtest.iterlabels()]
     pred = [cats[z] for z in model.predict(dtest.iterinstances())]
     cm = nltk.metrics.ConfusionMatrix(ref, pred)
