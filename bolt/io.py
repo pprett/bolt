@@ -239,9 +239,8 @@ class MemoryDataset(Dataset):
                 print(" [done]")
 
         if verbose > 1:
-            print("%d (%d+%d) examples loaded. " % (len(instances),
-                                                    labels[labels==1.0].shape[0],
-                                                    labels[labels==-1.0].shape[0]))
+            instances = data[1]
+            print("%d examples loaded. " % (len(instances)))
         return MemoryDataset(*data)
 
 
