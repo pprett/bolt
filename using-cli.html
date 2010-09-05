@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -10,14 +12,15 @@
     <link rel="stylesheet" href="static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '#',
+        URL_ROOT:    '',
         VERSION:     '1.4',
-        COLLAPSE_MODINDEX: false,
+        COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
       };
     </script>
     <script type="text/javascript" src="static/jquery.js"></script>
+    <script type="text/javascript" src="static/underscore.js"></script>
     <script type="text/javascript" src="static/doctools.js"></script>
     <link rel="top" title=" Bolt v1.4 documentation" href="index.html" />
     <link rel="next" title="Using Bolt (API)" href="using-api.html" />
@@ -31,8 +34,8 @@
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="modindex.html" title="Global Module Index"
-             accesskey="M">modules</a> |</li>
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
         <li class="right" >
           <a href="using-api.html" title="Using Bolt (API)"
              accesskey="N">next</a> |</li>
@@ -285,49 +288,49 @@ avg    5.41 (0.04)</pre>
             <p class="logo"><a href="index.html">
               <img class="logo" src="static/bolt.jpg" alt="Logo"/>
             </a></p>
-            <h3><a href="index.html">Table Of Contents</a></h3>
-            <ul>
-<li><a class="reference external" href="#">Using Bolt (CLI)</a><ul>
-<li><a class="reference external" href="#command-line-interface">Command Line Interface</a><ul>
-<li><a class="reference external" href="#sb">sb</a><ul>
-<li><a class="reference external" href="#examples">Examples:</a></li>
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Using Bolt (CLI)</a><ul>
+<li><a class="reference internal" href="#command-line-interface">Command Line Interface</a><ul>
+<li><a class="reference internal" href="#sb">sb</a><ul>
+<li><a class="reference internal" href="#examples">Examples:</a></li>
 </ul>
 </li>
-<li><a class="reference external" href="#sb-cv">sb_cv</a><ul>
-<li><a class="reference external" href="#id1">Examples:</a></li>
+<li><a class="reference internal" href="#sb-cv">sb_cv</a><ul>
+<li><a class="reference internal" href="#id1">Examples:</a></li>
 </ul>
 </li>
-<li><a class="reference external" href="#svml2npy">svml2npy</a></li>
+<li><a class="reference internal" href="#svml2npy">svml2npy</a></li>
 </ul>
 </li>
 </ul>
 </li>
 </ul>
 
-            <h4>Previous topic</h4>
-            <p class="topless"><a href="overview.html"
-                                  title="previous chapter">API Overview</a></p>
-            <h4>Next topic</h4>
-            <p class="topless"><a href="using-api.html"
-                                  title="next chapter">Using Bolt (API)</a></p>
-            <h3>This Page</h3>
-            <ul class="this-page-menu">
-              <li><a href="sources/using-cli.txt"
-                     rel="nofollow">Show Source</a></li>
-            </ul>
-          <div id="searchbox" style="display: none">
-            <h3>Quick search</h3>
-              <form class="search" action="search.html" method="get">
-                <input type="text" name="q" size="18" />
-                <input type="submit" value="Go" />
-                <input type="hidden" name="check_keywords" value="yes" />
-                <input type="hidden" name="area" value="default" />
-              </form>
-              <p class="searchtip" style="font-size: 90%">
-              Enter search terms or a module, class or function name.
-              </p>
-          </div>
-          <script type="text/javascript">$('#searchbox').show(0);</script>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="overview.html"
+                        title="previous chapter">API Overview</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="using-api.html"
+                        title="next chapter">Using Bolt (API)</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="sources/using-cli.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -339,7 +342,7 @@ avg    5.41 (0.04)</pre>
           <a href="genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="modindex.html" title="Global Module Index"
+          <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
           <a href="using-api.html" title="Using Bolt (API)"
@@ -351,8 +354,8 @@ avg    5.41 (0.04)</pre>
       </ul>
     </div>
     <div class="footer">
-      &copy; Copyright 2010, Peter Prettenhofer .
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.5.
+        &copy; Copyright 2010, Peter Prettenhofer .
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.3.
     </div>
   </body>
 </html>
