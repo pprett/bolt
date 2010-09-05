@@ -98,7 +98,7 @@ class MemoryDataset(Dataset):
         """The array holding the labels. """
         self._idx = np.arange(self.n)
         """The indexing array. """
-        self.classes = np.unique1d(labels)
+        self.classes = np.unique(labels)
         """The classes. """
 	self.qids = qids
         
