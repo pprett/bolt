@@ -29,6 +29,21 @@ The installation has been tested on Windows 7 using the `Enthought Python Distri
 If you get undefined symbol errors, make sure that the lib_dir path in `setup.py` is properly set (for EPD 6.2 use `C:\\Python26\\PCbuild`).
  
 If you want to modify the Cython code in the extension module `bolt.bolt` make sure that the newest release of `Cython <http://www.cython.org/>`_ (>= 0.7) is installed. 
+
+To generate the documentation you need `Sphinx <http://sphinx.pocoo.org/>`_ and the following packages
+
+  * `dvipng <http://savannah.nongnu.org/projects/dvipng/>`_ .
+  * `sphinx-to-github <http://github.com/michaeljones/sphinx-to-github/>`_ .
+
+On Ubuntu systems the following should suffice::
+
+  sudo easy_install sphinx
+  sudo apt-get install dvipng
+  pip install -e git+git://github.com/michaeljones/sphinx-to-github.git#egg=sphinx-to-github
+
+If you don't have `pip` install it via::
+
+  sudo easy_install pip
   
 Stable release
 --------------

@@ -10,12 +10,12 @@ from distutils.sysconfig import get_python_inc
 incdir = os.path.join(get_python_inc(plat_specific=1))
 
 # FIXME proper win/unix lib/includes.
-#unix_include_path = "/usr/include"
-#win_include_path = "C:\Python26\include"
-#include_path = win_include_path
+unix_include_path = "/usr/include"
+win_include_path = "C:\Python26\include"
+include_path = unix_include_path
 win_lib_path = "C:\Python26\PCbuild"
-#unix_lib_path = "/usr/lib"
-lib_path = win_lib_path
+unix_lib_path = "/usr/lib"
+lib_path = unix_lib_path
 
 setup(
     name = "bolt",

@@ -445,6 +445,7 @@ def loadDat(filename, qids = False):
             tokens=[(int(t[0]),float(t[1]))
                     for t in (t.split(':')
                               for t in tokens if t != '')]
+            tokens = sorted(tokens)
 	    a = fromlist(tokens, sparsedtype)
             local_max = 0.0
             if a.shape[0]>0:

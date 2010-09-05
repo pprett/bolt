@@ -55,8 +55,7 @@ class LinearModel(object):
 
 	:arg x: An instance in dense or sparse representation.
         :arg confidence: whether to output confidence scores.
-        :returns: The class assignment  :math:`\operatorname{sign}(\mathbf{w}^T \mathbf{x} + b)`.
-        and optionally a confidence score :math:`\frac{1}{1+\exp{\mathbf{w}^T \mathbf{x} + b}}`.
+        :returns: The class assignment and optionally a confidence score.
 	
         """
         if x.dtype == densedtype:
@@ -67,16 +66,17 @@ class LinearModel(object):
         else:
             return np.sign(p)
 
-    def predict(self,examples, confidence = False):
+    def predict(self,instances, confidence = False):
         """Evaluates :math:`y = sign(w^T \mathbf{x} + b)` for each
-        example x in examples.
-        See :meth:LinearModel.__call__ .
-
-        :arg examples: a sequence of examples.
+        instance x in `instances`.
+        Optionally, gives confidence score to each prediction if `confidence` is `True`. 
+        This method yields :meth:`LinearModel.__call__` for each instance in `instances`.
+        
+        :arg instances: a sequence of instances.
         :arg confidence: whether to output confidence scores.
-        :returns: a generator over the predictions.
+        :returns: a generator over the class assignments and optionally a confidence score.
         """
-        for x in examples:
+        for x in instances:
             yield self.__call__(x, confidence)
 
 class GeneralizedLinearModel(object):
@@ -100,8 +100,10 @@ class GeneralizedLinearModel(object):
         """The number of classes."""
         self.W = np.zeros((k,m), dtype=np.float64, order = "c")
         """A matrix which contains a `m`-dimensional weight vector for each
-        class. """
+        class.
+        Use `W[i]` to access the `i`-th weight vector."""
         self.biasterm = biasterm
+        """Whether or not the bias term is used. """
         self.b = np.zeros((k,), dtype=np.float64, order = "c")
         """A vector of bias terms. """
 
@@ -111,21 +113,19 @@ class GeneralizedLinearModel(object):
         Evaluates :math:`z = argmax_y w^T f(x,y) + b_y`.
 
         :arg confidence: whether to output confidence scores.
-        
+        :return: the class index of the predicted class and optionally a confidence value. 
         """
         return self._predict(x, confidence)
             
 
     def predict(self, instances, confidence = False):
         """Predicts class of each instances in
-        `instances`.
-        See :meth:`GeneralizedLinearModel.__call__`.
+        `instances`. Optionally, gives confidence score to each prediction if `confidence` is `True`. 
+        This method yields :meth:`GeneralizedLinearModel.__call__` for each instance in `instances`. 
 
-        Parameters:
         :arg confidence: whether to output confidence scores.
-        :arg examples: a sequence of instances
-
-        :return: a generator over the predictions.
+        :arg instances: a sequence of instances.
+        :return: a generator over the class assignments and optionally a confidence score.
         """
         for x in instances:
             yield self.__call__(x, confidence)
@@ -140,6 +140,10 @@ class GeneralizedLinearModel(object):
 
     def probdist(self,x):
         """The probability distribution of class assignment.
+        Transforms the confidence scores into a probability via a logit function
+        :math:`\exp{\mathbf{w}^T \mathbf{x} + b} / Z`. 
+
+        :return: a `k`-dimensional probability vector.
         """
         ps = np.array([np.exp(predict(x, self.W[i], self.b[i])) for i in range(self.k)])
         Z = np.sum(ps)
