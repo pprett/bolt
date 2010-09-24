@@ -10,8 +10,6 @@ The module provides the following classes:
 import sys
 import numpy as np
 import gzip
-import random
-import re
 
 from itertools import izip
 from collections import defaultdict
@@ -229,11 +227,11 @@ class MemoryDataset(Dataset):
         except IOError, (errno, strerror):
             if verbose > 0:
                 print(" [fail]")
-            raise Exception, "cannot open '%s' - %s." % (fname,strerror)
+            raise Exception("cannot open '%s' - %s." % (fname,strerror))
         except Exception, exc:
             if verbose > 0:
                 print(" [fail]")
-            raise Exception, exc
+            raise Exception(exc)
         else:
             if verbose > 0:
                 print(" [done]")
@@ -292,116 +290,6 @@ class BinaryDataset(Dataset):
     def mask(self, y):
 	return 1 if y == self.c else -1
 
-class RankingDataset(Dataset):
-    
-
-    def __init__(self, dim, instances, labels, qids):
-        assert len(instances) == len(labels) == len(qids)
-        self.dim = dim
-        self.n = len(instances)
-        self.instances = instances
-        self.labels = labels
-        self._idx = np.arange(self.n)
-        
-        self.qids = qids
-        self._buildindex()
-        
-
-    def _buildindex(self):
-        print("building index... ")
-        index =  defaultdict(lambda: defaultdict(list))
-        for x, y, q in izip(self.instances, self.labels, self.qids):
-            index[q][y].append(x)
-        for q in index:
-            for y in index[q]:
-                n = len(index[q][y])
-                index[q][y].insert(0,n)
-
-        # remove queries with constant labels
-        for q in index.keys():
-            m = len(index[q].keys())
-            if m < 2:
-                index.pop(q)
-        self.queries = np.array(index.keys())
-        self.index = index
-        self.nqueries = len(self.queries)
-        print("[done]")
-
-    def _minus(self, xa, xb):
-        i,j = 0,0
-        nxa, nxb = xa.shape[0], xb.shape[0]
-        x = xa.tolist()
-        while 1:
-            if j == nxb:
-                break
-            if i == nxa:
-                x.extend(xb[j:])
-                break
-            if x[i][0] < xb[j][0]:
-                i += 1
-                continue
-            elif xb[j][0] < x[i][0]:
-                x.append(xb[j])
-                j += 1
-            else:
-                assert x[i][0] == xb[j][0]
-                x[i] = (x[i][0],x[i][1] - xb[j][1])
-                i += 1
-                j += 1
-	return fromlist(x, sparsedtype)
-
-    def _sample(self):
-        q = self.queries[np.random.randint(self.nqueries)]
-        query = self.index[q]
-        ya, yb = random.sample(query.keys(),2)
-        i = np.random.randint(query[ya][0]) + 1
-        j = np.random.randint(query[yb][0]) + 1
-
-        y = np.sign(ya - yb)
-        xa = query[ya][i]
-        xb = query[yb][j]
-        x = self._minus(xa,xb)
-        return (q, y, x)
-    
-    def __iter__(self):
-        for i in xrange(self.T):
-            return 
-
-    def iterinstances(self):
-        pass
-
-    def iterlabels(self):
-        pass
-
-    @classmethod
-    def load(cls,fname, verbose = 1):
-        if verbose > 0:
-            print "loading data ...",
-        sys.stdout.flush()
-        try:
-            loader = None
-            if fname.endswith('.npy'):
-                loader = loadNpz
-            else:
-                loader = loadDat
-            dim, instances,labels,queries = loader(fname, qids = True)
-        except IOError, (errno, strerror):
-            if verbose > 0:
-                print(" [fail]")
-            raise Exception, "cannot open '%s' - %s." % (fname,strerror)
-        except Exception, exc:
-            if verbose > 0:
-                print(" [fail]")
-            raise Exception, exc
-        else:
-            if verbose > 0:
-                print(" [done]")
-
-        if verbose > 1:
-            print("%d (%d+%d) examples loaded. " % (len(instances),
-                                                    labels[labels==1.0].shape[0],
-                                                    labels[labels==-1.0].shape[0]))
-        return RankingDataset(dim, instances, labels, queries)
 
 def loadNpz(filename, qids = False):
     """Load data from numpy binary format.
@@ -426,7 +314,6 @@ def loadDat(filename, qids = False):
     instances = []
     queries = []
     global_max = -1
-    t_pair = sparsedtype
     if filename.endswith('gz'):
         f=gzip.open(filename,'r')
     else:

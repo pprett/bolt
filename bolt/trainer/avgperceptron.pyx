@@ -141,6 +141,6 @@ cdef class AveragedPerceptron(object):
         
         # floating-point under-/overflow check.
         if np.any(np.isinf(w)) or np.any(np.isnan(w)):
-            raise ValueError, "floating-point under-/overflow occured."
+            raise ValueError("floating-point under-/overflow occured.")
         
         model.W = wbar * (1.0 / (n*E))

@@ -62,10 +62,10 @@ cdef double add(double *w, int stride, double wscale, double *b,
     """Scales example x by constant c and adds it to the weight vector w. 
     """
     cdef Pair pair
-    cdef int i
     cdef double innerprod = 0.0
     cdef double xsqnorm = 0.0
     cdef int offset = y * stride
+    cdef int i
     for i from 0 <= i < nnz:
         pair = x[i]
         w[offset + pair.idx] += pair.val * (c / wscale)
@@ -121,23 +121,28 @@ cdef class MaxentSGD(object):
         :type alpha: float (0 <= alpha <= 1)
         """
         if reg < 0.0:
-            raise ValueError, "reg must be larger than 0. "
+            raise ValueError("reg must be larger than 0. ")
         if norm not in [1,2,3]:
-            raise ValueError, "norm must be in {1,2,3}. "
+            raise ValueError("norm must be in {1,2,3}. ")
         self.reg = reg
         self.epochs = epochs
         self.norm = norm
         
 
-    def train(self, model, dataset, verbose = 0, shuffle = False):
+    def train(self, model, dataset, verbose = 0, shuffle = False, nprobe = -1):
         """Train `model` on the `dataset` using SGD.
 
         :arg model: The :class:`bolt.model.GeneralizedLinearModel` that is going to be trained. 
         :arg dataset: The :class:`bolt.io.Dataset`. 
         :arg verbose: The verbosity level. If 0 no output to stdout.
-        :arg shuffle: Whether or not the training data should be shuffled after each epoch. 
+        :arg shuffle: Whether or not the training data should be shuffled after each epoch.
+        :arg nprobe: The number of probe examples to determine the learning rate. If -1 use 10 percent of the training data. 
         """
-        probeset = dataset.sample(int(dataset.n / 10), seed = 13)
+        if nprobe == -1:
+            probeset = dataset.sample(int(dataset.n / 10), seed = 13)
+        else:
+            assert nprobe > 0
+            probeset = dataset.sample(int(nprobe), seed = 13)
         self._train(model, dataset, probeset, verbose, shuffle)
 
     cdef void _train(self,model, dataset, probeset, verbose, shuffle):
@@ -165,7 +170,9 @@ cdef class MaxentSGD(object):
         cdef double wnorm = 0.0, t = 0.0
         cdef int e = 0
         cdef double loglikelihood = 0.0
-        cdef double eta = 0.01
+        
+
+        t = probe(probeset, w, wscale, wstride, b, k, pd, reg, n)
         
         t1=time()
         for e from 0 <= e < self.epochs:
@@ -173,12 +180,12 @@ cdef class MaxentSGD(object):
                 print("-- Epoch %d" % (e+1))
             if shuffle:
                 dataset.shuffle()
-            if e % 10 == 0:
-                print("probing for eta...")
-                eta = probe(probeset, w, wscale, wstride, b, k, pd, reg, n)
+            #if e % 10 == 0:
+            #    print("probing for eta...")
+            #    eta = probe(probeset, w, wscale, wstride, b, k, pd, reg, n)
             
             loglikelihood = learnsweep(dataset, wdata, wstride, &wscale, bdata,
-                                       k, pd, &t, reg, eta, n)
+                                       k, pd, &t, reg, n)
 
             if wscale < 1e-9:
                 print("Scaling w")
@@ -190,15 +197,16 @@ cdef class MaxentSGD(object):
                 print("Wscale: %.6f" % (wscale))
                 print("Log-likelihood: %.6f" % loglikelihood)
                 print("Total training time: %.2f seconds." % (time() - t1))
+                print("Current eta: %.9f" % (1.0 / (reg*t)))
 
         # floating-point under-/overflow check.
         if np.any(np.isinf(w)) or np.any(np.isnan(w)):
-            raise ValueError, "floating-point under-/overflow occured."
+            raise ValueError("floating-point under-/overflow occured.")
         model.w = w * wscale
         model.bias = b
 
 cdef double learnsweep(dataset, double *w, int wstride, double *wscale, double *b,
-                       int k, double *pd, double *t, double reg, double eta, int n):
+                       int k, double *pd, double *t, double reg, int n):
     """Perform one learn sweep over the dataset. 
     """
     cdef np.ndarray x = None
@@ -206,7 +214,9 @@ cdef double learnsweep(dataset, double *w, int wstride, double *wscale, double *
     cdef float y = 0.0
     cdef int xnnz = 0, j = 0
     cdef double loglikelihood = 0.0
+    cdef double eta = 0.0
     for x,y in dataset:
+        eta = 1.0 / (reg*t[0])
         xnnz = x.shape[0]
         xdata = <Pair *>x.data
         probdist(w, wstride, wscale[0], b, xdata, xnnz, k, pd)
@@ -225,7 +235,7 @@ cdef double probe(dataset, np.ndarray org_w, double org_wscale, int wstride, np.
     and choose the eta with the highest increase in log-likelihood. 
     """
     cdef int i = 0
-    cdef double eta
+    cdef double eta = 1.6 #FIXME seta
     cdef double best_ll = -100000000000.0
     cdef double cur_ll = 0.0
     cdef double best_eta = 0.0
@@ -236,18 +246,22 @@ cdef double probe(dataset, np.ndarray org_w, double org_wscale, int wstride, np.
     cdef double t = 0.0
     cdef double tmp = org_wscale
     cdef double *wscale = &tmp
-    for i from -1 <= i < 7:
+    
+    #for i from -1 <= i < 7:
+    for i from 0 <= i < 10:
         w = org_w.copy('C')
         wdata = <double*> w.data
         b = org_b.copy('C')
         bdata = <double*> b.data
         wscale[0] = org_wscale
-        eta = pow(10,-i)
-        t = 0.0
+        # eta = pow(10,-i)
+        eta = eta / 2.0
+        t = 1.0 / (eta * reg)
         cur_ll = learnsweep(dataset, wdata, wstride, wscale,
-                            bdata, k, pd, &t, reg, eta, n)
+                            bdata, k, pd, &t, reg, n)
+        print("eta:%.9f ll:%.6f" % (eta, cur_ll))
         if cur_ll > best_ll:
             best_ll = cur_ll
             best_eta = eta
     print("Best eta:%.9f ll:%.6f" % (best_eta, best_ll))
-    return best_eta
+    return 1.0 / (best_eta * reg)

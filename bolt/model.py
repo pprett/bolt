@@ -38,7 +38,7 @@ class LinearModel(object):
          
         """
         if m <= 0:
-            raise ValueError, "Number of dimensions must be larger than 0."
+            raise ValueError("Number of dimensions must be larger than 0.")
         self.m = m
         """The number of features. 
         """
@@ -91,9 +91,9 @@ class GeneralizedLinearModel(object):
         :arg k: The number of classes.
         """
         if m <= 0:
-            raise ValueError, "Number of dimensions must be larger than 0."
+            raise ValueError("Number of dimensions must be larger than 0.")
         if k <= 1:
-            raise ValueError, "Number of classes must be larger than 2 (if 2 use `LinearModel`.)"
+            raise ValueError("Number of classes must be larger than 2 (if 2 use `LinearModel`.)")
         self.m = m
         """The number of features."""
         self.k = k

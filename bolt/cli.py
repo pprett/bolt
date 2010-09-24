@@ -1,3 +1,5 @@
+#!/usr/bin/python2.6
+
 """
 Command Line Interface
 
@@ -54,6 +56,7 @@ def create_trainer(options):
         loss = loss_class(options.epsilon)
     else:
         loss = loss_class()
+
     
     if options.clstype == "sgd":
         trainer = SGD(loss, options.regularizer,
@@ -124,10 +127,10 @@ def main():
             
             if isinstance(trainer, (OVA,MaxentSGD,AveragedPerceptron)):
                 if not isinstance(model, GeneralizedLinearModel):
-                    raise ValueError, "Multi-class classifiers require > 2 classes. "
+                    raise ValueError("Multi-class classifiers require > 2 classes. ")
             else:
                 if isinstance(model, GeneralizedLinearModel):
-                    raise ValueError, "%s cannot be used for multi-class problems. " % str(trainer)            
+                    raise ValueError("%s cannot be used for multi-class problems. " % str(trainer))
             trainer.train(model,dtrain,verbose = verbose,
 		      shuffle = options.shuffle)
 
@@ -157,7 +160,7 @@ def main():
             finally:
                 f.close()
             if not model:
-                raise Exception, "cannot deserialize model in '%s'. " % options.model_file
+                raise Exception("cannot deserialize model in '%s'. " % options.model_file)
             if options.prediction_file:
                 write_predictions(model,dtrain,options.prediction_file)
             else:

@@ -83,5 +83,5 @@ def error(model, ds, loss):
     elif isinstance(loss,Regression):
         err = rmse(model,ds)
     else:
-        raise ValueError, "lm.loss: either Regression or Classification loss expected"
+        raise ValueError("lm.loss: either Regression or Classification loss expected")
     return err

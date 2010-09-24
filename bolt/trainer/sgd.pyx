@@ -322,13 +322,13 @@ cdef class SGD:
         :type alpha: float (0 <= alpha <= 1)
         """
         if loss == None:
-            raise ValueError, "Loss function must not be None."
+            raise ValueError("Loss function must not be None.")
         if reg < 0.0:
-            raise ValueError, "reg must be larger than 0. "
+            raise ValueError("reg must be larger than 0. ")
         if norm not in [1,2,3]:
-            raise ValueError, "norm must be in {1,2,3}. "
+            raise ValueError("norm must be in {1,2,3}. ")
         if alpha > 1.0 or alpha < 0.0:
-            raise ValueError, "alpha must be in [0,1]. "
+            raise ValueError("alpha must be in [0,1]. ")
         self.loss = loss
         self.reg = reg
         self.epochs = epochs
@@ -433,7 +433,7 @@ cdef class SGD:
 
         # floating-point under-/overflow check.
         if np.any(np.isinf(w)) or np.any(np.isnan(w))or np.isnan(b) or np.isinf(b):
-            raise ValueError, "floating-point under-/overflow occured."
+            raise ValueError("floating-point under-/overflow occured.")
         if norm == 3:
             # FIXME rescale naive elastic net coefficient?
             model.w = w * wscale #* (1.0 + alpha)
@@ -474,7 +474,7 @@ cdef class PEGASOS:
     
     def __init__(self, reg, epochs):
         if reg < 0.0:
-            raise ValueError, "`reg` must be larger than 0. "
+            raise ValueError("`reg` must be larger than 0. ")
         self.epochs = epochs
         self.reg = reg
 
@@ -555,7 +555,7 @@ cdef class PEGASOS:
                 
         # floating-point under-/overflow check.
         if np.any(np.isinf(w)) or np.any(np.isnan(w))or np.isnan(b) or np.isinf(b):
-            raise ValueError, "floating-point under-/overflow occured."
+            raise ValueError("floating-point under-/overflow occured.")
         model.w = w * wscale
         model.bias = b
 

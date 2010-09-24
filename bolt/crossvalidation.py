@@ -1,5 +1,8 @@
+from __future__ import division
+
 import copy
 import numpy as np
+import math
 
 import eval
 import parse
@@ -54,6 +57,10 @@ def main():
         else:
             model = LinearModel(ds.dim,
                                 biasterm = options.biasterm)
+	if options.epochs == -1:
+	    options.epochs = math.ceil(10**6 / ((options.nfolds - 1) * (ds.n / options.nfolds)))
+	    print "epochs: ", options.epochs
+	    
         trainer = cli.create_trainer(options)
         print("%s %s" % ("Fold".ljust(5), "Error"))
 	err = crossvalidation(ds, trainer, model,
