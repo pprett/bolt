@@ -58,7 +58,7 @@ class LinearModel(object):
         :returns: The class assignment and optionally a confidence score.
 	
         """
-        if x.dtype == densedtype:
+        if x.dtype != sparsedtype:
             x = dense2sparse(x)
         p = predict(x, self.w, self.bias)
         if confidence:
