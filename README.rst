@@ -5,7 +5,7 @@ Bolt features discriminative learning of linear predictors (e.g. `SVM <http://en
 `Logistic Regression <http://en.wikipedia.org/wiki/Logistic_regression>`_) using fast online learning algorithms. Bolt is
 aimed at large-scale, high-dimensional and sparse machine-learning problems.
 In particular, problems encountered in information retrieval and
-natural language processing.
+natural language processing. 
 
 Bolt features: 
 
@@ -19,7 +19,7 @@ Bolt features:
 
    * Python bindings, feature vectors encoded as Numpy arrays. 
 
-Furthermore, Bolt provides preliminary support for generalized linear models for multi-class classification. Currently, it supports the following multi-class learning algorithms: 
+Furthermore, Bolt provides support for generalized linear models for multi-class classification. Currently, it supports the following multi-class learning algorithms: 
 
    * One-versus-All strategy for binary classifiers.
  
@@ -38,7 +38,7 @@ To install Bolt you need:
 
    * Python 2.5 or 2.6
    * C-compiler (tested with gcc 4.3.3)
-   * Numpy (tested with 1.2.1)
+   * Numpy (>= 1.1)
 
 If you want to modify *.pyx files you also need cython (>=0.11.2).
 

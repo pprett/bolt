@@ -13,7 +13,7 @@ Requirements
 
 Bolt depends on the following python packages: 
 
-  * numpy (tested with version 1.1 - 1.3)
+  * numpy (tested with version 1.1 - 1.5)
 
 To check your installed version use::
 
@@ -28,7 +28,7 @@ On Ubuntu systems the following should suffice::
 The installation has been tested on Windows 7 using the `Enthought Python Distribution <http://www.enthought.com/products/epd.php>`_.
 If you get undefined symbol errors, make sure that the lib_dir path in `setup.py` is properly set (for EPD 6.2 use `C:\\Python26\\PCbuild`).
  
-If you want to modify the Cython code in the extension module `bolt.bolt` make sure that the newest release of `Cython <http://www.cython.org/>`_ (>= 0.7) is installed. 
+If you want to modify the Cython code in the extension modules in `bolt.trainer` make sure that the newest release of `Cython <http://www.cython.org/>`_ (>= 0.7) is installed. 
 
 To generate the documentation you need `Sphinx <http://sphinx.pocoo.org/>`_ and the following packages
 
@@ -68,7 +68,7 @@ Install bolt sytem wide::
 
 If the build process fails due to undefined references make sure that the include paths in `setupy.py` are properly defined. 
 
-If you need assistance feel free to contact the author at peter.prettenhofer@gmail.com. 
+If you need assistance please contact the author at peter.prettenhofer@gmail.com. 
 
 Latest development version
 --------------------------

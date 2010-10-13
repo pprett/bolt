@@ -50,6 +50,8 @@ In Bolt the model parameters are learned by minimizing the regularized training 
 
 where :math:`L` is a loss function that measures model fit and :math:`R` is a regularization term that measures model complexity. 
 
+**Features**
+
 Bolt supports the following trainers for binary classification: 
 
    * Stochastic Gradient Descent (:class:`bolt.trainer.sgd.SGD`)
@@ -59,13 +61,36 @@ Bolt supports the following trainers for binary classification:
    * PEGASOS (:class:`bolt.trainer.sgd.PEGASOS`)
 
 For multi-class classification: 
-
+   
+   * One-versus-all (:class:`bolt.trainer.OVA`)
    * Averaged Perceptron (:class:`bolt.trainer.avgperceptron.AveragedPerceptron`)
    * Maximum Entropy (:class:`bolt.trainer.maxent.MaxentSGD`)
         * aka Multinomial Logistic Regression
         * Trained via SGD. 
 
-Furthermore, a one-versus-all (:class:`bolt.trainer.OVA`) strategy to combine multiple binary classifiers for multi-class classification is supported. 
+**Benchmark**
+
+The following RCV1-CCAT benchmark results show that Bolt is competitive to state-of-the-art linear SVM solvers such as SVM\ :sup:`Perf`, `liblinear <http://www.csie.ntu.edu.tw/~cjlin/liblinear/>`_, or `sgd <http://leon.bottou.org/projects/sgd/>`_. The dataset comprises 781.264 training documents, each represented as a 47.152 dimensional feature vector. 
+
+========================  ====================  ========
+Algorithm                 Training time         Accuracy
+========================  ====================  ========
+SVM\ :sup:`light`         >600.00 sec          
+------------------------  --------------------  --------
+SVM\ :sup:`Perf` [#f1]_   11.60 sec             94.79
+------------------------  --------------------  --------
+liblinear [#f2]_          9.00 sec              94.77 
+------------------------  --------------------  --------
+bolt [#f3]_               2.33 sec              94.79
+------------------------  --------------------  --------
+sgd [#f4]_                1.09 sec              94.77
+========================  ====================  ========
+
+.. [#f1] Uses C=1000
+.. [#f2] Uses SVM (Dual), B=1
+.. [#f3] Uses E=5, r=0.00001, l=0, b
+.. [#f4] Uses epochs=5, lambda=0.00001
+
 
 Indices and tables
 ==================
