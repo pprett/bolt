@@ -70,7 +70,7 @@ For multi-class classification:
 
 **Benchmark**
 
-The following RCV1-CCAT benchmark results show that Bolt is competitive to state-of-the-art linear SVM solvers such as SVM\ :sup:`Perf`, `liblinear <http://www.csie.ntu.edu.tw/~cjlin/liblinear/>`_, or `sgd <http://leon.bottou.org/projects/sgd/>`_. The dataset comprises 781.264 training documents, each represented as a 47.152 dimensional feature vector. 
+The following RCV1-CCAT benchmark results show that Bolt is competitive to state-of-the-art linear SVM solvers such as SVM\ :sup:`Perf`, `liblinear <http://www.csie.ntu.edu.tw/~cjlin/liblinear/>`_, or `sgd <http://leon.bottou.org/projects/sgd/>`_. The dataset comprises 781.264 training documents, each represented by a 47.152 dimensional feature vector. 
 
 ========================  ====================  ========
 Algorithm                 Training time         Accuracy
