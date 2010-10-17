@@ -1,4 +1,7 @@
-#!/usr/bin/python2.6
+#!/usr/bin/python
+# Author: Peter Prettenhofer <peter.prettenhofer@gmail.com>
+#
+# License: BSD Style.
 
 """
 Command Line Interface

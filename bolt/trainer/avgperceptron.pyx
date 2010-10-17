@@ -3,6 +3,10 @@
 # cython: boundscheck=False
 # cython: wraparound=False
 # filename: avgperceptron.pyx
+#
+# Author: Peter Prettenhofer <peter.prettenhofer@gmail.com>
+#
+# License: BSD Style.
 from __future__ import division
 
 import numpy as np

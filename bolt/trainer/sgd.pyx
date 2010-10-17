@@ -3,6 +3,10 @@
 # cython: boundscheck=False
 # cython: wraparound=False
 # filename: sgd.pyx
+#
+# Author: Peter Prettenhofer <peter.prettenhofer@gmail.com>
+#
+# License: BSD Style.
 
 
 """
