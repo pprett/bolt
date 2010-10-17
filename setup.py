@@ -44,13 +44,27 @@ setup(
     description="Bolt Online Learning Toolbox",
     author='Peter Prettenhofer',
     author_email='peter.prettenhofer@gmail.com',
+    url = 'http://scikit-learn.sourceforge.net',
+    license = 'new BSD'
     packages=['bolt','bolt.trainer', 'bolt.sandbox'],
     scripts = ["sb","sb_cv","svml2npy"],
     long_description = """Bolt features online learning algorithms
 to train (generalized) linear models. Bolt is aimed at
 large-scale, high-dimensional, and sparse machine learning
 problems encountered in natural language processing
-and information retrieval. """ 
+and information retrieval. """,
+    zip_safe=False,
+    classifiers = 
+            ['Intended Audience :: Science/Research',
+             'Intended Audience :: Developers',
+             'License :: OSI Approved',
+             'Programming Language :: C',
+             'Programming Language :: Python',
+             'Topic :: Scientific/Engineering',
+             'Operating System :: Microsoft :: Windows',
+             'Operating System :: POSIX',
+             'Operating System :: Unix',
+             'Operating System :: MacOS'
+             ]
 )
-
 

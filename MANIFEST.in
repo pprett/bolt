@@ -1,1 +1,8 @@
-include sb README
+include *.rst
+include COPYING
+include setup.py
+include sb sb_cv svml2npy
+recursive-include doc *
+recursive-include bolt *.c *.pyx *.py
+
+
