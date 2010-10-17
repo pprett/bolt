@@ -44,7 +44,7 @@ setup(
     description="Bolt Online Learning Toolbox",
     author='Peter Prettenhofer',
     author_email='peter.prettenhofer@gmail.com',
-    url = 'http://scikit-learn.sourceforge.net',
+    url = 'http://pprett.github.com/bolt/',
     license = 'new BSD'
     packages=['bolt','bolt.trainer', 'bolt.sandbox'],
     scripts = ["sb","sb_cv","svml2npy"],
