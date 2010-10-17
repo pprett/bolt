@@ -250,8 +250,9 @@ class MemoryDataset(Dataset):
 	"""
 	f = open(fname,'w+b')
 	try:
-	    np.save(f,self.instances)
-	    np.save(f,self.labels)
+	    # FIXME we should also store self._idx.
+	    np.save(f,self.instances[self._idx])
+	    np.save(f,self.labels[self._idx])
 	    np.save(f,self.dim)
 	    if self.qids != None:
 		np.save(f,self.qids)
@@ -263,7 +264,7 @@ class BinaryDataset(Dataset):
 
     Most methods are deligated to the wrapped `Dataset`. Only :func:`BinaryDataset.__iter__` and  :func:`BinaryDataset.labels` are wrapped.
     """
-    def __init__(self,dataset,c):
+    def __init__(self, dataset, c):
         """Creates a binary class wrapper for `dataset`.
         
         :arg dataset: The `Dataset` to wrap.

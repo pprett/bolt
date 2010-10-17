@@ -19,7 +19,6 @@ lib_path = unix_lib_path
 
 setup(
     name = "bolt",
-    license = "MIT",
     ext_modules = [
                    Extension("bolt.trainer.sgd", ["bolt/trainer/sgd.c"],
                              include_dirs=[incdir,numpy_path],
@@ -45,8 +44,8 @@ setup(
     author='Peter Prettenhofer',
     author_email='peter.prettenhofer@gmail.com',
     url = 'http://pprett.github.com/bolt/',
-    license = 'new BSD'
-    packages=['bolt','bolt.trainer', 'bolt.sandbox'],
+    license = 'new BSD',
+    packages = ['bolt','bolt.trainer', 'bolt.sandbox'],
     scripts = ["sb","sb_cv","svml2npy"],
     long_description = """Bolt features online learning algorithms
 to train (generalized) linear models. Bolt is aimed at
