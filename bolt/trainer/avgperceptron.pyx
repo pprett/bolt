@@ -17,9 +17,7 @@ cimport cython
 
 from time import time
 
-__authors__ = [
-      '"Peter Prettenhofer" <peter.prettenhofer@gmail.com>'
-]
+__authors__ = "Peter Prettenhofer <peter.prettenhofer@gmail.com>"
 
 
 # ----------------------------------------
@@ -41,7 +39,8 @@ cdef double dot(double *w, Pair *x, int nnz):
         sum += w[pair.idx] * pair.val
     return sum
 
-cdef void add(double *w, int stride, Pair *x, int nnz, int y, double c, double *wbar, double u):
+cdef void add(double *w, int stride, Pair *x, int nnz, int y,
+              double c, double *wbar, double u):
     cdef Pair pair
     cdef int i
     cdef int offset = (y*stride)
@@ -88,10 +87,13 @@ cdef class AveragedPerceptron(object):
     def train(self, model, dataset, verbose = 0, shuffle = False):
         """Train `model` on the `dataset` using SGD.
 
-        :arg model: The model that is going to be trained. Either :class:`bolt.model.GeneralizedLinearModel` or :class:`bolt.model.LinearModel`.
+        :arg model: The model that is going to be trained.
+        Either :class:`bolt.model.GeneralizedLinearModel` or
+        :class:`bolt.model.LinearModel`.
         :arg dataset: The :class:`bolt.io.Dataset`. 
         :arg verbose: The verbosity level. If 0 no output to stdout.
-        :arg shuffle: Whether or not the training data should be shuffled after each epoch. 
+        :arg shuffle: Whether or not the training data should be
+        shuffled after each epoch. 
         """
         self._train_multi(model, dataset, verbose, shuffle)
 
@@ -104,7 +106,7 @@ cdef class AveragedPerceptron(object):
         cdef np.ndarray[np.float64_t, ndim=2, mode="c"] w = model.W
         # maintain a averaged w
         cdef np.ndarray[np.float64_t, ndim=2, mode="c"] wbar = np.zeros((k,m),
-                                                                        dtype = np.float64)
+                                                                        dtype=np.float64)
         cdef double *wdata = <double *>w.data
         cdef double *wbardata = <double *>wbar.data
         cdef int wstride0 = w.strides[0]
@@ -116,7 +118,9 @@ cdef class AveragedPerceptron(object):
         cdef Pair *xdata = NULL
         cdef float y = 0
         cdef int z = 0
-        cdef int xnnz = 0, nadds = 0, i = 0
+        cdef int xnnz = 0
+        cdef int nadds = 0
+        cdef int i = 0
         cdef int E = self.epochs
         cdef double u = 0.0
         t1=time()

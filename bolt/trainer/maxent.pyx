@@ -92,11 +92,13 @@ cdef double probdist(double *w, int wstride, double wscale, double *b,
 
 
 # ----------------------------------------
-# Extension type for Stochastic Gradient Descent
+# Extension type for Maximum Entropy
 # ----------------------------------------
 
 cdef class MaxentSGD(object):
-    """Stochastic gradient descent solver for maxent (aka multinomial logistic regression). The solver supports various penalties (L1, L2, and Elastic-Net). 
+    """Stochastic gradient descent solver for maxent
+    (aka multinomial logistic regression).
+    The solver supports various penalties (L1, L2, and Elastic-Net). 
 
 **References**:
    * SGD implementation inspired by Leon Buttuo's sgd and [Zhang2004]_.
@@ -106,14 +108,17 @@ cdef class MaxentSGD(object):
 **Parameters**:
    * *reg* -  The regularization parameter lambda.
    * *epochs* - The number of iterations through the dataset. Default `epochs=5`. 
-   * *norm* - Whether to minimize the L1, L2 norm or the Elastic Net (either 1,2, or 3; default 2).
-   * *alpha* - The elastic net penality parameter (0<=`alpha`<=1). A value of 1 amounts to L2 regularization whereas a value of 0 gives L1 penalty (requires `norm=3`). Default `alpha=0.85`.
+   * *norm* - Whether to minimize the L1, L2 norm or
+   the Elastic Net (either 1,2, or 3; default 2).
+   * *alpha* - The elastic net penality parameter (0<=`alpha`<=1).
+   A value of 1 amounts to L2 regularization whereas a value of 0
+   gives L1 penalty (requires `norm=3`). Default `alpha=0.85`.
     """
     cdef int epochs
     cdef double reg
     cdef int norm
     
-    def __init__(self, reg, epochs = 5, norm = 2):
+    def __init__(self, reg, epochs=5, norm=2):
         """
         :arg reg: The regularization parameter lambda (>0).
         :type reg: float.
@@ -121,7 +126,9 @@ cdef class MaxentSGD(object):
         :type epochs: int
         :arg norm: Whether to minimize the L1, L2 norm or the Elastic Net.
         :type norm: 1 or 2 or 3
-        :arg alpha: The elastic net penality parameter. A value of 1 amounts to L2 regularization whereas a value of 0 gives L1 penalty. 
+        :arg alpha: The elastic net penality parameter.
+        A value of 1 amounts to L2 regularization whereas a value of 0
+        gives L1 penalty. 
         :type alpha: float (0 <= alpha <= 1)
         """
         if reg < 0.0:
@@ -133,17 +140,20 @@ cdef class MaxentSGD(object):
         self.norm = norm
         
 
-    def train(self, model, dataset, verbose = 0, shuffle = False, nprobe = -1):
+    def train(self, model, dataset, verbose=0, shuffle=False, nprobe=-1):
         """Train `model` on the `dataset` using SGD.
 
-        :arg model: The :class:`bolt.model.GeneralizedLinearModel` that is going to be trained. 
+        :arg model: The :class:`bolt.model.GeneralizedLinearModel`
+        that is going to be trained. 
         :arg dataset: The :class:`bolt.io.Dataset`. 
         :arg verbose: The verbosity level. If 0 no output to stdout.
-        :arg shuffle: Whether or not the training data should be shuffled after each epoch.
-        :arg nprobe: The number of probe examples to determine the learning rate. If -1 use 10 percent of the training data. 
+        :arg shuffle: Whether or not the training data should be shuffled
+        after each epoch.
+        :arg nprobe: The number of probe examples to determine the learning rate.
+        If -1 use 10 percent of the training data. 
         """
         if nprobe == -1:
-            probeset = dataset.sample(int(dataset.n / 10), seed = 13)
+            probeset = dataset.sample(int(dataset.n / 10), seed=13)
         else:
             assert nprobe > 0
             probeset = dataset.sample(int(nprobe), seed = 13)
@@ -169,7 +179,8 @@ cdef class MaxentSGD(object):
         cdef np.ndarray[np.float64_t, ndim=1, mode="c"] b = model.b
         cdef double *bdata = <double *>b.data
 
-        cdef np.ndarray[np.float64_t, ndim=1, mode="c"] PD = np.zeros((k,), dtype = np.float64)
+        cdef np.ndarray[np.float64_t, ndim=1, mode="c"] PD = np.zeros((k,),
+                                                                      dtype = np.float64)
         cdef double *pd = <double *>PD.data
         cdef double wnorm = 0.0, t = 0.0
         cdef int e = 0
@@ -233,7 +244,8 @@ cdef double learnsweep(dataset, double *w, int wstride, double *wscale, double *
         t[0] += 1
     return loglikelihood
 
-cdef double probe(dataset, np.ndarray org_w, double org_wscale, int wstride, np.ndarray org_b, int k, double *pd, double reg, int n):
+cdef double probe(dataset, np.ndarray org_w, double org_wscale, int wstride,
+                  np.ndarray org_b, int k, double *pd, double reg, int n):
     """Probe for a new eta on the probe dataset.
     Perform one learning sweep on the probe set for each eta in 10**-i 0 <= i < 8
     and choose the eta with the highest increase in log-likelihood. 

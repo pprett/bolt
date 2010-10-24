@@ -21,22 +21,23 @@ setup(
     name = "bolt",
     ext_modules = [
                    Extension("bolt.trainer.sgd", ["bolt/trainer/sgd.c"],
-                             include_dirs=[incdir,numpy_path],
+                             include_dirs=[incdir, numpy_path],
                              extra_link_args=["-O3"],
                              library_dirs=[lib_path,],
-                             extra_compile_args=["-O3","-g"]
+                             extra_compile_args=["-O3", "-g"]
                              ),
-                   Extension("bolt.trainer.avgperceptron", ["bolt/trainer/avgperceptron.c"],
+                   Extension("bolt.trainer.avgperceptron",
+                             ["bolt/trainer/avgperceptron.c"],
                              include_dirs=[incdir,numpy_path],
                              extra_link_args=["-O3"],
                              library_dirs=[lib_path,],
-                             extra_compile_args=["-O3","-g"]
+                             extra_compile_args=["-O3", "-g"]
                              ),
                    Extension("bolt.trainer.maxent", ["bolt/trainer/maxent.c"],
-                             include_dirs=[incdir,numpy_path],
+                             include_dirs=[incdir, numpy_path],
                              extra_link_args=["-O3"],
                              library_dirs=[lib_path,],
-                             extra_compile_args=["-O3","-g"]
+                             extra_compile_args=["-O3", "-g"]
                              ),
                    ],
     version = "1.4",

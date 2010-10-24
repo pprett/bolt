@@ -1,3 +1,7 @@
+#!/usr/bin/python
+# Author: Peter Prettenhofer <peter.prettenhofer@gmail.com>
+#
+# License: BSD Style.
 """
 The :mod:`eval` module contains various routines for model evaluation.
 
@@ -17,7 +21,7 @@ from itertools import izip
 import numpy as np
 from trainer.sgd import LossFunction, Classification, Regression
 
-def errorrate(model,ds):
+def errorrate(model, ds):
     """Compute the misclassification rate of the model.
     Assumes that labels are coded as 1 or -1. 
 
@@ -38,7 +42,7 @@ def errorrate(model,ds):
     errrate = err / n
     return errrate * 100.0
 
-def rmse(model,ds):
+def rmse(model, ds):
     """Compute the root mean squared error of the model.
 
     :arg model: A :class:`bolt.model.LinearModel`.
@@ -53,7 +57,7 @@ def rmse(model,ds):
     err /= n
     return np.sqrt(err)
 
-def cost(model,ds, loss):
+def cost(model, ds, loss):
     """The cost of the loss function.
 
     :arg model: A :class:`bolt.model.LinearModel`.
@@ -61,27 +65,30 @@ def cost(model,ds, loss):
     :returns: `sum([loss.(model(x),y) for x,y in ds])`
     """
     cost = 0
-    for p,y in izip(model.predict(ds.iterinstances()),ds.iterlabels()):
-        cost += loss.loss(p,y)
+    for p,y in izip(model.predict(ds.iterinstances()), ds.iterlabels()):
+        cost += loss.loss(p, y)
     return cost
 
 def error(model, ds, loss):
     """Report the error of the model on the
     test examples. If the loss function of the model
-    is :class:`bolt.trainer.sgd.Classification` then :func:`errorrate` is computes,
-    else :func:`rmse` is computed if loss function inherits from :class:`bolt.trainer.sgd.Regression`.
+    is :class:`bolt.trainer.sgd.Classification` then :func:`errorrate`
+    is computes, else :func:`rmse` is computed if loss function inherits
+    from :class:`bolt.trainer.sgd.Regression`.
 
     :arg model: A :class:`bolt.model.LinearModel`.
     :arg ds: A :class:`bolt.io.Dataset`.
     :arg loss: A :class:`bolt.trainer.sgd.LossFunction`.
-    :returns: Either :func:`errorrate` or :func:`rmse`; depending on the `loss` function.
+    :returns: Either :func:`errorrate` or :func:`rmse`; depending
+    on the `loss` function.
       
     """
     err = 0.0
-    if isinstance(loss,Classification):
+    if isinstance(loss, Classification):
         err = errorrate(model,ds)
-    elif isinstance(loss,Regression):
-        err = rmse(model,ds)
+    elif isinstance(loss, Regression):
+        err = rmse(model, ds)
     else:
-        raise ValueError("lm.loss: either Regression or Classification loss expected")
+        raise ValueError("lm.loss: either Regression or " \
+                         "Classification loss expected")
     return err

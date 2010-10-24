@@ -1,3 +1,7 @@
+#!/usr/bin/python
+# Author: Peter Prettenhofer <peter.prettenhofer@gmail.com>
+#
+# License: BSD Style.
 from optparse import *
 import textwrap
 
@@ -131,10 +135,11 @@ http://github.com/pprett/bolt""" % version
     parser.add_option("-c","--clstype",
                       action="callback",
                       callback=check_clstype,
-                      help="Classifier type. \nsgd: Stochastic Gradient Descent [default].\n"+
-                      "pegasos: Primal Estimated sub-GrAdient SOlver for SVM. \n"+
-                      "ova: One-vs-All strategy for SGD classifiers. \n" +
-                      "maxent: Maximum Entropy (via SGD). \n"+
+                      help="Classifier type. \n" \
+                      "sgd: Stochastic Gradient Descent [default].\n" \
+                      "pegasos: Primal Estimated sub-GrAdient SOlver for SVM. \n" \
+                      "ova: One-vs-All strategy for SGD classifiers. \n" \
+                      "maxent: Maximum Entropy (via SGD). \n" \
                       "avgperc: Averaged Perceptron. \n",
                       type="string",
                       dest="clstype",
@@ -143,9 +148,9 @@ http://github.com/pprett/bolt""" % version
     parser.add_option("-l","--loss",
                       action="callback",
                       callback=check_loss,
-                      help="Loss function to use. \n0: Hinge loss.\n"+
-                      "1: Modified huber loss [default]. \n"+
-                      "2: Log loss.\n"+"5: Squared loss.\n"+
+                      help="Loss function to use. \n0: Hinge loss.\n" \
+                      "1: Modified huber loss [default]. \n" \
+                      "2: Log loss.\n"+"5: Squared loss.\n" \
                       "6: Huber loss.",
                       type="int",
                       dest="loss",
@@ -176,7 +181,8 @@ http://github.com/pprett/bolt""" % version
 		      default = 2)
     parser.add_option("-a","--alpha",
                       dest="alpha",
-                      help="Elastic Net parameter alpha [requires -n 3; default %default]. ",
+                      help="Elastic Net parameter alpha [requires -n 3; "\
+                      "default %default]. ",
                       type="float",
                       default=0.85,
                       metavar="float")
@@ -203,7 +209,8 @@ def parseSB(version):
     parser = parse(version)
     parser.add_option("-p", "--predictions",
                       dest="prediction_file",
-                      help="Write predicitons to FILE. If FILE is '-' write to stdout [either -t or --test-only are required].",
+                      help="Write predicitons to FILE. If FILE is '-' "\
+                      "write to stdout [either -t or --test-only are required].",
                       metavar="FILE")
     parser.add_option("-t",
                       dest="test_file",
@@ -211,13 +218,15 @@ def parseSB(version):
                       metavar="FILE")
     parser.add_option("-m", "--model",
                       dest="model_file",
-                      help="If --test-only: Apply seralized model in FILE to example_file. \nelse: store trained model in FILE.",
+                      help="If --test-only: Apply seralized model in FILE " \
+                      "to example_file. \nelse: store trained model in FILE.",
                       metavar = "FILE") 
     parser.add_option("--test-only",
                       action="store_true",
                       dest="test_only",
                       default=False,
-                      help="Apply serialized model in option -m to example_file [requires -m].")
+                      help="Apply serialized model in option -m to " \
+                      "example_file [requires -m].")
     parser.add_option("--train-error",
                       action="store_true",
                       dest="computetrainerror",

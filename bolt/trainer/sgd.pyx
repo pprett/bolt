@@ -11,12 +11,17 @@
 
 """
 The :mod:`bolt.trainer.sgd` module is the core of bolt. Its an extension
-module written in cython containing efficient implementations of Stochastic Gradient Descent and PEGASOS.
+module written in cython containing efficient implementations of
+Stochastic Gradient Descent and PEGASOS.
 
 The module contains two `Trainer` classes:
 
-  * :class:`SGD`: A plain stochastic gradient descent implementation, supporting various :class:`LossFunction` and different penalties, including L1, L2, and Elastic-net penalty.
-  * :class:`PEGASOS`: Similar to SGD, however, after each update it projects the current weight vector onto the L2 ball of radius 1/sqrt(lambda). Currently, only supports hinge loss and L2 penalty. 
+  * :class:`SGD`: A plain stochastic gradient descent implementation,
+  supporting various :class:`LossFunction` and different penalties,
+  including L1, L2, and Elastic-net penalty.
+  * :class:`PEGASOS`: Similar to SGD, however, after each update it
+  projects the current weight vector onto the L2 ball of
+  radius 1/sqrt(lambda). Currently, only supports hinge loss and L2 penalty. 
 
 The module contains a number of concrete `LossFunction` implementations
 that can be plugged into the `SGD` trainer. Bolt provides `LossFunctions`
@@ -25,7 +30,8 @@ for `Classification` and `Regression`.
 The following :class:`Classification` loss functions are supported:
 
   * :class:`ModifiedHuber`: A quadratical smoothed version of the hinge loss. 
-  * :class:`Hinge`: The loss function employed by the Support Vector Machine classifier.
+  * :class:`Hinge`: The loss function employed by the Support Vector Machine
+  classifier.
   * :class:`Log`: The loss function of Logistic Regression.
 
 The following :class:`Regression` loss functions are supported:
@@ -36,7 +42,8 @@ The following :class:`Regression` loss functions are supported:
 
 The module also contains a number of utility function:
 
-  * :func:`predict`: computes the dot product between a sparse and a dense feature vector. 
+  * :func:`predict`: computes the dot product between a sparse and a
+  dense feature vector. 
 
 """
 from __future__ import division
@@ -50,9 +57,7 @@ cimport cython
 from time import time
 from itertools import izip
 
-__authors__ = [
-      '"Peter Prettenhofer" <peter.prettenhofer@gmail.com>'
-]
+__authors__ = "Peter Prettenhofer <peter.prettenhofer@gmail.com>"
 
 cdef extern from "math.h":
     cdef extern double exp(double x)
@@ -231,7 +236,7 @@ def predict(np.ndarray x, np.ndarray w,
     if xnnz == 0:
         y = bias
     else:
-        y = dot_checked(<double *>w.data,<Pair *>x.data,xnnz,wdim) + bias
+        y = dot_checked(<double *>w.data, <Pair *>x.data, xnnz, wdim) + bias
     return y
   
  # ----------------------------------------
@@ -292,7 +297,8 @@ cdef double add(double *w, double wscale, Pair *x, int nnz, double c):
 # ----------------------------------------
 
 cdef class SGD:
-    """Plain stochastic gradient descent solver. The solver supports various :class:`LossFunction` and different penalties (L1, L2, and Elastic-Net). 
+    """Plain stochastic gradient descent solver. The solver supports
+    various :class:`LossFunction` and different penalties (L1, L2, and Elastic-Net). 
 
 **References**:
    * SGD implementation inspired by Leon Buttuo's sgd and [Zhang2004]_.
@@ -303,8 +309,11 @@ cdef class SGD:
    * *loss* - The :class:`LossFunction`.
    * *reg* -  The regularization parameter lambda.
    * *epochs* - The number of iterations through the dataset. Default `epochs=5`. 
-   * *norm* - Whether to minimize the L1, L2 norm or the Elastic Net (either 1,2, or 3; default 2).
-   * *alpha* - The elastic net penality parameter (0<=`alpha`<=1). A value of 1 amounts to L2 regularization whereas a value of 0 gives L1 penalty (requires `norm=3`). Default `alpha=0.85`.
+   * *norm* - Whether to minimize the L1, L2 norm or the Elastic Net
+   (either 1,2, or 3; default 2).
+   * *alpha* - The elastic net penality parameter (0<=`alpha`<=1).
+   A value of 1 amounts to L2 regularization whereas a value of 0
+   gives L1 penalty (requires `norm=3`). Default `alpha=0.85`.
     """
     cdef int epochs
     cdef double reg
@@ -312,7 +321,7 @@ cdef class SGD:
     cdef int norm
     cdef double alpha
     
-    def __init__(self, loss, reg, epochs = 5, norm = 2, alpha = 0.85):
+    def __init__(self, loss, reg, epochs=5, norm=2, alpha=0.85):
         """
 
         :arg loss: The :class:`LossFunction` (default ModifiedHuber) .
@@ -322,7 +331,9 @@ cdef class SGD:
         :type epochs: int
         :arg norm: Whether to minimize the L1, L2 norm or the Elastic Net.
         :type norm: 1 or 2 or 3
-        :arg alpha: The elastic net penality parameter. A value of 1 amounts to L2 regularization whereas a value of 0 gives L1 penalty. 
+        :arg alpha: The elastic net penality parameter.
+        A value of 1 amounts to L2 regularization whereas a value of 0
+        gives L1 penalty. 
         :type alpha: float (0 <= alpha <= 1)
         """
         if loss == None:
@@ -342,13 +353,14 @@ cdef class SGD:
     def __reduce__(self):
         return SGD,(self.loss,self.reg, self.epochs, self.norm, self.alpha)
 
-    def train(self, model, dataset, verbose = 0, shuffle = False):
+    def train(self, model, dataset, verbose=0, shuffle=False):
         """Train `model` on the `dataset` using SGD.
 
         :arg model: The :class:`bolt.model.LinearModel` that is going to be trained. 
         :arg dataset: The :class:`bolt.io.Dataset`. 
         :arg verbose: The verbosity level. If 0 no output to stdout.
-        :arg shuffle: Whether or not the training data should be shuffled after each epoch. 
+        :arg shuffle: Whether or not the training data should be shuffled
+        after each epoch. 
         """
         self._train(model, dataset, verbose, shuffle)
 
@@ -391,12 +403,21 @@ cdef class SGD:
         if model.biasterm == False:
             usebias = 0
 
-        cdef double b = 0.0,p = 0.0, wnorm = 0.0, t = 0.0, update = 0.0,sumloss = 0.0, eta = 0.0
-        cdef int xnnz = 0, count = 0, i = 0, e = 0
+        cdef double b = 0.0
+        cdef double p = 0.0
+        cdef double wnorm = 0.0
+        cdef double t = 0.0
+        cdef double update = 0.0
+        cdef double sumloss = 0.0
+        cdef double eta = 0.0
+        cdef int xnnz = 0
+        cdef int count = 0
+        cdef int i = 0
+        cdef int e = 0
         
         # computing eta0
         cdef double typw = sqrt(1.0 / sqrt(reg))
-        cdef double eta0 = typw /max(1.0,loss.dloss(-typw,1.0))
+        cdef double eta0 = typw /max(1.0, loss.dloss(-typw,1.0))
         t = 1.0 / (eta0 * reg)
         t1=time()
         for e from 0 <= e < self.epochs:
@@ -432,11 +453,14 @@ cdef class SGD:
             # report epoche information
             if verbose > 0:
                 wnorm = sqrt(np.dot(w,w) * wscale * wscale)
-                print("Norm: %.2f, NNZs: %d, Bias: %.6f, T: %d, Avg. loss: %.6f" % (wnorm,w.nonzero()[0].shape[0],b,count,sumloss/count))
+                print("Norm: %.2f, NNZs: %d, Bias: %.6f, T: %d, " \
+                      "Avg. loss: %.6f" % (wnorm, w.nonzero()[0].shape[0],
+                                           b, count, sumloss / count))
                 print("Total training time: %.2f seconds." % (time()-t1))
 
         # floating-point under-/overflow check.
-        if np.any(np.isinf(w)) or np.any(np.isnan(w))or np.isnan(b) or np.isinf(b):
+        if np.any(np.isinf(w)) or np.any(np.isnan(w)) \
+               or np.isnan(b) or np.isinf(b):
             raise ValueError("floating-point under-/overflow occured.")
         if norm == 3:
             # FIXME rescale naive elastic net coefficient?
@@ -491,7 +515,8 @@ cdef class PEGASOS:
         :arg model: The :class:`LinearModel` that is going to be trained. 
         :arg dataset: The :class:`Dataset`. 
         :arg verbose: The verbosity level. If 0 no output to stdout.
-        :arg shuffle: Whether or not the training data should be shuffled after each epoch. 
+        :arg shuffle: Whether or not the training data should be shuffled
+        after each epoch. 
         """
         self._train(model, dataset, verbose, shuffle)
 
@@ -554,7 +579,9 @@ cdef class PEGASOS:
                 t += 1
 
             if verbose > 0:
-                print("Norm: %.2f, NNZs: %d, Bias: %.6f, T: %d, Avg. loss: %.6f" % (sqrt(wnorm),w.nonzero()[0].shape[0],b,t+1,sumloss/(t+1)))
+                print("Norm: %.2f, NNZs: %d, Bias: %.6f, T: %d, " \
+                      "Avg. loss: %.6f" % (sqrt(wnorm), w.nonzero()[0].shape[0],
+                                           b, t+1, sumloss / (t+1)))
                 print("Total training time: %.2f seconds." % (time()-t1))
                 
         # floating-point under-/overflow check.

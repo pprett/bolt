@@ -20,7 +20,8 @@ import parse
 import eval
 
 from trainer import OVA
-from trainer.sgd import predict,SGD,LossFunction,Classification,Regression,Hinge, ModifiedHuber, Log, SquaredError, Huber, PEGASOS
+from trainer.sgd import predict, SGD, LossFunction, Classification, \
+     Regression, Hinge, ModifiedHuber, Log, SquaredError, Huber, PEGASOS
 from trainer.maxent import MaxentSGD
 from trainer.avgperceptron import AveragedPerceptron
 from io import MemoryDataset, sparsedtype, dense2sparse, fromlist
@@ -31,7 +32,7 @@ __version__ = "1.4"
 
 loss_functions = {0:Hinge, 1:ModifiedHuber, 2:Log, 5:SquaredError, 6:Huber}
 
-def write_predictions(lm,ds,pfile):
+def write_predictions(lm, ds, pfile):
     """Write model predictions to file.
     The prediction file has as many lines as len(examples).
     The i-th line contains the prediction for the i-th example, encoded as
@@ -45,7 +46,7 @@ def write_predictions(lm,ds,pfile):
     f = pfile
     out = sys.stdout if f == "-" else open(f,"w+")
     try:
-        for p,c in lm.predict(ds.iterinstances(), confidence = True):
+        for p,c in lm.predict(ds.iterinstances(), confidence=True):
             out.write("%d\t%.6f\n" % (p,c))
     finally:
         out.close()
@@ -63,45 +64,45 @@ def create_trainer(options):
     
     if options.clstype == "sgd":
         trainer = SGD(loss, options.regularizer,
-                  norm = options.norm,
-                  epochs = options.epochs,
-                  alpha = options.alpha)
+                      norm=options.norm,
+                      epochs=options.epochs,
+                      alpha=options.alpha)
 
     elif options.clstype == "pegasos":
         trainer = PEGASOS(options.regularizer,
-                  epochs = options.epochs)
+                          epochs=options.epochs)
     elif options.clstype == "ova":
         subtrainer = SGD(loss, options.regularizer,
-                         norm = options.norm,
-                         epochs = options.epochs,
-                         alpha = options.alpha)
+                         norm=options.norm,
+                         epochs=options.epochs,
+                         alpha=options.alpha)
         trainer = OVA(subtrainer)
     elif options.clstype == "maxent":
         trainer = MaxentSGD(options.regularizer,
-                            epochs = options.epochs)
+                            epochs=options.epochs)
     elif options.clstype == "avgperc":
         trainer = AveragedPerceptron(epochs = options.epochs)
     else:
         parser.error("classifier type \"%s\" not supported." % options.clstype)
     return trainer
 
-def test_model(model, dataset):
+def test_model(model, dataset, text="Test error:"):
     """Tests the `model` on the `dataset` and reports `eval.errorrate`.
     """
-    print("--------")
-    print("Testing:")
-    print("--------")
+    print("-" * len(text))
+    print(text)
+    print("-" * len(text))
     t1 = time()
-    err = eval.errorrate(model,dataset)
+    err = eval.errorrate(model, dataset)
     print("error: %.4f" % err)
-    print("Total prediction time: %.2f seconds." % (time()-t1))
+    print("Total prediction time: %.2f seconds." % (time() - t1))
 
 def main():
     try: 
         parser  = parse.parseSB(__version__)
-	options, args = parser.parse_args()
+        options, args = parser.parse_args()
         if len(args) < 1 or len(args) > 1:
-            parser.error("incorrect number of arguments (use `--help` for help).")
+            parser.error("incorrect number of arguments (`--help` for help).")
 
         if options.test_only and not options.model_file:
             parser.error("option -m is required for --test-only.")
@@ -130,17 +131,17 @@ def main():
             
             if isinstance(trainer, (OVA,MaxentSGD,AveragedPerceptron)):
                 if not isinstance(model, GeneralizedLinearModel):
-                    raise ValueError("Multi-class classifiers require > 2 classes. ")
+                    raise ValueError("Multi-class classifiers "\
+                                     "require > 2 classes. ")
             else:
                 if isinstance(model, GeneralizedLinearModel):
-                    raise ValueError("%s cannot be used for multi-class problems. " % str(trainer))
+                    raise ValueError("%s cannot be used "\
+                                     "for multi-class problems." % str(trainer))
             trainer.train(model,dtrain,verbose = verbose,
-		      shuffle = options.shuffle)
+                      shuffle = options.shuffle)
 
-	    if options.computetrainerror:
-		err = eval.error(model,dtrain,loss)
-		print("error: %.4f" % err)
-		sys.stdout.flush()
+            if options.computetrainerror:
+                test_model(model, dtrain, text="Training error")
             if options.model_file:
                 f = open(options.model_file, 'w+')
                 try:
@@ -152,7 +153,7 @@ def main():
                 dtest = MemoryDataset.load(options.test_file,
                                            verbose = verbose)
                 if options.prediction_file:
-                    write_predictions(model,dtest,options.prediction_file)
+                    write_predictions(model, dtest, options.prediction_file)
                 else:
                     test_model(model, dtest)
         else:
@@ -163,9 +164,10 @@ def main():
             finally:
                 f.close()
             if not model:
-                raise Exception("cannot deserialize model in '%s'. " % options.model_file)
+                raise Exception("cannot deserialize "\
+                                "model in '%s'. " % options.model_file)
             if options.prediction_file:
-                write_predictions(model,dtrain,options.prediction_file)
+                write_predictions(model, dtrain, options.prediction_file)
             else:
                 test_model(model, dtrain)
 
