@@ -30,23 +30,43 @@ Example:
 densedtype = np.float32
 
 def fromlist(l, dtype):
+    """Create a numpy array with data type `dtype` from the given list `l`.
+
+    Arguments
+    ---------
+    l : list
+        The list to be converted.
+
+    dtype : np.dtype
+        The numpy data type (e.g. bolt.io.sparsetype or np.float64).
+
+    Returns
+    -------
+    array, shape=[len(l)]
+        The array representation of the list `l`.
+
+    Examples
+    --------
+    >>> bolt.io.fromlist([(0,0.1),(1,1.0)], bolt.io.sparsedtype)
+    array([(0L, 0.10000000149011612), (1L, 1.0)], 
+      dtype=[('f0', '<u4'), ('f1', '<f4')])
+    """
     length = len(l)
     arr = np.empty((length,), dtype = dtype)
     arr[:] = l
     return arr
 
 def dense2sparse(x):
-    """Convert `numpy` arrays of `bolt.io.densetype` to sparse arrays
-    of `bolt.io.sparsetype`.
+    """Convert numpy arrays of `bolt.io.densetype` to sparse arrays of `bolt.io.sparsetype`.
 
-    Example:
-
-    >>> x = np.array([1,0,0,0,0.2], dtype = bolt.io.densedtype)
-    >>> bolt.dense2sparse(x)
-    array([(0L, 1.0), (4L, 0.2)], 
-      dtype=bolt.io.sparsedtype)
+    Examples
+    --------
+    >>> x = bolt.io.fromlist([1,0,0,0,0.2], bolt.io.densedtype)
+    >>> bolt.io.dense2sparse(x)
+    array([(0L, 1.0), (4L, 0.20000000298023224)], 
+      dtype=[('f0', '<u4'), ('f1', '<f4')])
     """
-    return fromlist([(nnz, x[nnz]) for nnz in x.nonzero()[0]], sparsedtype)
+    return fromlist([(nnz, x[nnz]) for nnz in x.nonzero()[0]],sparsedtype)
 
 class Dataset(object):
     """Dataset interface.
