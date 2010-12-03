@@ -72,27 +72,27 @@ class OVA(object):
         classes = dataset.classes
         t1 = time()
         for i,c in enumerate(classes):
-            bmodel = LinearModel(glm.m, biasterm = glm.biasterm)
+            bmodel = LinearModel(glm.m, biasterm=glm.biasterm)
             dtmp = BinaryDataset(dataset,c)
-            self.trainer.train(bmodel,dtmp, verbose = 0,
-                               shuffle = shuffle)
+            self.trainer.train(bmodel, dtmp, verbose=0,
+                               shuffle=shuffle)
             glm.W[i] = bmodel.w.T
             glm.b[i] = bmodel.bias
             if verbose > 1:
                 print("Model %d trained. \n" \
-                      "Total training time %.2f seconds. " % (i, time() - t1))
+                      "Total training time %.2f seconds." % (i, time() - t1))
         
                 
     def paralleltrain(self, glm, dataset, verbose, shuffle, ncpus):
         if ncpus == None or ncpus <= 0:
             ncpus = multiprocessing.cpu_count()
         pool = multiprocessing.Pool(ncpus)
-        protomodel = LinearModel(glm.m, biasterm = glm.biasterm)
+        protomodel = LinearModel(glm.m, biasterm=glm.biasterm)
         prototrainer = self.trainer
         t1 = time()
         tasks = [(i, c, deepcopy(protomodel), prototrainer,
-                  BinaryDataset(dataset,c), verbose, shuffle)
-                 for i,c in enumerate(dataset.classes)]
+                  BinaryDataset(dataset, c), verbose, shuffle)
+                 for i, c in enumerate(dataset.classes)]
         bmodels = pool.map(paralleltrain_impl, tasks)
         for i,c,model in bmodels:
             glm.W[i] = model.w.T
@@ -103,6 +103,6 @@ def paralleltrain_impl(args):
     t1 = time()
     trainer.train(model, ds, verbose=0, shuffle=shuffle)
     if verbose > 1:
-        print("Model %d trained. \n" \
-              "Training time %.2f seconds. " % (i,time() - t1))
+        print("Model %d trained.\n" \
+              "Training time %.2f seconds." % (i,time() - t1))
     return (i,c,model)
