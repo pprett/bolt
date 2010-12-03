@@ -5,7 +5,7 @@
 """
 The :mod:`trainer` package contains concrete
 `Trainer` classes which are used
-to train a `Model` on a `Dataset`. 
+to train a `Model` on a `Dataset`.
 
 """
 
@@ -23,13 +23,14 @@ from ..io import BinaryDataset
 import multiprocessing
 from copy import deepcopy
 
+
 class OVA(object):
     """A One-versus-All trainer for multi-class models.
 
     It trains one binary classifier for each class `c`
     that predicts the class or all-other classes.
     """
-    
+
     trainer = None
     """The concrete trainer for the binary classifiers. """
 
@@ -37,7 +38,7 @@ class OVA(object):
         """
         :arg trainer: A concrete `Trainer` implementation which is used to
         train `k` `LinearModel` classifiers that try to predict one
-        class versus all others. 
+        class versus all others.
         """
         self.trainer = trainer
         """:member trainer: the trainer... """
@@ -66,14 +67,13 @@ class OVA(object):
         if verbose > 0:
             print("%d models trained in %.2f seconds. " % (len(dataset.classes),
                                                            time() - t1))
-        
 
     def serialtrain(self, glm, dataset, verbose, shuffle):
         classes = dataset.classes
         t1 = time()
-        for i,c in enumerate(classes):
+        for i, c in enumerate(classes):
             bmodel = LinearModel(glm.m, biasterm=glm.biasterm)
-            dtmp = BinaryDataset(dataset,c)
+            dtmp = BinaryDataset(dataset, c)
             self.trainer.train(bmodel, dtmp, verbose=0,
                                shuffle=shuffle)
             glm.W[i] = bmodel.w.T
@@ -81,8 +81,7 @@ class OVA(object):
             if verbose > 1:
                 print("Model %d trained. \n" \
                       "Total training time %.2f seconds." % (i, time() - t1))
-        
-                
+
     def paralleltrain(self, glm, dataset, verbose, shuffle, ncpus):
         if ncpus == None or ncpus <= 0:
             ncpus = multiprocessing.cpu_count()
@@ -94,9 +93,10 @@ class OVA(object):
                   BinaryDataset(dataset, c), verbose, shuffle)
                  for i, c in enumerate(dataset.classes)]
         bmodels = pool.map(paralleltrain_impl, tasks)
-        for i,c,model in bmodels:
+        for i, c, model in bmodels:
             glm.W[i] = model.w.T
             glm.b[i] = model.bias
+
 
 def paralleltrain_impl(args):
     i, c, model, trainer, ds, verbose, shuffle = args
@@ -104,5 +104,5 @@ def paralleltrain_impl(args):
     trainer.train(model, ds, verbose=0, shuffle=shuffle)
     if verbose > 1:
         print("Model %d trained.\n" \
-              "Training time %.2f seconds." % (i,time() - t1))
-    return (i,c,model)
+              "Training time %.2f seconds." % (i, time() - t1))
+    return (i, c, model)
