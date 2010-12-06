@@ -253,7 +253,7 @@ cdef inline double max(double a, double b):
 cdef inline double min(double a, double b):
     return a if a <= b else b
 
-cdef double dot(double *w, Pair *x, int nnz):
+cdef double dot(double *w, Pair *x, int nnz, int *mask_ptr):
     """Dot product of weight vector w and example x. 
     """
     cdef double sum = 0.0
@@ -261,7 +261,7 @@ cdef double dot(double *w, Pair *x, int nnz):
     cdef int i
     for i from 0 <= i < nnz:
         pair = x[i]
-        sum += w[pair.idx] * pair.val
+        sum += w[pair.idx] * pair.val * mask_ptr[pair.idx]
     return sum
 
 cdef double dot_checked(double *w, Pair *x, int nnz, int wdim):
@@ -277,18 +277,20 @@ cdef double dot_checked(double *w, Pair *x, int nnz, int wdim):
             sum +=w[pair.idx]*pair.val
     return sum
 
-cdef double add(double *w, double wscale, Pair *x, int nnz, double c):
+cdef double add(double *w, double wscale, Pair *x, int nnz, double c, int *mask_ptr):
     """Scales example x by constant c and adds it to the weight vector w. 
     """
     cdef Pair pair
     cdef int i
     cdef double innerprod = 0.0
     cdef double xsqnorm = 0.0
+    cdef double val = 0.0
     for i from 0 <= i < nnz:
         pair = x[i]
-        innerprod += (w[pair.idx] * pair.val)
-        xsqnorm += (pair.val*pair.val)
-        w[pair.idx] += pair.val * (c / wscale)
+        val = pair.val * mask_ptr[pair.idx]
+        innerprod += (w[pair.idx] * val)
+        xsqnorm += (val * val)
+        w[pair.idx] += val * (c / wscale)
         
     return (xsqnorm * c * c) + (2.0 * innerprod * wscale * c)
 
@@ -353,18 +355,25 @@ cdef class SGD:
     def __reduce__(self):
         return SGD,(self.loss,self.reg, self.epochs, self.norm, self.alpha)
 
-    def train(self, model, dataset, verbose=0, shuffle=False):
+    def train(self, model, dataset, verbose=0, shuffle=False, mask=None):
         """Train `model` on the `dataset` using SGD.
 
         :arg model: The :class:`bolt.model.LinearModel` that is going to be trained. 
         :arg dataset: The :class:`bolt.io.Dataset`. 
         :arg verbose: The verbosity level. If 0 no output to stdout.
         :arg shuffle: Whether or not the training data should be shuffled
-        after each epoch. 
+        after each epoch.
+        :arg mask: The feature mask, a binary array that specificies which features
+        should be considered.
         """
-        self._train(model, dataset, verbose, shuffle)
+        if mask == None:
+            mask = np.ones((model.m,), dtype=np.int32, order="C")
+        else:
+            mask = np.asarray(mask, dtype=np.int32, order="C")
+            assert mask.shape == (model.m,)
+        self._train(model, dataset, verbose, shuffle, mask)
 
-    cdef void _train(self,model, dataset, verbose, shuffle):
+    cdef void _train(self, model, dataset, verbose, shuffle, mask_arr):
         
         cdef LossFunction loss = self.loss
         cdef int m = model.m
@@ -376,6 +385,10 @@ cdef class SGD:
         cdef double *wdata = <double *>w.data
         # the scale of w
         cdef double wscale = 1.0
+
+        # the feature mask
+        cdef np.ndarray[np.int32_t, ndim=1, mode="c"] mask = mask_arr
+        cdef int *mask_ptr = <int *>mask.data
 
         # training instance
         cdef np.ndarray x = None
@@ -429,12 +442,12 @@ cdef class SGD:
                 eta = 1.0 / (reg * t)
                 xnnz = x.shape[0]
                 xdata = <Pair *>x.data
-                p = (dot(wdata, xdata, xnnz) * wscale) + b
+                p = (dot(wdata, xdata, xnnz, mask_ptr) * wscale) + b
                 sumloss += loss.loss(p,y)
                 update = eta * loss.dloss(p,y)
                 if update != 0:
                     add(wdata, wscale, xdata,
-                        xnnz,update)
+                        xnnz, update, mask_ptr)
                     if usebias == 1:
                         b += update * 0.01
 
@@ -445,7 +458,7 @@ cdef class SGD:
                         wscale = 1
                 if norm == 1 or norm == 3:
                     u += ((1-alpha) * eta * reg)
-                    l1penalty(wscale, wdata, qdata, xdata, xnnz, u)
+                    l1penalty(wscale, wdata, qdata, xdata, xnnz, u, mask_ptr)
                 
                 t += 1
                 count += 1
@@ -470,13 +483,17 @@ cdef class SGD:
         model.bias = b
 
 cdef void l1penalty(double wscale, double *w, double *q,
-                    Pair *x, int nnz, double u):
+                    Pair *x, int nnz, double u, int *mask_ptr):
     cdef double z = 0.0
     cdef Pair pair
     cdef int i,j
+    cdef double val = 0.0
     for i from 0 <= i < nnz:
         pair = x[i]
         j = pair.idx
+        val = pair.val * mask_ptr[j]
+        if val == 0.0:
+            continue
         z = w[j]
         if (wscale * w[j]) > 0:
             w[j] = max(0,w[j] - ((u + q[j])/wscale) )
@@ -509,7 +526,7 @@ cdef class PEGASOS:
     def __reduce__(self):
         return PEGASOS,(self.reg, self.epochs)
 
-    def train(self, model, dataset, verbose = 0, shuffle = False):
+    def train(self, model, dataset, verbose=0, shuffle=False, mask=None):
         """Train `model` on the `dataset` using PEGASOS.
 
         :arg model: The :class:`LinearModel` that is going to be trained. 
@@ -518,9 +535,14 @@ cdef class PEGASOS:
         :arg shuffle: Whether or not the training data should be shuffled
         after each epoch. 
         """
-        self._train(model, dataset, verbose, shuffle)
+        if mask == None:
+            mask = np.ones((model.m,), dtype=np.int32, order="C")
+        else:
+            mask = np.asarray(mask, dtype=np.int32, order="C")
+            assert mask.shape == (model.m,)
+        self._train(model, dataset, verbose, shuffle, mask)
 
-    cdef void _train(self, model, dataset, verbose, shuffle):
+    cdef void _train(self, model, dataset, verbose, shuffle, mask_arr):
         cdef int m = model.m
         cdef int n = dataset.n
         cdef double reg = self.reg
@@ -532,6 +554,9 @@ cdef class PEGASOS:
         # norm of w
         cdef double wscale = 1.0
         cdef double wnorm = 0.0
+
+        cdef np.ndarray[np.int32_t, ndim=1, mode="c"] mask = mask_arr
+        cdef int *mask_ptr = <int *>mask.data
         
         # training instance
         cdef np.ndarray x = None
@@ -562,11 +587,11 @@ cdef class PEGASOS:
                 eta = 1.0 / (reg * t)
                 xnnz = x.shape[0]
                 xdata = <Pair *>x.data
-                p = (dot(wdata, xdata, xnnz) * wscale) + b
+                p = (dot(wdata, xdata, xnnz, mask_ptr) * wscale) + b
                 z = p*y
                 if z < 1:
                     wnorm += add(wdata, wscale, xdata,
-                                 xnnz,(eta*y))
+                                 xnnz, (eta*y), mask_ptr)
                     if usebias == 1:
                         b += (eta*y) * 0.01
                     sumloss += (1-z)
