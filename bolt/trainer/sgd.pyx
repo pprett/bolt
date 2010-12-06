@@ -288,8 +288,8 @@ cdef double add(double *w, double wscale, Pair *x, int nnz, double c, int *mask_
     for i from 0 <= i < nnz:
         pair = x[i]
         val = pair.val * mask_ptr[pair.idx]
-        innerprod += (w[pair.idx] * val)
-        xsqnorm += (val * val)
+        innerprod += w[pair.idx] * val
+        xsqnorm += val * val
         w[pair.idx] += val * (c / wscale)
         
     return (xsqnorm * c * c) + (2.0 * innerprod * wscale * c)
