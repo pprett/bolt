@@ -20,7 +20,6 @@ from time import time
 from ..model import LinearModel
 from ..io import BinaryDataset
 
-import multiprocessing
 from copy import deepcopy
 
 
@@ -83,6 +82,7 @@ class OVA(object):
                       "Total training time %.2f seconds." % (i, time() - t1))
 
     def paralleltrain(self, glm, dataset, verbose, shuffle, ncpus):
+        import multiprocessing
         if ncpus == None or ncpus <= 0:
             ncpus = multiprocessing.cpu_count()
         pool = multiprocessing.Pool(ncpus)
