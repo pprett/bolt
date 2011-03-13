@@ -301,7 +301,7 @@ cdef class SGD:
     various :class:`LossFunction` and different penalties (L1, L2, and Elastic-Net). 
 
 **References**:
-   * SGD implementation inspired by Leon Buttuo's sgd and [Zhang2004]_.
+   * SGD implementation inspired by Leon Bottou's sgd and [Zhang2004]_.
    * L1 penalty via truncation [Tsuruoka2009]_.
    * Elastic-net penalty [Zou2005]_.
           
