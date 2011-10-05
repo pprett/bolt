@@ -151,7 +151,7 @@ class GeneralizedLinearModel(object):
         ps = np.array([predict(x, self.W[i], self.b[i]) for i in range(self.k)])
         c = np.argmax(ps)
         if confidence:
-            return c,ps[c]
+            return c, ps[c]
         else:
             return c
 
